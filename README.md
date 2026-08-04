@@ -36,6 +36,29 @@ bin/rails db:prepare
 bin/rails server -p 3000            # API on :3000
 ```
 
+## Tests
+
+```sh
+cd apps/rapi
+bundle exec rspec                   # one process
+bundle exec rake parallel:spec      # all cores
+```
+
+The suite runs in parallel from day one. `database.yml` appends
+`TEST_ENV_NUMBER` to the test database name, so worker 2 gets
+`contagorda_test2` and workers never share data. The variable is empty for a
+plain `rspec` run, so both paths keep working.
+
+After changing the schema, re-sync the worker databases:
+
+```sh
+bundle exec rake parallel:prepare
+```
+
+Writing a spec that depends on global state — a fixed id, a shared row, the
+current test's position in the file — will pass alone and fail under
+`parallel:spec`. That is the point: the parallel run is what catches it.
+
 ## Authentication
 
 Auth is brokered by [Clowk](https://clowk.in). This API verifies tokens against

@@ -164,6 +164,8 @@ GEM
     nokogiri (1.19.4-x86_64-linux-musl)
       racc (~> 1.4)
     parallel (2.1.0)
+    parallel_tests (5.7.0)
+      parallel
     parser (3.3.12.0)
       ast (~> 2.4.1)
       racc
@@ -325,6 +327,7 @@ DEPENDENCIES
   clowk (~> 0.5)
   debug
   factory_bot_rails
+  parallel_tests
   pg (~> 1.1)
   puma (>= 5.0)
   rack-attack

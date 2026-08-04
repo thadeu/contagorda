@@ -7,9 +7,12 @@ development:
   <<: *default
   database: contagorda_development
 
+# TEST_ENV_NUMBER is what keeps parallel workers off each other's data: worker 2
+# gets contagorda_test2, and so on. It is empty for worker 1 and for a plain
+# `rspec` run, so both paths keep working.
 test:
   <<: *default
-  database: contagorda_test
+  database: contagorda_test<%= ENV["TEST_ENV_NUMBER"] %>
 
 # Production is driven entirely by DATABASE_URL, seeded through
 # `vd config contagorda/api set DATABASE_URL=...`. Postgres lives on a separate

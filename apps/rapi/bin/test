@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Two workers by default. The suite is small enough that more processes cost
+# more in database setup than they save in wall clock; raise it when that stops
+# being true.
+#
+#   bin/test                       whole suite
+#   bin/test spec/models           a folder
+#   RSPEC_TURBO_MAX=8 bin/test     more workers
+export RSPEC_TURBO_MAX="${RSPEC_TURBO_MAX:-2}"
+
+exec bundle exec rspec-turbo "$@"

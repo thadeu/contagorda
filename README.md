@@ -40,24 +40,31 @@ bin/rails server -p 3000            # API on :3000
 
 ```sh
 cd apps/rapi
-bundle exec rspec                   # one process
-bundle exec rake parallel:spec      # all cores
+bin/test                        # whole suite, parallel
+bin/test spec/models            # a folder or file
+RSPEC_TURBO_MAX=8 bin/test      # more workers
+bundle exec rspec               # single process, when isolating something
 ```
 
-The suite runs in parallel from day one. `database.yml` appends
-`TEST_ENV_NUMBER` to the test database name, so worker 2 gets
-`contagorda_test2` and workers never share data. The variable is empty for a
-plain `rspec` run, so both paths keep working.
+The suite runs in parallel from day one, through
+[rspec-turbo](https://github.com/thadeu/rspec-turbo). It balances by actual
+example count from a single `--dry-run` rather than by file, so one fat spec
+file cannot leave a worker idle while another grinds.
 
-After changing the schema, re-sync the worker databases:
+`database.yml` appends `TEST_ENV_NUMBER` to the test database name, so worker 2
+gets `contagorda_test2` and workers never share data. The variable is empty for
+a plain `rspec` run, so both paths keep working. Worker databases are created
+and schema-loaded automatically, cached against a fingerprint of `db/schema.rb`
+and `db/seeds.rb` — a schema change re-runs setup on its own. Force it with
+`RSPEC_TURBO_FORCE_SETUP=1`.
 
-```sh
-bundle exec rake parallel:prepare
-```
+Default is 2 workers: the suite is small enough that more processes cost more in
+database setup than they save in wall clock. Raise it when that stops being
+true.
 
 Writing a spec that depends on global state — a fixed id, a shared row, the
-current test's position in the file — will pass alone and fail under
-`parallel:spec`. That is the point: the parallel run is what catches it.
+current test's position in the file — will pass alone and fail in parallel. That
+is the point: the parallel run is what catches it.
 
 ## Authentication
 

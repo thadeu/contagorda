@@ -52,31 +52,31 @@ Inside the API:
 
 ```sh
 cd apps/rapi
-bin/test                        # whole suite, parallel
-bin/test spec/models            # a folder or file
-RSPEC_TURBO_MAX=8 bin/test      # more workers
-make test-one SPEC=spec/models/transaction_spec.rb   # single process
+make test                       # plain rspec, single process
+make test-turbo                 # parallel, what CI runs
+make test-one SPEC=spec/models/transaction_spec.rb
 ```
 
-The suite runs in parallel from day one, through
-[rspec-turbo](https://github.com/thadeu/rspec-turbo). It balances by actual
+**Locally the suite runs in one process.** At this size, spinning up worker
+databases costs more than the parallelism saves, and a single process keeps
+`binding.irb` usable. `maintain_test_schema!` keeps the test database in sync
+after a migration, so there is no prepare step to remember.
+
+**CI runs it in parallel**, through
+[rspec-turbo](https://github.com/thadeu/rspec-turbo) — runners bill wall-clock
+time, so splitting the suite is what keeps the bill down. It balances by actual
 example count from a single `--dry-run` rather than by file, so one fat spec
-file cannot leave a worker idle while another grinds.
+file cannot leave a worker idle while another grinds. Worker databases are
+created and schema-loaded automatically, cached against a fingerprint of
+`db/schema.rb` and `db/seeds.rb`; force it with `RSPEC_TURBO_FORCE_SETUP=1`.
 
 `database.yml` appends `TEST_ENV_NUMBER` to the test database name, so worker 2
 gets `contagorda_test2` and workers never share data. The variable is empty for
-a plain `rspec` run, so both paths keep working. Worker databases are created
-and schema-loaded automatically, cached against a fingerprint of `db/schema.rb`
-and `db/seeds.rb` — a schema change re-runs setup on its own. Force it with
-`RSPEC_TURBO_FORCE_SETUP=1`.
+a plain `rspec` run, which is why both paths work off the same config.
 
-Default is 2 workers: the suite is small enough that more processes cost more in
-database setup than they save in wall clock. Raise it when that stops being
-true.
-
-Writing a spec that depends on global state — a fixed id, a shared row, the
-current test's position in the file — will pass alone and fail in parallel. That
-is the point: the parallel run is what catches it.
+Worth knowing: a spec that depends on global state — a fixed id, a shared row,
+its position in the file — passes locally and fails in CI. Reach for
+`make test-turbo` before pushing when a spec looks order-sensitive.
 
 ## Authentication
 

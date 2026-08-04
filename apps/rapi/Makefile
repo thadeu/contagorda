@@ -3,10 +3,10 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-.PHONY: help setup test test-one lint typecheck server console migrate
+.PHONY: help setup test test-turbo test-one lint typecheck server console migrate
 
 help:
-	@echo "setup test test-one lint typecheck server console migrate"
+	@echo "setup test test-turbo test-one lint typecheck server console migrate"
 
 setup:
 	@echo "-----> bundle"
@@ -14,13 +14,21 @@ setup:
 	@echo "-----> databases"
 	@bin/rails db:prepare
 
-# rspec-turbo creates and schema-loads the worker databases itself, keyed by a
-# fingerprint of schema.rb and seeds.rb, so a migration does not need a separate
-# prepare step here.
+# Plain rspec locally. While the suite is this size, spinning up worker
+# databases costs more than the parallelism saves, and a single process keeps
+# `binding.irb` usable. `maintain_test_schema!` keeps the one test database in
+# sync after a migration, so there is no prepare step to remember.
 test:
+	@bundle exec rspec
+
+# What CI runs. There the tradeoff flips: runners bill wall-clock time, so
+# splitting across workers is what keeps the bill down. rspec-turbo creates and
+# schema-loads the worker databases itself, cached against a fingerprint of
+# schema.rb and seeds.rb.
+test-turbo:
 	@bin/test
 
-# Single process, for when a failure needs a debugger or an isolated run.
+# One file or folder.
 #   make test-one SPEC=spec/models/transaction_spec.rb
 test-one:
 	@bundle exec rspec $(SPEC)

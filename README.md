@@ -28,11 +28,20 @@ it.
 
 ```sh
 cp apps/rapi/.env.example apps/rapi/.env   # fill in the Clowk keys
-make up                             # Postgres 18 on :5433
-make setup                          # deps + databases
-pnpm dev                            # PWA on :5173
-cd apps/rapi && bin/rails s -p 3000 # API on :3000
+make setup                          # postgres + deps + databases
+make up-with-logs                   # api :3000 + pwa :5173, logs interleaved
 ```
+
+`up-with-logs` runs Postgres in compose and the two apps on the host through
+overmind (`brew install overmind`). Ctrl-C stops the API and the PWA and leaves
+Postgres running — it holds the data you are working against. `make down` stops
+that too.
+
+`make up` brings up only the database, for when you would rather run the servers
+yourself.
+
+The PWA answers on `http://localhost:5173`, not `127.0.0.1:5173` — vite binds
+IPv6 only, so the v4 address refuses the connection.
 
 Postgres runs in compose and **must be 18** — primary keys default to
 `uuidv7()`, which arrived in that version. It listens on 5433 so it does not

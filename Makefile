@@ -13,22 +13,37 @@ SHELL := /bin/bash
 
 APPS := $(patsubst apps/%/Makefile,%,$(wildcard apps/*/Makefile))
 
-.PHONY: help up down logs setup test test-turbo lint typecheck check
+.PHONY: help up up-with-logs down logs setup test test-turbo lint typecheck check
 
 help:
 	@echo "apps:  $(APPS)"
-	@echo "db:    up down logs"
+	@echo "dev:   up up-with-logs down logs"
 	@echo "all:   setup test test-turbo lint typecheck check"
 	@echo "one:   test-<app>  lint-<app>  typecheck-<app>  setup-<app>"
 
-## ─────────────────────────── database ───────────────────────────
+## ─────────────────────────── dev stack ───────────────────────────
 #
-# Postgres 18 in compose, on 5433 so it does not collide with a Postgres you
-# already run on 5432. 18 is required: ids default to uuidv7().
+# Postgres runs in compose; the API and the PWA run on the host through
+# overmind. They are what you edit, and a container in the way buys nothing —
+# while the database is the one piece whose exact version matters (18, for
+# uuidv7()) and is worth pinning in an image.
+#
+# Postgres listens on 5433 so it does not collide with one you already run.
 
 up:
 	@echo "-----> postgres 18 on 127.0.0.1:5433"
 	@docker compose up -d
+
+# Everything, with both logs interleaved. Ctrl-C stops the API and the PWA;
+# Postgres stays up, since it holds the data you are working against — `make
+# down` is what stops it.
+up-with-logs: up
+	@command -v overmind >/dev/null || { echo "overmind not installed (brew install overmind)"; exit 1; }
+	@test -f apps/rapi/.env || { echo "-----> create apps/rapi/.env: cp apps/rapi/.env.example apps/rapi/.env"; exit 1; }
+	@# localhost, not 127.0.0.1, for the PWA: vite binds IPv6 only, so the
+	@# v4 address refuses the connection while localhost resolves to ::1.
+	@echo "-----> api http://127.0.0.1:3000  ·  pwa http://localhost:5173"
+	@overmind start -f Procfile.dev
 
 down:
 	@docker compose down

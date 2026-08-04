@@ -19,3 +19,6 @@ apps/rapi/.bundle/
 # a credential leak.
 apps/rapi/config/master.key
 apps/rapi/config/credentials/*.key
+
+# overmind writes its control socket here
+.overmind.sock

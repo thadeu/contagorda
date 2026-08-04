@@ -1,4 +1,9 @@
 class User < ApplicationRecord
+  has_many :accounts, dependent: :destroy
+  has_many :categories, dependent: :destroy
+  has_many :transactions, dependent: :destroy
+  has_many :recurring_series, dependent: :destroy
+
   validates :clowk_sub, presence: true, uniqueness: true
   validates :email, presence: true
 

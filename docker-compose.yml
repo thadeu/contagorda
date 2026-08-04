@@ -1,0 +1,25 @@
+# Only the database runs in compose. The Rails API and the PWA run on the host
+# — they are what you edit, and a container in the way buys nothing here.
+services:
+  postgres:
+    image: postgres:18-alpine
+    ports:
+      # 5433 on the host: 5432 usually belongs to the developer's own Postgres.
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: contagorda
+      POSTGRES_PASSWORD: contagorda
+      POSTGRES_DB: contagorda_development
+    volumes:
+      # Postgres 18's image moved the data directory: mount /var/lib/postgresql
+      # (data lands in a version subdir), not /var/lib/postgresql/data as ≤17.
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U contagorda -d contagorda_development" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:

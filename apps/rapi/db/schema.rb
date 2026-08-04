@@ -10,8 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 0) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_04_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "users", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.string "avatar_url"
+    t.string "clowk_sub", null: false
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["clowk_sub"], name: "index_users_on_clowk_sub", unique: true
+  end
 end

@@ -13,14 +13,30 @@ SHELL := /bin/bash
 
 APPS := $(patsubst apps/%/Makefile,%,$(wildcard apps/*/Makefile))
 
-.PHONY: help setup test test-turbo lint typecheck check
+.PHONY: help up down logs setup test test-turbo lint typecheck check
 
 help:
 	@echo "apps:  $(APPS)"
+	@echo "db:    up down logs"
 	@echo "all:   setup test test-turbo lint typecheck check"
 	@echo "one:   test-<app>  lint-<app>  typecheck-<app>  setup-<app>"
 
-setup: $(addprefix setup-,$(APPS))
+## ─────────────────────────── database ───────────────────────────
+#
+# Postgres 18 in compose, on 5433 so it does not collide with a Postgres you
+# already run on 5432. 18 is required: ids default to uuidv7().
+
+up:
+	@echo "-----> postgres 18 on 127.0.0.1:5433"
+	@docker compose up -d
+
+down:
+	@docker compose down
+
+logs:
+	@docker compose logs -f postgres
+
+setup: up $(addprefix setup-,$(APPS))
 
 test: $(addprefix test-,$(APPS))
 

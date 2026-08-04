@@ -1,7 +1,15 @@
+# Dev and test run against the Postgres 18 container from docker-compose.yml,
+# on 5433 so it does not collide with a Postgres the developer already has on
+# 5432. 18 is not optional: ids default to `uuidv7()`, which arrived in that
+# version.
 default: &default
   adapter: postgresql
   encoding: unicode
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("PGHOST", "127.0.0.1") %>
+  port: <%= ENV.fetch("PGPORT", 5433) %>
+  username: <%= ENV.fetch("PGUSER", "contagorda") %>
+  password: <%= ENV.fetch("PGPASSWORD", "contagorda") %>
 
 development:
   <<: *default

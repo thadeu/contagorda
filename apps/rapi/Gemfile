@@ -25,7 +25,7 @@ gem "rack-cors"
 
 # Authentication is brokered by Clowk: this app verifies tokens, it never issues
 # them.
-gem "clowk", "~> 0.5"
+gem "clowk", "~> 0.5.1"
 
 # Auth endpoints are the ones worth rate limiting hardest.
 gem "rack-attack"

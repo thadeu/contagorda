@@ -86,7 +86,7 @@ GEM
     bundler-audit (0.9.3)
       bundler (>= 1.2.0)
       thor (~> 1.0)
-    clowk (0.5.0)
+    clowk (0.5.1)
       activesupport (>= 7.0)
       jwt (>= 2.7, < 3.0)
       railties (>= 7.0)
@@ -328,7 +328,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   bundler-audit
-  clowk (~> 0.5)
+  clowk (~> 0.5.1)
   debug
   dotenv-rails
   factory_bot_rails

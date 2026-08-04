@@ -39,11 +39,23 @@ bin/rails server -p 3000            # API on :3000
 ## Tests
 
 ```sh
+make test                       # every app
+make test-rapi                  # one app
+make check                      # lint + typecheck + test, what CI runs
+```
+
+Each app under `apps/` owns a Makefile exposing the same verbs, and the root
+only fans out to them. Apps are discovered by wildcard rather than listed, so
+adding `apps/ios` joins `make test` by having a Makefile.
+
+Inside the API:
+
+```sh
 cd apps/rapi
 bin/test                        # whole suite, parallel
 bin/test spec/models            # a folder or file
 RSPEC_TURBO_MAX=8 bin/test      # more workers
-bundle exec rspec               # single process, when isolating something
+make test-one SPEC=spec/models/transaction_spec.rb   # single process
 ```
 
 The suite runs in parallel from day one, through

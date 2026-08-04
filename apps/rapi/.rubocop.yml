@@ -1,0 +1,10 @@
+# Omakase is the style Rails itself ships with, so generated code passes without
+# argument and the diff of a `rails new` upgrade stays readable.
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
+
+AllCops:
+  Exclude:
+    - db/schema.rb
+    - vendor/**/*
+    - tmp/**/*

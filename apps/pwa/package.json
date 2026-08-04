@@ -12,6 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@clowk/core": "^1.1.1",
+    "@clowk/react": "^1.1.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

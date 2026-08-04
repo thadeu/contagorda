@@ -1,0 +1,6 @@
+# Only the JavaScript side lives in the workspace. apps/rapi has its own
+# Gemfile and apps/ios will have its own Xcode project — a polyglot monorepo is
+# held together by convention, not by forcing one package manager over all of it.
+packages:
+  - 'apps/pwa'
+  - 'packages/*'

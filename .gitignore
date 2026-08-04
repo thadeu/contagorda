@@ -1,0 +1,21 @@
+node_modules/
+dist/
+dev-dist/
+.turbo/
+*.log
+.DS_Store
+
+.env
+.env.*
+!.env.example
+
+apps/pwa/.vite/
+apps/rapi/tmp/
+apps/rapi/log/
+apps/rapi/storage/
+apps/rapi/.bundle/
+
+# Never commit master.key: it decrypts credentials, so a repo leak would become
+# a credential leak.
+apps/rapi/config/master.key
+apps/rapi/config/credentials/*.key

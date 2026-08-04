@@ -1,0 +1,19 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: contagorda_development
+
+test:
+  <<: *default
+  database: contagorda_test
+
+# Production is driven entirely by DATABASE_URL, seeded through
+# `vd config contagorda/api set DATABASE_URL=...`. Postgres lives on a separate
+# VM reachable over the private network, so no credential belongs in this file.
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

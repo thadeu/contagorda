@@ -5,11 +5,14 @@ import { MonthList } from '../transactions/MonthList'
 import { MonthStack } from './components/MonthStack'
 import { ProfileButton } from './components/ProfileButton'
 import { Card } from '../../ui/Card'
+import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 
 export function DashboardPage() {
   const { month, setMonth } = useMonth()
   const { salutation, firstName, avatarUrl, email } = useGreeting()
   const transactions = useTransactions(month)
+
+  useDocumentCanvas('sky')
 
   const rows = transactions.data ?? []
   const expenses = rows.filter((t) => t.kind === 'expense')
@@ -26,7 +29,7 @@ export function DashboardPage() {
             {salutation}
           </h1>
           {firstName && (
-            <p className="truncate pt-0.5 text-lg leading-tight font-medium text-muted">
+            <p className="truncate pt-0.5 text-lg leading-tight font-medium text-ink/70">
               {firstName}
             </p>
           )}

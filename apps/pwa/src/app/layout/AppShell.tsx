@@ -56,7 +56,7 @@ function Shell() {
   const root = pathname === '/'
 
   return (
-    <div className="relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
+    <div className="app-surface relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
       <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-[6em]">
         <Outlet />
       </main>

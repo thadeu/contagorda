@@ -28,6 +28,12 @@
   --color-brand-soft: #18202f;
   --color-accent: #5aa9ff;
 
+  /* The month view's sky. Same blue as the accent, opened up and taken down to
+     the page so the screen has a horizon rather than a coloured header with an
+     edge — an edge is what dates the shape. */
+  --color-sky: #4a9df2;
+  --color-sky-soft: #8fc4f8;
+
   --color-ink: #0a0f1a;
   --color-muted: #67748a;
   --color-faint: #98a4b5;
@@ -181,6 +187,30 @@
 html[data-canvas='brand'],
 html[data-canvas='brand'] body {
   background-color: var(--color-brand);
+}
+
+/*
+ * The sky is painted on the frame, which does not scroll, so it stays put while
+ * the month moves over it. Painting it into the page instead would carry it
+ * away on the first scroll and leave the strip above the app still blue.
+ *
+ * The document takes the top colour for that strip: it sits above the root and
+ * shows whatever the page is, so it has to agree with the frame at the seam.
+ */
+html[data-canvas='sky'],
+html[data-canvas='sky'] body {
+  background-color: var(--color-sky);
+}
+
+html[data-canvas='sky'] .app-surface {
+  background-image: linear-gradient(
+    180deg,
+    var(--color-sky) 0%,
+    var(--color-sky-soft) 38%,
+    var(--color-canvas) 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 26rem;
 }
 
 html[data-overlay-open='true'],

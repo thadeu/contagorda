@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-type Canvas = 'brand'
+type Canvas = 'brand' | 'sky'
 
 /**
  * Paints the document behind a full-screen surface.
@@ -13,6 +13,10 @@ type Canvas = 'brand'
  *
  * Colouring the document to match removes it without inflating the surface past
  * the viewport, which would push a bottom-anchored element off the screen.
+ *
+ * The same hook carries the month view's sky, for the same reason in reverse:
+ * the strip above the app shows the document, so the document has to agree with
+ * whatever the screen is painting at its top edge.
  */
 export function useDocumentCanvas(canvas: Canvas): void {
   useEffect(() => {

@@ -31,7 +31,7 @@ export function MonthPicker({ month, onChange }: MonthPickerProps) {
         type="button"
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
-        className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white/12 pr-2.5 pl-3.5 text-sm font-medium text-white capitalize"
+        className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white/12 pr-2.5 pl-3.5 text-sm font-medium text-white first-letter:uppercase"
       >
         {monthLabel(month)}
         <ChevronDownIcon className="size-4 opacity-70" />
@@ -56,7 +56,7 @@ export function MonthPicker({ month, onChange }: MonthPickerProps) {
                           setOpen(false)
                         }}
                         aria-current={option === month}
-                        className={`flex min-h-12 w-full items-center justify-between rounded-control px-4 text-left text-[0.9375rem] capitalize ${
+                        className={`flex min-h-12 w-full items-center justify-between rounded-control px-4 text-left text-[0.9375rem] first-letter:uppercase ${
                           option === month
                             ? 'bg-brand font-semibold text-white'
                             : 'bg-sunken text-ink'

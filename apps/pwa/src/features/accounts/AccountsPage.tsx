@@ -1,42 +1,48 @@
-import { Link } from 'react-router'
-import { ScreenHeader } from '../../ui/ScreenHeader'
+import { NavBar, NavButton } from '../../ui/NavBar'
 import { useAccounts } from './hooks'
+import { useAccountEditor } from './accountEditorContext'
 import { kindLabel } from './accountKinds'
 import { Card } from '../../ui/Card'
 import { Money } from '../../ui/Money'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/EmptyState'
+import { PlusIcon } from '../../ui/icons'
+import { ProfileButton } from '../dashboard/components/ProfileButton'
+import { useGreeting } from '../../app/useGreeting'
 
 export function AccountsPage() {
   const accounts = useAccounts()
+  const editor = useAccountEditor()
+  const { firstName, email, avatarUrl } = useGreeting()
 
   return (
     <>
-      <ScreenHeader title="Contas" />
-
-      <div className="flex justify-end px-4 pt-4">
-        <Link to="/accounts/new">
-          <Button variant="ghost">Nova conta</Button>
-        </Link>
-      </div>
+      <NavBar
+        topInset
+        title="Contas"
+        leading={
+          <ProfileButton name={firstName} email={email} avatarUrl={avatarUrl} />
+        }
+        trailing={<NavButton primary icon={PlusIcon} label="Nova conta" onClick={editor.openNew} />}
+      />
 
       {accounts.isSuccess && accounts.data.length === 0 && (
         <EmptyState
           title="Nenhuma conta ainda"
           hint="Cadastre onde o dinheiro entra e sai para começar a lançar."
-          action={
-            <Link to="/accounts/new">
-              <Button>Cadastrar conta</Button>
-            </Link>
-          }
+          action={<Button onClick={editor.openNew}>Cadastrar conta</Button>}
         />
       )}
 
-      <ul className="grid gap-2 px-4 pt-4">
+      <ul className="grid gap-2 px-4 pt-2">
         {(accounts.data ?? []).map((account) => (
           <li key={account.id}>
-            <Link to={`/accounts/${account.id}/edit`}>
-              <Card className="flex items-center justify-between px-4 py-3 ">
+            <button
+              type="button"
+              onClick={() => editor.openEdit(account.id)}
+              className="block w-full text-left"
+            >
+              <Card className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-[0.9375rem] font-medium text-ink">{account.name}</p>
                   <p className="truncate text-xs text-muted">
@@ -44,9 +50,13 @@ export function AccountsPage() {
                     {account.institution && ` · ${account.institution}`}
                   </p>
                 </div>
-                <Money cents={account.initial_balance_cents} className="shrink-0 text-[0.9375rem] font-semibold" />
+
+                <Money
+                  cents={account.initial_balance_cents}
+                  className="shrink-0 text-[0.9375rem] font-semibold"
+                />
               </Card>
-            </Link>
+            </button>
           </li>
         ))}
       </ul>

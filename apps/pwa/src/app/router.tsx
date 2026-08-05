@@ -3,8 +3,6 @@ import { AppShell } from './layout/AppShell'
 import { RequireAuth } from './auth/RequireAuth'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { AccountsPage } from '../features/accounts/AccountsPage'
-import { NewAccountPage } from '../features/accounts/NewAccountPage'
-import { EditAccountPage } from '../features/accounts/EditAccountPage'
 
 export const router = createBrowserRouter([
   {
@@ -19,8 +17,6 @@ export const router = createBrowserRouter([
       // it. Having both meant two routes rendering the same thing.
       { index: true, element: <DashboardPage /> },
       { path: 'accounts', element: <AccountsPage /> },
-      { path: 'accounts/new', element: <NewAccountPage /> },
-      { path: 'accounts/:id/edit', element: <EditAccountPage /> },
       // The Clowk callback lands here. Rendering the month view means the
       // provider finishes its exchange and the user sees the app, rather than a
       // dead URL they have to navigate away from themselves.

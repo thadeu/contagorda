@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { CloseIcon } from './icons'
+import { NavBar, NavButton } from './NavBar'
 import { useBodyScrollLock } from './useBodyScrollLock'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
@@ -81,29 +82,21 @@ export function Modal({ title, onClose, children }: ModalProps) {
         style={{ transform: `translateY(${offset}px)` }}
         className="sheet-snap relative flex h-[calc(100%-env(safe-area-inset-top)-2.5rem)] w-full max-w-lg flex-col rounded-t-card bg-surface"
       >
-        <header
+        <div
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="shrink-0 px-4 pt-2 pb-1 select-none"
+          className="shrink-0 select-none"
         >
-          <div className="flex justify-center pb-3" aria-hidden="true">
+          <div className="flex justify-center pt-2" aria-hidden="true">
             <span className="h-1 w-10 rounded-full bg-line" />
           </div>
 
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="truncate text-lg font-semibold text-ink">{title}</h2>
-
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Fechar"
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-sunken text-muted"
-            >
-              <CloseIcon className="size-4" strokeWidth={2} aria-hidden="true" />
-            </button>
-          </div>
-        </header>
+          <NavBar
+            title={title}
+            leading={<NavButton icon={CloseIcon} label="Fechar" onClick={onClose} />}
+          />
+        </div>
 
         <div ref={content} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {children}

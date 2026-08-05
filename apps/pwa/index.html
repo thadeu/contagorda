@@ -2,39 +2,17 @@
 <html lang="pt-BR" >
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
-    <!-- viewport-fit=cover lets the layout reach under the iOS status bar, which
-         is what the safe-area padding in the shell then accounts for. -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no"
-    />
-
-    <!-- Matches --color-canvas. A mismatch here shows as a seam above the header
-         once the app is installed. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#f2f4f7" />
-    <!-- `scope` is what keeps navigation inside the installed app. Without a
-         manifest the home-screen app has no scope at all, so iOS cannot tell
-         which URLs belong to it and treats a move to another path as leaving
-         for the web — which is what going to the new-transaction form did. -->
-    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- `default`, chosen on the device. black-translucent fills the screen but
-         left a band around the app in the installed PWA that no combination of
-         frame sizing removed, and it forces a white clock, which needs a dark
-         strip across the top to stay readable. `default` reserves the status bar
-         outside the web view and iOS draws it to match — verified to look right
-         on the phone, which beats a full-screen mode that does not. -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Conta Gorda" />
-
+    
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <title>Conta Gorda</title>
   </head>

@@ -13,7 +13,6 @@ interface AccountFormProps {
   submitLabel: string
   pending: boolean
   onSubmit: (input: NewAccount) => void
-  onCancel: () => void
   footer?: ReactNode
 }
 
@@ -22,7 +21,6 @@ export function AccountForm({
   submitLabel,
   pending,
   onSubmit,
-  onCancel,
   footer,
 }: AccountFormProps) {
   const [name, setName] = useState(initial?.name ?? '')
@@ -49,13 +47,12 @@ export function AccountForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pt-4 pb-8">
+    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pt-4">
       <Field label="Nome">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nubank, Carteira…"
-          autoFocus
           className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
         />
       </Field>
@@ -102,16 +99,13 @@ export function AccountForm({
         </p>
       )}
 
-      <div className="flex gap-2 pt-3">
-        <Button type="submit" className="flex-1" disabled={pending}>
+      {footer}
+
+      <div className="sticky bottom-0 -mx-4 mt-1 border-t border-line bg-surface px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+        <Button type="submit" className="w-full" disabled={pending}>
           {pending ? 'Salvando…' : submitLabel}
         </Button>
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancelar
-        </Button>
       </div>
-
-      {footer}
     </form>
   )
 }

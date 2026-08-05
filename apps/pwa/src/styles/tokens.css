@@ -49,23 +49,14 @@
 @layer base {
   :root {
     color-scheme: light;
-
-    /* TEMPORARY, read by ViewportProbe: env() is not readable from JS. */
-    --probe-top: env(safe-area-inset-top);
-    --probe-right: env(safe-area-inset-right);
-    --probe-bottom: env(safe-area-inset-bottom);
-    --probe-left: env(safe-area-inset-left);
-    --probe-dvh: 100dvh;
   }
 
-  /* Measured in dvh, the same basis the app frame uses. With `100%` here and
-     `100dvh` on the frame the two resolve against different boxes in a
-     standalone PWA, and the difference shows up as a strip of page below the
-     app. */
+  /* `100%` all the way down, so the app frame is the document rather than a
+     box measured against it. */
   html,
   body,
   #root {
-    height: 100dvh;
+    height: 100%;
   }
 
   html {
@@ -201,23 +192,3 @@ html[data-overlay-open='true'] .app-scroll {
 html[data-overlay-open='true'] .slide-away {
   display: none;
 }
-
-/* ─────────────────────────── TEMPORARY ───────────────────────────
- *
- * Paint over the numbers, because the numbers stopped being decisive.
- *
- *   red      the app frame
- *   magenta  the body behind it
- *
- * If red reaches all four edges of the screen, the frame is fine and the empty
- * space is padding inside it. If magenta shows anywhere, that edge is where the
- * frame stops. Remove this block once the answer is known.
- */
-[data-probe-frame] {
-  background-color: red !important;
-}
-
-body {
-  background-color: magenta !important;
-}
-

@@ -28,5 +28,5 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 function BootScreen() {
   useDocumentCanvas('brand')
 
-  return <div className="fixed inset-0 bg-brand" />
+  return <div className="h-full bg-brand" />
 }

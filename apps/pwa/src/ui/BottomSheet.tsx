@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { useBodyScrollLock } from './useBodyScrollLock'
+import { useTouchScrollGuard } from './useTouchScrollGuard'
 
 interface BottomSheetProps {
   title: string
@@ -26,6 +27,10 @@ const PULL_LIMIT = 48
 /**
  * Actions come to the thumb rather than the thumb going to them.
  *
+ * A drag anywhere in here that is not scrolling the sheet's own content is
+ * cancelled outright, or iOS spends it on the page underneath and the app
+ * appears to travel with the sheet.
+ *
  * The panel follows the finger while dragging — direct manipulation, not
  * animation — and only the release travels. Pulling down closes; on an
  * expandable sheet it steps back to compact first, because going from full
@@ -40,6 +45,8 @@ export function BottomSheet({
   children,
 }: BottomSheetProps) {
   const panel = useRef<HTMLDivElement>(null)
+  const overlay = useRef<HTMLDivElement>(null)
+  const content = useRef<HTMLDivElement>(null)
   const startY = useRef<number | null>(null)
 
   const [expanded, setExpanded] = useState(false)
@@ -47,6 +54,7 @@ export function BottomSheet({
   const [dragging, setDragging] = useState(false)
 
   useBodyScrollLock()
+  useTouchScrollGuard(overlay, content)
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -96,7 +104,7 @@ export function BottomSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center">
+    <div ref={overlay} className="fixed inset-0 z-40 flex items-end justify-center">
       <button
         type="button"
         aria-label="Fechar"
@@ -130,7 +138,9 @@ export function BottomSheet({
           {subtitle && <p className="truncate pt-0.5 text-sm text-muted">{subtitle}</p>}
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+        <div ref={content} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {children}
+        </div>
       </div>
     </div>
   )

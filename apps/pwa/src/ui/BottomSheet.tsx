@@ -1,35 +1,51 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useBodyScrollLock } from './useBodyScrollLock'
 
 interface BottomSheetProps {
   title: string
   subtitle?: string
   onClose: () => void
+  /**
+   * Whether pulling up opens a taller detent.
+   *
+   * Only worth it when there is more to see — a long list. A sheet holding three
+   * actions that grows to fill the screen is empty space pretending to be
+   * content, and the gesture teaches nothing because nothing changes.
+   */
+  expandable?: boolean
   children: ReactNode
 }
 
 /** Far enough that a scroll gesture does not trigger a detent by accident. */
 const THRESHOLD = 70
 
-/** How far the panel rubber-bands upward, so pulling up answers immediately. */
+/** How far an expandable panel rubber-bands upward, so pulling up answers. */
 const PULL_LIMIT = 48
 
 /**
- * Two detents, the way a native sheet behaves.
- *
- * Pulling up expands to full height; pulling down steps back to compact, and
- * pulling down again closes. Going straight from full height to dismissed on
- * one gesture would throw away a list someone had just opened up to read.
+ * Actions come to the thumb rather than the thumb going to them.
  *
  * The panel follows the finger while dragging — direct manipulation, not
- * animation — and only the release travels.
+ * animation — and only the release travels. Pulling down closes; on an
+ * expandable sheet it steps back to compact first, because going from full
+ * height to dismissed in one gesture would throw away a list someone had just
+ * opened up to read.
  */
-export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetProps) {
+export function BottomSheet({
+  title,
+  subtitle,
+  onClose,
+  expandable = false,
+  children,
+}: BottomSheetProps) {
   const panel = useRef<HTMLDivElement>(null)
   const startY = useRef<number | null>(null)
 
   const [expanded, setExpanded] = useState(false)
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
+
+  useBodyScrollLock()
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -39,16 +55,7 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
     document.addEventListener('keydown', onKey)
     panel.current?.focus()
 
-    // Locking the body keeps the list behind from scrolling under the sheet,
-    // which on iOS otherwise drags the whole page around.
-    const previous = document.body.style.overflow
-
-    document.body.style.overflow = 'hidden'
-
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = previous
-    }
+    return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
   function handleTouchStart(event: React.TouchEvent) {
@@ -61,17 +68,24 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
 
     const delta = event.touches[0].clientY - startY.current
 
-    setOffset(delta > 0 ? delta : Math.max(delta, -PULL_LIMIT))
+    if (delta > 0) {
+      setOffset(delta)
+
+      return
+    }
+
+    // A fixed sheet does not answer an upward pull, so it does not invite one.
+    setOffset(expandable ? Math.max(delta, -PULL_LIMIT) : 0)
   }
 
   function handleTouchEnd() {
     if (offset > THRESHOLD) {
-      if (expanded) {
+      if (expandable && expanded) {
         setExpanded(false)
       } else {
         onClose()
       }
-    } else if (offset < -THRESHOLD / 2) {
+    } else if (expandable && offset < -THRESHOLD / 2) {
       setExpanded(true)
     }
 

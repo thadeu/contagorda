@@ -38,7 +38,7 @@ export function MonthPicker({ month, onChange }: MonthPickerProps) {
       </button>
 
       {open && (
-        <BottomSheet title="Mês" onClose={() => setOpen(false)}>
+        <BottomSheet title="Mês" expandable onClose={() => setOpen(false)}>
           <div className="grid gap-4 px-1 pb-2">
             {groups.map((group) => (
               <section key={group.year}>

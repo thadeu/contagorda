@@ -1,7 +1,18 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '@clowk/react'
 import { Button } from '../../ui/Button'
 import { clearSignInAttempt, redirectToSignIn, signInAlreadyAttempted } from './signIn'
+
+/**
+ * How long "signed out" has to hold before it counts as a failure.
+ *
+ * Coming back from Clowk there is a window where loading has finished but the
+ * exchange has not landed yet, and under StrictMode the provider runs its
+ * bootstrap twice — the first pass consumes the token from the URL, the second
+ * finds none and falls back to the stored refresh token. Either way the app is
+ * momentarily "not signed in", which is not the same thing as "sign-in failed".
+ */
+const SETTLE_MS = 1500
 
 /**
  * Everything behind a sign-in.
@@ -13,12 +24,8 @@ import { clearSignInAttempt, redirectToSignIn, signInAlreadyAttempted } from './
  */
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { signedIn, isLoading } = useAuth()
+  const [failed, setFailed] = useState(false)
   const started = useRef(false)
-
-  // Coming back from Clowk still signed out means the exchange failed.
-  // Redirecting again would loop, and a loop reads as a frozen app rather than
-  // as something that went wrong.
-  const failed = !isLoading && !signedIn && signInAlreadyAttempted()
 
   useEffect(() => {
     if (isLoading || started.current) return
@@ -29,13 +36,20 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       return
     }
 
-    if (signInAlreadyAttempted()) return
+    // Back from Clowk and still signed out. Give it a moment before calling it
+    // a failure — redirecting again immediately would loop, and a loop reads as
+    // a frozen app rather than as something that went wrong.
+    if (signInAlreadyAttempted()) {
+      const timer = setTimeout(() => setFailed(true), SETTLE_MS)
+
+      return () => clearTimeout(timer)
+    }
 
     started.current = true
     void redirectToSignIn()
   }, [isLoading, signedIn])
 
-  if (failed) {
+  if (failed && !signedIn) {
     return (
       <Centered>
         <p className="text-lg font-semibold">Não deu para entrar</p>

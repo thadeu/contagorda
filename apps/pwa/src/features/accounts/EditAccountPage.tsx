@@ -18,7 +18,7 @@ export function EditAccountPage() {
       <EmptyState
         title="Conta não encontrada"
         hint="Ela pode ter sido arquivada."
-        action={<Button onClick={() => navigate('/contas')}>Voltar</Button>}
+        action={<Button onClick={() => navigate('/accounts')}>Voltar</Button>}
       />
     )
   }
@@ -38,7 +38,7 @@ export function EditAccountPage() {
           balance: centsToInput(account.initial_balance_cents),
         }}
         onSubmit={(input) =>
-          update.mutate({ id, input }, { onSuccess: () => navigate('/contas') })
+          update.mutate({ id, input }, { onSuccess: () => navigate('/accounts') })
         }
         footer={
           <div className="pt-4">
@@ -50,7 +50,7 @@ export function EditAccountPage() {
               onClick={() => {
                 if (!confirm(`Arquivar "${account.name}"? Os lançamentos dela continuam no histórico.`)) return
 
-                archive.mutate(id, { onSuccess: () => navigate('/contas') })
+                archive.mutate(id, { onSuccess: () => navigate('/accounts') })
               }}
             >
               Arquivar conta

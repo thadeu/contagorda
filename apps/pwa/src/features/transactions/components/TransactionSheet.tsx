@@ -44,7 +44,7 @@ export function TransactionSheet({
         <SheetActionCard
           label="Editar"
           icon={EditIcon}
-          onClick={() => navigate(`/transacoes/${transaction.id}/editar`)}
+          onClick={() => navigate(`/transactions/${transaction.id}/edit`)}
         />
       </div>
 

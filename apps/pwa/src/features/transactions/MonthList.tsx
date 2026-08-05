@@ -70,7 +70,7 @@ export function MonthList({ month }: MonthListProps) {
             title="Nada pendente neste mês"
             hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
             action={
-              <Link to="/transacoes/novo">
+              <Link to="/transactions/new">
                 <Button>Adicionar lançamento</Button>
               </Link>
             }

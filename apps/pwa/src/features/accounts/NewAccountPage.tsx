@@ -15,7 +15,7 @@ export function NewAccountPage() {
         submitLabel="Salvar"
         pending={create.isPending}
         onCancel={() => navigate(-1)}
-        onSubmit={(input) => create.mutate(input, { onSuccess: () => navigate('/contas') })}
+        onSubmit={(input) => create.mutate(input, { onSuccess: () => navigate('/accounts') })}
       />
     </>
   )

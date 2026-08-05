@@ -15,7 +15,7 @@ export function AccountsPage() {
       <ScreenHeader title="Contas" />
 
       <div className="flex justify-end px-4 pt-4">
-        <Link to="/contas/nova">
+        <Link to="/accounts/new">
           <Button variant="ghost">Nova conta</Button>
         </Link>
       </div>
@@ -25,7 +25,7 @@ export function AccountsPage() {
           title="Nenhuma conta ainda"
           hint="Cadastre onde o dinheiro entra e sai para começar a lançar."
           action={
-            <Link to="/contas/nova">
+            <Link to="/accounts/new">
               <Button>Cadastrar conta</Button>
             </Link>
           }
@@ -35,7 +35,7 @@ export function AccountsPage() {
       <ul className="grid gap-2 px-4 pt-4">
         {(accounts.data ?? []).map((account) => (
           <li key={account.id}>
-            <Link to={`/contas/${account.id}/editar`}>
+            <Link to={`/accounts/${account.id}/edit`}>
               <Card className="flex items-center justify-between px-4 py-3 ">
                 <div className="min-w-0">
                   <p className="truncate text-[0.9375rem] font-medium text-ink">{account.name}</p>

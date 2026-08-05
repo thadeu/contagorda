@@ -5,7 +5,7 @@ import { useHideOnScroll } from '../useHideOnScroll'
 
 const TABS = [
   { to: '/', label: 'Mês', end: true, Icon: HomeIcon },
-  { to: '/contas', label: 'Contas', end: false, Icon: WalletIcon },
+  { to: '/accounts', label: 'Contas', end: false, Icon: WalletIcon },
 ]
 
 /**
@@ -33,11 +33,11 @@ export function AppShell() {
   const { pathname } = useLocation()
   const scroller = useRef<HTMLElement>(null)
   const hidden = useHideOnScroll(scroller)
-  const onForm = pathname.includes('/novo') || pathname.includes('/editar')
+  const onForm = pathname.includes('/new') || pathname.includes('/edit')
 
   return (
     <div className="relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
-      <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-32">
+      <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-[30em]">
         <Outlet />
       </main>
 
@@ -68,7 +68,7 @@ export function AppShell() {
             ))}
 
             <Link
-              to="/transacoes/novo"
+              to="/transactions/new"
               aria-label="Adicionar lançamento"
               className="grid size-11 place-items-center rounded-full bg-white text-brand"
             >

@@ -86,6 +86,9 @@ export function createMockServices(): Services {
     transactions: {
       listByMonth: (month) => delay(store.filter(inMonth(month)).sort(byDateThenCreation)),
 
+      months: () =>
+        delay([...new Set(store.map((t) => monthKey(t.date)))].sort((a, b) => b.localeCompare(a))),
+
       summary: (month): Promise<MonthSummary> => {
         const rows = store.filter(inMonth(month))
         const today = todayIso()

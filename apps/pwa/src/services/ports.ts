@@ -15,6 +15,14 @@ import type { Account, Category, MonthSummary, NewTransaction, Transaction } fro
 export interface TransactionsPort {
   listByMonth(month: string): Promise<Transaction[]>
   summary(month: string): Promise<MonthSummary>
+  /**
+   * Every month holding at least one transaction, newest first.
+   *
+   * The month picker is built from this rather than from a fixed window: a
+   * range guessed in the client either hides months that exist or offers empty
+   * ones that lead nowhere.
+   */
+  months(): Promise<string[]>
   create(input: NewTransaction): Promise<Transaction>
   update(id: string, input: Partial<NewTransaction>): Promise<Transaction>
   remove(id: string): Promise<void>

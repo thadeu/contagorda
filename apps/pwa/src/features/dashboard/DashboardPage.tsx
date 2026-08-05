@@ -6,8 +6,6 @@ import { MonthStack } from './components/MonthStack'
 import { Avatar } from '../../ui/Avatar'
 import { Card } from '../../ui/Card'
 
-// The greeting stays one quiet line. The figure below is the hero, and two
-// headlines competing means neither of them wins.
 export function DashboardPage() {
   const { month, setMonth } = useMonth()
   const { salutation, firstName, avatarUrl } = useGreeting()
@@ -22,11 +20,12 @@ export function DashboardPage() {
 
   return (
     <>
-      <header className="flex items-center justify-between gap-3 px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4">
-        <p className="truncate text-[0.9375rem] text-muted">
-          {salutation}
-          {firstName && <span className="font-semibold text-ink">, {firstName}</span>}
-        </p>
+      <header className="flex items-start justify-between gap-4 px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-5">
+        <h1 className="min-w-0 text-[1.75rem] leading-[1.15] font-bold tracking-[-0.02em] text-ink">
+          {salutation},
+          <br />
+          <span className="truncate">{firstName || 'tudo bem?'}</span>
+        </h1>
 
         <Avatar name={firstName} url={avatarUrl} />
       </header>

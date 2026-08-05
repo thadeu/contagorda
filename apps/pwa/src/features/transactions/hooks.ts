@@ -9,6 +9,15 @@ import type { Direction, NewTransaction, Transaction } from '../../services/type
 export const transactionKeys = {
   month: (month: string) => ['transactions', month] as const,
   summary: (month: string) => ['summary', month] as const,
+  months: ['months'] as const,
+}
+
+/** Months holding data, newest first. Drives the month picker's range. */
+export function useMonthsWithData() {
+  return useQuery({
+    queryKey: transactionKeys.months,
+    queryFn: () => services.transactions.months(),
+  })
 }
 
 export function useTransactions(month: string) {
@@ -73,6 +82,9 @@ function invalidate(client: ReturnType<typeof useQueryClient>, month: string) {
   return Promise.all([
     client.invalidateQueries({ queryKey: transactionKeys.month(month) }),
     client.invalidateQueries({ queryKey: transactionKeys.summary(month) }),
+    // The first entry in a month has to make that month appear in the picker,
+    // and deleting the last one has to take it out again.
+    client.invalidateQueries({ queryKey: transactionKeys.months }),
   ])
 }
 

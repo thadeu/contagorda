@@ -9,12 +9,18 @@ const TABS = [
 ]
 
 /**
- * The app scrolls inside `main`, not the document.
+ * The frame is `fixed inset-0`, so it does no height arithmetic at all.
  *
- * On iOS the scroll indicator for the root scroller is drawn by the system and
- * CSS cannot touch it; on any other scroller `::-webkit-scrollbar` applies. It
- * also makes freezing the page behind a sheet a matter of one `overflow`
- * property instead of pinning the body and restoring its offset afterwards.
+ * `100dvh` is a number that has to agree with the window, and in a standalone
+ * PWA it can come up a hair short — which is the strip of page that kept
+ * showing along the bottom edge. A fixed element pinned to all four sides is
+ * the viewport by definition, with nothing to disagree with.
+ *
+ * The app scrolls inside `main`, not the document. On iOS the scroll indicator
+ * for the root scroller is drawn by the system and CSS cannot touch it; on any
+ * other scroller `::-webkit-scrollbar` applies. It also makes freezing the page
+ * behind a sheet a matter of one `overflow` property instead of pinning the
+ * body and restoring its offset afterwards.
  *
  * The tab bar is a floating pill — the shape iOS moved to once the home
  * indicator took the bottom strip. It gets out of the way while the list is
@@ -29,7 +35,7 @@ export function AppShell() {
   const onForm = pathname.includes('/novo') || pathname.includes('/editar')
 
   return (
-    <div className="mx-auto flex h-dvh max-w-lg flex-col overflow-hidden bg-canvas">
+    <div className="fixed inset-0 mx-auto flex max-w-lg flex-col overflow-hidden bg-canvas">
       <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-32">
         <Outlet />
       </main>

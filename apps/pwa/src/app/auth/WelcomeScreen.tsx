@@ -25,7 +25,7 @@ export function WelcomeScreen() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-brand px-6 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] text-white">
+    <div className="fixed inset-0 mx-auto flex max-w-lg flex-col overflow-y-auto bg-brand px-6 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] text-white">
       <div className="flex flex-1 flex-col justify-center">
         <p className="text-sm text-white/50">Conta Gorda</p>
         <h1 className="max-w-[14ch] pt-2 text-[2.5rem] leading-[1.1] font-bold tracking-[-0.02em]">

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { NavBar, NavButton } from '../../ui/NavBar'
 import { useAccounts } from './hooks'
 import { useAccountEditor } from './accountEditorContext'
@@ -6,14 +7,12 @@ import { Card } from '../../ui/Card'
 import { Money } from '../../ui/Money'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/EmptyState'
-import { PlusIcon } from '../../ui/icons'
-import { ProfileButton } from '../dashboard/components/ProfileButton'
-import { useGreeting } from '../../app/useGreeting'
+import { ChevronLeftIcon, PlusIcon } from '../../ui/icons'
 
 export function AccountsPage() {
   const accounts = useAccounts()
   const editor = useAccountEditor()
-  const { firstName, email, avatarUrl } = useGreeting()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -21,7 +20,7 @@ export function AccountsPage() {
         topInset
         title="Contas"
         leading={
-          <ProfileButton name={firstName} email={email} avatarUrl={avatarUrl} />
+          <NavButton icon={ChevronLeftIcon} label="Voltar" onClick={() => navigate('/')} />
         }
         trailing={<NavButton primary icon={PlusIcon} label="Nova conta" onClick={editor.openNew} />}
       />

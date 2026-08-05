@@ -41,7 +41,7 @@ export function MonthPicker({ month, onChange }: MonthPickerProps) {
 
       {open && (
         <BottomSheet title="Mês" onClose={() => setOpen(false)}>
-          <ul className="grid max-h-[50vh] gap-1 overflow-y-auto">
+          <ul className="grid gap-1">
             {options.map((option) => (
               <li key={option}>
                 <button

@@ -7,20 +7,29 @@ interface BottomSheetProps {
   children: ReactNode
 }
 
-/** Far enough that a scroll gesture does not dismiss by accident. */
-const DISMISS_AT = 90
+/** Far enough that a scroll gesture does not trigger a detent by accident. */
+const THRESHOLD = 70
+
+/** How far the panel rubber-bands upward, so pulling up answers immediately. */
+const PULL_LIMIT = 48
 
 /**
- * Actions come to the thumb rather than the thumb going to them.
+ * Two detents, the way a native sheet behaves.
  *
- * The sheet follows the finger while it is being dragged. That is direct
- * manipulation, not an animation — the panel is exactly where the touch put it
- * at every moment, which is why it still feels right with transitions off.
+ * Pulling up expands to full height; pulling down steps back to compact, and
+ * pulling down again closes. Going straight from full height to dismissed on
+ * one gesture would throw away a list someone had just opened up to read.
+ *
+ * The panel follows the finger while dragging — direct manipulation, not
+ * animation — and only the release travels.
  */
 export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetProps) {
   const panel = useRef<HTMLDivElement>(null)
   const startY = useRef<number | null>(null)
+
+  const [expanded, setExpanded] = useState(false)
   const [offset, setOffset] = useState(0)
+  const [dragging, setDragging] = useState(false)
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -44,23 +53,30 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
 
   function handleTouchStart(event: React.TouchEvent) {
     startY.current = event.touches[0].clientY
+    setDragging(true)
   }
 
   function handleTouchMove(event: React.TouchEvent) {
     if (startY.current === null) return
 
-    // Downward only. Letting it travel up would peel the sheet off the bottom
-    // edge it is anchored to.
-    setOffset(Math.max(0, event.touches[0].clientY - startY.current))
+    const delta = event.touches[0].clientY - startY.current
+
+    setOffset(delta > 0 ? delta : Math.max(delta, -PULL_LIMIT))
   }
 
   function handleTouchEnd() {
-    if (offset > DISMISS_AT) {
-      onClose()
-    } else {
-      setOffset(0)
+    if (offset > THRESHOLD) {
+      if (expanded) {
+        setExpanded(false)
+      } else {
+        onClose()
+      }
+    } else if (offset < -THRESHOLD / 2) {
+      setExpanded(true)
     }
 
+    setOffset(0)
+    setDragging(false)
     startY.current = null
   }
 
@@ -79,14 +95,17 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
+        data-dragging={dragging}
         style={{ transform: `translateY(${offset}px)` }}
-        className="relative mx-2 mb-2 w-full max-w-md rounded-card bg-surface p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] outline-none"
+        className={`sheet-snap relative mx-2 mb-2 flex w-full max-w-md flex-col rounded-card bg-surface p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] outline-none ${
+          expanded ? 'h-[92vh]' : 'max-h-[75vh]'
+        }`}
       >
         <header
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="px-3 pt-2 pb-4"
+          className="shrink-0 px-3 pt-2 pb-4 select-none"
         >
           <div className="flex justify-center pb-3" aria-hidden="true">
             <span className="h-1 w-10 rounded-full bg-line" />
@@ -96,7 +115,7 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
           {subtitle && <p className="truncate pt-0.5 text-sm text-muted">{subtitle}</p>}
         </header>
 
-        {children}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
       </div>
     </div>
   )
@@ -109,7 +128,12 @@ interface SheetActionProps {
   children: ReactNode
 }
 
-export function SheetAction({ onClick, danger = false, className = '', children }: SheetActionProps) {
+export function SheetAction({
+  onClick,
+  danger = false,
+  className = '',
+  children,
+}: SheetActionProps) {
   return (
     <button
       type="button"

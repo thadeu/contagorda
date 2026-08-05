@@ -95,8 +95,20 @@
     transform: translateY(calc(100% + 1rem));
   }
 
+  /* The sheet settling after a drag. While the finger is down the panel is
+     wherever the touch put it and must not lag behind it, so the transition is
+     off during the gesture and only the release travels. */
+  .sheet-snap {
+    transition: transform 0.2s ease !important;
+  }
+
+  .sheet-snap[data-dragging='true'] {
+    transition: none !important;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .slide-away {
+    .slide-away,
+    .sheet-snap {
       transition: none !important;
     }
   }

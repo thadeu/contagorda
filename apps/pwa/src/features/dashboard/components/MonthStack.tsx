@@ -14,12 +14,16 @@ interface MonthStackProps {
 }
 
 /**
- * Two cards, one behind the other.
+ * Two cards, one genuinely on top of the other.
  *
- * The dark card only shows a strip: enough to hold the month and give the white
- * card something to sit on. That is what makes the top read as layered rather
- * than as a coloured band across the screen — depth without the curved header
- * that dates a design.
+ * The dark card carries real height below the month row and the white one is
+ * pulled up over it, inset at the sides and running past the bottom edge. That
+ * overlap is the whole effect: matching their edges would read as a border
+ * around a card, which is what a few pixels of padding produces and why it
+ * looked flat.
+ *
+ * It buys depth without the curved full-bleed header that dates a design, and
+ * gives the month somewhere to live that is not competing with the figure.
  */
 export function MonthStack({
   month,
@@ -34,21 +38,23 @@ export function MonthStack({
   const clear = totalCents > 0 && remainingCents === 0
 
   return (
-    <section className="rounded-card bg-brand p-2 pt-2.5">
-      <div className="flex items-center justify-between px-1 pb-3">
-        <MonthPicker month={month} onChange={onMonthChange} />
+    <section>
+      <div className="rounded-card bg-brand px-3 pt-3 pb-14">
+        <div className="flex items-center justify-between">
+          <MonthPicker month={month} onChange={onMonthChange} />
 
-        <button
-          type="button"
-          onClick={() => setExplaining(true)}
-          aria-label="O que este valor considera"
-          className="grid size-9 place-items-center rounded-full bg-white/12 text-white"
-        >
-          <InfoIcon className="size-4" />
-        </button>
+          <button
+            type="button"
+            onClick={() => setExplaining(true)}
+            aria-label="O que este valor considera"
+            className="grid size-9 place-items-center rounded-full bg-white/12 text-white"
+          >
+            <InfoIcon className="size-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="rounded-[1.25rem] border border-dashed border-line bg-surface px-5 py-5">
+      <div className="card-shadow relative mx-3 -mt-10 rounded-[1.25rem] border border-dashed border-line bg-surface px-5 py-5">
         <p className="text-sm text-muted">{clear ? 'Tudo pago' : 'Falta pagar'}</p>
 
         <p className="tnum pt-1 text-[2.25rem] leading-none font-bold tracking-[-0.02em] text-ink">

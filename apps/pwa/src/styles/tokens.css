@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+
+/*
+ * Ink under a desk lamp, not an OLED void. The background leans blue rather
+ * than pure black so raised surfaces can sit above it without needing a border
+ * to be legible.
+ *
+ * Green for money in and red for money out stay, because that mapping is
+ * learned deeply enough that fighting it costs comprehension. What changes is
+ * the register: a desaturated jade and a dusty coral read as information rather
+ * than as alarm, which matters on a screen someone opens every day.
+ */
+@theme {
+  --color-ink: #0e1116;
+  --color-raised: #161a21;
+  --color-sunken: #0a0d11;
+  --color-hairline: #232932;
+  --color-hairline-strong: #333b47;
+
+  --color-text: #e8eaed;
+  --color-muted: #8a929e;
+  --color-faint: #5c6470;
+
+  --color-in: #4fb286;
+  --color-in-dim: #2f6b52;
+  --color-out: #e06c5a;
+  --color-out-dim: #8a4034;
+
+  /* The one warm note. Reserved for the current month and nothing else — an
+     accent that appears everywhere stops being an accent. */
+  --color-amber: #e8b44a;
+
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    /* Matches --color-ink. The PWA shows this behind the status bar, and any
+       mismatch reads as a white seam above the header on iOS. */
+    background-color: #0e1116;
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  /* Money and dates are read by scanning a column, so figures have to hold
+     their width. Without this, every row shifts by a pixel or two and the
+     column stops being scannable. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

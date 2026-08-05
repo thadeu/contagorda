@@ -25,11 +25,11 @@ export function DashboardPage() {
     <>
       <header className="flex items-start justify-between gap-4 px-5 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-5">
         <div className="min-w-0">
-          <h1 className="text-[2rem] leading-[1.1] font-bold tracking-[-0.02em] text-ink">
+          <h1 className="text-[1.625rem] leading-[1.15] font-bold tracking-[-0.02em] text-ink">
             {salutation}
           </h1>
           {firstName && (
-            <p className="truncate pt-0.5 text-lg leading-tight font-medium text-ink/70">
+            <p className="truncate pt-0.5 text-base leading-tight font-medium text-ink/70">
               {firstName}
             </p>
           )}

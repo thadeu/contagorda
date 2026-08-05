@@ -14,6 +14,11 @@
     <!-- Matches --color-canvas. A mismatch here shows as a seam above the header
          once the app is installed. -->
     <meta name="theme-color" content="#f2f4f7" />
+    <!-- `scope` is what keeps navigation inside the installed app. Without a
+         manifest the home-screen app has no scope at all, so iOS cannot tell
+         which URLs belong to it and treats a move to another path as leaving
+         for the web — which is what going to the new-transaction form did. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <!-- `default`, chosen on the device. black-translucent fills the screen but
          left a band around the app in the installed PWA that no combination of

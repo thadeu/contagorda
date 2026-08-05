@@ -37,7 +37,7 @@ export function AppShell() {
 
   return (
     <div className="relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
-      <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-[30em]">
+      <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-[6em]">
         <Outlet />
       </main>
 

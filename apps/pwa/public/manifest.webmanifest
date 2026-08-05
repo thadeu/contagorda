@@ -1,0 +1,15 @@
+{
+  "id": "/",
+  "name": "Conta Gorda",
+  "short_name": "Conta Gorda",
+  "description": "O que falta pagar este mês.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#f2f4f7",
+  "background_color": "#0a0f1a",
+  "categories": ["finance"]
+}

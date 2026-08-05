@@ -9,11 +9,13 @@ interface MonthHeaderProps {
  * The month is the app's main axis, so it stays reachable from every screen
  * rather than living in a filter someone has to go find.
  */
+// No safe-area padding here: this sits below the toolbar, which already accounts
+// for it, and adding it again pushes the month down a second time.
 export function MonthHeader({ month, onChange }: MonthHeaderProps) {
   const current = month === monthKey(todayIso())
 
   return (
-    <header className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-2">
+    <header className="flex items-center justify-between px-4 pt-3 pb-2">
       <button
         type="button"
         onClick={() => onChange(shiftMonth(month, -1))}

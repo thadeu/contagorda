@@ -21,12 +21,29 @@ export interface TransactionsPort {
   setPaid(id: string, paid: boolean): Promise<Transaction>
 }
 
+export interface NewAccount {
+  name: string
+  kind: Account['kind']
+  institution: string | null
+  initial_balance_cents: number
+}
+
 export interface AccountsPort {
   list(): Promise<Account[]>
+  create(input: NewAccount): Promise<Account>
+  update(id: string, input: Partial<NewAccount>): Promise<Account>
+  /** Archived, never deleted: the transactions pointing at it are history. */
+  archive(id: string): Promise<void>
 }
 
 export interface CategoriesPort {
   list(): Promise<Category[]>
+  /**
+   * Creating from the transaction form is the main path, so this matches on
+   * name first — typing "Farmácia" twice has to reuse the category rather than
+   * quietly build a second one that splits every future report.
+   */
+  findOrCreate(name: string, kind: Category['kind']): Promise<Category>
 }
 
 export interface Services {

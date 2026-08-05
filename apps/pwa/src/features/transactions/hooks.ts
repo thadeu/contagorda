@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '../../services'
-import type { NewTransaction, Transaction } from '../../services/types'
+import type { Direction, NewTransaction, Transaction } from '../../services/types'
 
 /**
  * Query keys are built here rather than inline so an invalidation cannot miss a
@@ -104,4 +104,25 @@ export function useDeleteTransaction(month: string) {
     mutationFn: (id: string) => services.transactions.remove(id),
     onSuccess: () => invalidate(client, month),
   })
+}
+
+/**
+ * Resolves a typed category name into an id before saving the transaction.
+ *
+ * Matching happens server-side by name so the same word typed twice reuses one
+ * category — otherwise every report would split across entries that look
+ * identical on screen.
+ */
+export function useResolveCategory() {
+  const client = useQueryClient()
+
+  return async (name: string | null, kind: Direction): Promise<string | null> => {
+    if (!name) return null
+
+    const category = await services.categories.findOrCreate(name, kind)
+
+    await client.invalidateQueries({ queryKey: ['categories'] })
+
+    return category.id
+  }
 }

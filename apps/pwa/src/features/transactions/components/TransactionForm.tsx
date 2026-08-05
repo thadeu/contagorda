@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { useAccounts, useCategories } from '../../accounts/hooks'
 import { parseBRLToCents } from '../../../lib/money'
 import { Button } from '../../../ui/Button'
+import { CategoryPicker } from './CategoryPicker'
 import { emptyValues, type TransactionFormValues } from '../formValues'
 import type { NewTransaction } from '../../../services/types'
 
@@ -9,7 +10,8 @@ interface TransactionFormProps {
   initial?: Partial<TransactionFormValues>
   submitLabel: string
   pending: boolean
-  onSubmit: (input: NewTransaction) => void
+  /** `customCategory` is set when the user typed one under "Outros". */
+  onSubmit: (input: NewTransaction, customCategory: string | null) => void
   onCancel: () => void
   /** Destructive actions live at the bottom, away from the primary path. */
   footer?: ReactNode
@@ -37,7 +39,6 @@ export function TransactionForm({
   const [values, setValues] = useState<TransactionFormValues>(base)
   const [error, setError] = useState<string | null>(null)
 
-  const availableCategories = (categories.data ?? []).filter((c) => c.kind === values.kind)
   const resolvedAccount = values.accountId || accounts.data?.[0]?.id || ''
 
   function set<K extends keyof TransactionFormValues>(key: K, value: TransactionFormValues[K]) {
@@ -61,15 +62,20 @@ export function TransactionForm({
       return
     }
 
-    onSubmit({
-      account_id: resolvedAccount,
-      category_id: values.categoryId || null,
-      kind: values.kind,
-      amount_cents: cents,
-      date: values.date,
-      description: values.description.trim(),
-      paid: values.paid,
-    })
+    const custom = values.customCategory.trim()
+
+    onSubmit(
+      {
+        account_id: resolvedAccount,
+        category_id: values.categoryId || null,
+        kind: values.kind,
+        amount_cents: cents,
+        date: values.date,
+        description: values.description.trim(),
+        paid: values.paid,
+      },
+      custom === '' ? null : custom,
+    )
   }
 
   return (
@@ -137,22 +143,14 @@ export function TransactionForm({
         </select>
       </Field>
 
-      <Field label="Categoria">
-        <select
-          value={values.categoryId}
-          onChange={(e) => set('categoryId', e.target.value)}
-          className="w-full bg-transparent text-base text-text outline-none"
-        >
-          <option value="" className="bg-raised">
-            Sem categoria
-          </option>
-          {availableCategories.map((category) => (
-            <option key={category.id} value={category.id} className="bg-raised">
-              {category.icon} {category.name}
-            </option>
-          ))}
-        </select>
-      </Field>
+      <CategoryPicker
+        categories={categories.data ?? []}
+        kind={values.kind}
+        value={values.categoryId}
+        onChange={(id) => set('categoryId', id)}
+        customName={values.customCategory}
+        onCustomNameChange={(name) => set('customCategory', name)}
+      />
 
       <label className="flex items-center gap-3 border-b border-hairline py-4">
         <input

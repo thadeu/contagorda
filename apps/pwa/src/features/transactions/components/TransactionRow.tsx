@@ -9,6 +9,9 @@ interface TransactionRowProps {
   onTogglePaid: (transaction: Transaction) => void
 }
 
+// The row body opens the editor while the check stays a separate target.
+// Merging them would make correcting an amount and marking it paid the same
+// gesture, and one of those destroys the list you are reading.
 export function TransactionRow({ transaction, category, onTogglePaid }: TransactionRowProps) {
   const paid = transaction.paid_at !== null
   const upcoming = !paid && isFuture(transaction.date)
@@ -16,10 +19,6 @@ export function TransactionRow({ transaction, category, onTogglePaid }: Transact
 
   return (
     <li className="flex items-center gap-3">
-      {/* The row body opens the editor; the check stays a separate target.
-          Merging them would make correcting an amount and marking it paid the
-          same gesture, and one of them is destructive to the list you are
-          reading. */}
       <Link
         to={`/transacoes/${transaction.id}/editar`}
         className="flex min-w-0 flex-1 items-center gap-3 py-2.5"

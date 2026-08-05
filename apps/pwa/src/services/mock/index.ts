@@ -1,7 +1,7 @@
 import type { Services } from '../ports'
 import type { MonthSummary, NewTransaction, Transaction } from '../types'
 import { monthKey, todayIso } from '../../lib/dates'
-import { accounts, categories, transactions as seed } from './fixtures'
+import { accounts as seedAccounts, categories as seedCategories, transactions as seed } from './fixtures'
 
 /**
  * In-memory implementation of the ports.
@@ -15,6 +15,8 @@ import { accounts, categories, transactions as seed } from './fixtures'
  * broken.
  */
 let store: Transaction[] = [...seed]
+let accountStore = [...seedAccounts]
+let categoryStore = [...seedCategories]
 
 const LATENCY_MS = 180
 
@@ -37,11 +39,48 @@ function byDateThenCreation(a: Transaction, b: Transaction): number {
 export function createMockServices(): Services {
   return {
     accounts: {
-      list: () => delay(accounts.filter((a) => a.archived_at === null)),
+      list: () => delay(accountStore.filter((a) => a.archived_at === null)),
+
+      create: (input) => {
+        const created = { id: uuid(), archived_at: null, ...input }
+
+        accountStore = [...accountStore, created]
+
+        return delay(created)
+      },
+
+      update: (id, input) => {
+        accountStore = accountStore.map((a) => (a.id === id ? { ...a, ...input } : a))
+
+        return delay(accountStore.find((a) => a.id === id)!)
+      },
+
+      archive: (id) => {
+        accountStore = accountStore.map((a) =>
+          a.id === id ? { ...a, archived_at: new Date().toISOString() } : a,
+        )
+
+        return delay(undefined)
+      },
     },
 
     categories: {
-      list: () => delay(categories),
+      list: () => delay(categoryStore),
+
+      findOrCreate: (name, kind) => {
+        const normalized = name.trim()
+        const existing = categoryStore.find(
+          (c) => c.kind === kind && c.name.toLowerCase() === normalized.toLowerCase(),
+        )
+
+        if (existing) return delay(existing)
+
+        const created = { id: uuid(), name: normalized, kind, icon: null, color: null }
+
+        categoryStore = [...categoryStore, created]
+
+        return delay(created)
+      },
     },
 
     transactions: {
@@ -129,4 +168,6 @@ function stripPaid(input: Partial<NewTransaction>): Partial<Transaction> {
 /** Test seam: lets a spec start from a known store. */
 export function resetMockStore(rows: Transaction[] = seed): void {
   store = [...rows]
+  accountStore = [...seedAccounts]
+  categoryStore = [...seedCategories]
 }

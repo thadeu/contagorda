@@ -1,8 +1,7 @@
 import { useMonth } from '../../app/useMonth'
 import { useMonthSummary, useTransactions } from '../transactions/hooks'
 import { MonthList } from '../transactions/MonthList'
-import { MonthHeader } from './components/MonthHeader'
-import { RemainingCard } from './components/RemainingCard'
+import { MonthHero } from './components/MonthHero'
 import { Money } from '../../ui/Money'
 import { Card } from '../../ui/Card'
 
@@ -19,17 +18,15 @@ export function DashboardPage() {
 
   return (
     <>
-      <MonthHeader month={month} onChange={setMonth} />
+      <MonthHero
+        month={month}
+        onChange={setMonth}
+        remainingCents={remaining}
+        settledCount={settled}
+        totalCount={rows.length}
+      />
 
-      <div className="px-4">
-        <RemainingCard
-          remainingCents={remaining}
-          settledCount={settled}
-          totalCount={rows.length}
-        />
-      </div>
-
-      <section className="grid grid-cols-2 gap-3 px-4 pt-3">
+      <section className="grid grid-cols-2 gap-3 px-4 pt-4">
         <Stat label="Entrou" cents={summary.data?.income_cents} tone="in" />
         <Stat label="Saiu" cents={summary.data?.expense_cents} tone="default" />
       </section>
@@ -39,15 +36,7 @@ export function DashboardPage() {
   )
 }
 
-function Stat({
-  label,
-  cents,
-  tone,
-}: {
-  label: string
-  cents?: number
-  tone: 'in' | 'default'
-}) {
+function Stat({ label, cents, tone }: { label: string; cents?: number; tone: 'in' | 'default' }) {
   return (
     <Card className="px-4 py-3">
       <p className="text-xs text-muted">{label}</p>

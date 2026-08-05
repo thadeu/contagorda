@@ -4,6 +4,7 @@ import { AccountForm } from './components/AccountForm'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/EmptyState'
 import { centsToInput } from '../transactions/formValues'
+import { ScreenHeader } from '../../ui/ScreenHeader'
 
 export function EditAccountPage() {
   const { id = '' } = useParams()
@@ -24,7 +25,7 @@ export function EditAccountPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Editar conta</h1>
+      <ScreenHeader title="Editar conta" />
 
       <AccountForm
         submitLabel="Salvar"

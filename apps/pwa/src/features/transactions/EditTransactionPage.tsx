@@ -10,6 +10,7 @@ import { TransactionForm } from './components/TransactionForm'
 import { centsToInput } from './formValues'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/EmptyState'
+import { ScreenHeader } from '../../ui/ScreenHeader'
 
 export function EditTransactionPage() {
   const { id = '' } = useParams()
@@ -33,7 +34,7 @@ export function EditTransactionPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Editar lançamento</h1>
+      <ScreenHeader title="Editar lançamento" />
 
       <TransactionForm
         submitLabel="Salvar"

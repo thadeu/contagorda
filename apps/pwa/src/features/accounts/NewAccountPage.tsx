@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useCreateAccount } from './hooks'
 import { AccountForm } from './components/AccountForm'
+import { ScreenHeader } from '../../ui/ScreenHeader'
 
 export function NewAccountPage() {
   const navigate = useNavigate()
@@ -8,7 +9,7 @@ export function NewAccountPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Nova conta</h1>
+      <ScreenHeader title="Nova conta" />
 
       <AccountForm
         submitLabel="Salvar"

@@ -79,7 +79,7 @@ export function TransactionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pb-8">
+    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pt-4 pb-8">
       <div className="grid grid-cols-2 gap-2" role="group" aria-label="Tipo">
         <DirectionButton
           active={values.kind === 'expense'}

@@ -49,7 +49,7 @@ export function AccountForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pb-8">
+    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pt-4 pb-8">
       <Field label="Nome">
         <input
           value={name}

@@ -22,33 +22,40 @@ export function TransactionSheet({
   const paid = transaction.paid_at !== null
   const income = transaction.kind === 'income'
 
+  const payLabel = paid
+    ? income
+      ? 'Não recebida'
+      : 'Não paga'
+    : income
+      ? 'Recebida'
+      : 'Paga'
+
   return (
     <BottomSheet
       title={transaction.description}
       subtitle={formatBRL(transaction.amount_cents)}
       onClose={onClose}
     >
-      <SheetAction
-        onClick={() => {
-          onTogglePaid(transaction)
-          onClose()
-        }}
-      >
-        {paid
-          ? income
-            ? 'Marcar como não recebida'
-            : 'Marcar como não paga'
-          : income
-            ? 'Marcar como recebida'
-            : 'Marcar como paga'}
-      </SheetAction>
+      <div className="grid grid-cols-2 gap-2">
+        <SheetAction
+          onClick={() => {
+            onTogglePaid(transaction)
+            onClose()
+          }}
+        >
+          {payLabel}
+        </SheetAction>
 
-      <SheetAction onClick={() => navigate(`/transacoes/${transaction.id}/editar`)}>
-        Editar
-      </SheetAction>
+        <SheetAction onClick={() => navigate(`/transacoes/${transaction.id}/editar`)}>
+          Editar
+        </SheetAction>
+      </div>
+
+      <hr className="my-2 border-line" />
 
       <SheetAction
         danger
+        className="w-full"
         onClick={() => {
           onDelete(transaction)
           onClose()

@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { ScreenHeader } from '../../ui/ScreenHeader'
 import { useAccounts } from './hooks'
 import { kindLabel } from './accountKinds'
 import { Card } from '../../ui/Card'
@@ -10,9 +11,10 @@ export function AccountsPage() {
   const accounts = useAccounts()
 
   return (
-    <div className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)]">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[1.75rem] font-semibold tracking-tight">Contas</h1>
+    <>
+      <ScreenHeader title="Contas" />
+
+      <div className="flex justify-end px-4 pt-4">
         <Link to="/contas/nova">
           <Button variant="ghost">Nova conta</Button>
         </Link>
@@ -30,7 +32,7 @@ export function AccountsPage() {
         />
       )}
 
-      <ul className="grid gap-2 pt-4">
+      <ul className="grid gap-2 px-4 pt-4">
         {(accounts.data ?? []).map((account) => (
           <li key={account.id}>
             <Link to={`/contas/${account.id}/editar`}>
@@ -48,6 +50,6 @@ export function AccountsPage() {
           </li>
         ))}
       </ul>
-    </div>
+    </>
   )
 }

@@ -15,7 +15,11 @@
          once the app is installed. -->
     <meta name="theme-color" content="#f4f5f3" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- black-translucent puts the web view under the status bar, so a full-screen
+         overlay dims the whole display instead of stopping below the clock. iOS
+         draws the status bar text white in this mode, which is why the top of
+         every screen carries the brand colour. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Conta Gorda" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

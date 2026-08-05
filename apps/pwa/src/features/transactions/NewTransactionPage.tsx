@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router'
 import { useMonth } from '../../app/useMonth'
 import { useCreateTransaction, useResolveCategory } from './hooks'
 import { TransactionForm } from './components/TransactionForm'
+import { ScreenHeader } from '../../ui/ScreenHeader'
 
 export function NewTransactionPage() {
   const navigate = useNavigate()
@@ -11,7 +12,7 @@ export function NewTransactionPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Novo lançamento</h1>
+      <ScreenHeader title="Novo lançamento" />
 
       <TransactionForm
         submitLabel="Salvar"

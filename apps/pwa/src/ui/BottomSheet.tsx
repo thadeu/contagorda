@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 interface BottomSheetProps {
   title: string
@@ -7,15 +7,20 @@ interface BottomSheetProps {
   children: ReactNode
 }
 
+/** Far enough that a scroll gesture does not dismiss by accident. */
+const DISMISS_AT = 90
+
 /**
  * Actions come to the thumb rather than the thumb going to them.
  *
- * A row with three affordances on it spends width on controls that are only
- * wanted occasionally; a sheet keeps the row to its content and puts every
- * action within reach of the hand already holding the phone.
+ * The sheet follows the finger while it is being dragged. That is direct
+ * manipulation, not an animation — the panel is exactly where the touch put it
+ * at every moment, which is why it still feels right with transitions off.
  */
 export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetProps) {
   const panel = useRef<HTMLDivElement>(null)
+  const startY = useRef<number | null>(null)
+  const [offset, setOffset] = useState(0)
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -37,6 +42,28 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
     }
   }, [onClose])
 
+  function handleTouchStart(event: React.TouchEvent) {
+    startY.current = event.touches[0].clientY
+  }
+
+  function handleTouchMove(event: React.TouchEvent) {
+    if (startY.current === null) return
+
+    // Downward only. Letting it travel up would peel the sheet off the bottom
+    // edge it is anchored to.
+    setOffset(Math.max(0, event.touches[0].clientY - startY.current))
+  }
+
+  function handleTouchEnd() {
+    if (offset > DISMISS_AT) {
+      onClose()
+    } else {
+      setOffset(0)
+    }
+
+    startY.current = null
+  }
+
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center">
       <button
@@ -52,14 +79,24 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
+        style={{ transform: `translateY(${offset}px)` }}
         className="relative mx-2 mb-2 w-full max-w-md rounded-card bg-surface p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] outline-none"
       >
-        <header className="px-3 pt-3 pb-4">
+        <header
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="px-3 pt-2 pb-4"
+        >
+          <div className="flex justify-center pb-3" aria-hidden="true">
+            <span className="h-1 w-10 rounded-full bg-line" />
+          </div>
+
           <p className="truncate text-base font-semibold text-ink">{title}</p>
           {subtitle && <p className="truncate pt-0.5 text-sm text-muted">{subtitle}</p>}
         </header>
 
-        <div className="grid gap-1">{children}</div>
+        {children}
       </div>
     </div>
   )
@@ -68,17 +105,18 @@ export function BottomSheet({ title, subtitle, onClose, children }: BottomSheetP
 interface SheetActionProps {
   onClick: () => void
   danger?: boolean
+  className?: string
   children: ReactNode
 }
 
-export function SheetAction({ onClick, danger = false, children }: SheetActionProps) {
+export function SheetAction({ onClick, danger = false, className = '', children }: SheetActionProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-13 rounded-control px-4 text-left text-[0.9375rem] font-medium ${
+      className={`min-h-13 rounded-control px-4 text-[0.9375rem] font-medium ${
         danger ? 'bg-out/10 text-out' : 'bg-sunken text-ink'
-      }`}
+      } ${className}`}
     >
       {children}
     </button>

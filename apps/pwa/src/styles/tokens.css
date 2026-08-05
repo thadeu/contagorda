@@ -49,6 +49,13 @@
 @layer base {
   :root {
     color-scheme: light;
+
+    /* TEMPORARY, read by ViewportProbe: env() is not readable from JS. */
+    --probe-top: env(safe-area-inset-top);
+    --probe-right: env(safe-area-inset-right);
+    --probe-bottom: env(safe-area-inset-bottom);
+    --probe-left: env(safe-area-inset-left);
+    --probe-dvh: 100dvh;
   }
 
   /* Measured in dvh, the same basis the app frame uses. With `100%` here and

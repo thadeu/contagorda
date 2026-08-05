@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { HomeIcon, PlusIcon, WalletIcon } from '../../ui/icons'
 import { useHideOnScroll } from '../useHideOnScroll'
+import { ViewportProbe } from '../../ui/ViewportProbe'
 
 const TABS = [
   { to: '/', label: 'Mês', end: true, Icon: HomeIcon },
@@ -35,7 +36,11 @@ export function AppShell() {
   const onForm = pathname.includes('/novo') || pathname.includes('/editar')
 
   return (
-    <div className="fixed inset-0 mx-auto flex max-w-lg flex-col overflow-hidden bg-canvas">
+    <div
+      data-probe-frame
+      className="fixed inset-0 mx-auto flex max-w-lg flex-col overflow-hidden bg-canvas"
+    >
+      <ViewportProbe />
       <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-32">
         <Outlet />
       </main>

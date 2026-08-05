@@ -15,11 +15,11 @@
          once the app is installed. -->
     <meta name="theme-color" content="#f2f4f7" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- `default`, not black-translucent. The latter puts the view under the
-         status bar, but iOS then draws the clock in white, which forces a dark
-         band across the top of every screen — and a curved dark header is a
-         dated shape. A light header is worth more than an overlay reaching the
-         last 40px of the display. -->
+    <!-- black-translucent is what makes the installed app fill the screen: any
+         other value has iOS reserve the status bar outside the web view, and no
+         amount of CSS reaches an area that is not part of the page. The cost is
+         that iOS draws the clock in white, so whatever sits at the top of a
+         screen has to be dark enough to read it against. -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Conta Gorda" />
 

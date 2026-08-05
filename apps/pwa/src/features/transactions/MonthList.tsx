@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '../accounts/hooks'
-import { groupByDay, peakNet } from './groupByDay'
+import { groupByDay } from './groupByDay'
 import { matchesStatus, orderFor, useStatusFilter } from './useStatusFilter'
 import { DayGroupSection } from './components/DayGroupSection'
 import { StatusTabs } from './components/StatusTabs'
@@ -35,7 +35,6 @@ export function MonthList({ month }: MonthListProps) {
   const visible = all.filter((t) => matchesStatus(t, status))
 
   const groups = groupByDay(visible, orderFor(status))
-  const peak = peakNet(groups)
   const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
 
   function handleToggle(transaction: Transaction) {
@@ -50,17 +49,11 @@ export function MonthList({ month }: MonthListProps) {
 
   return (
     <>
-      <StatusTabs
-        status={status}
-        onChange={setStatus}
-        pendingCount={pending.length}
-        pendingCents={pending.reduce(
-          (total, t) => total + (t.kind === 'expense' ? t.amount_cents : 0),
-          0,
-        )}
-      />
+      <div className="px-4 pt-4">
+        <StatusTabs status={status} onChange={setStatus} pendingCount={pending.length} />
+      </div>
 
-      <div className="pt-1">
+      <div className="px-4">
         {transactions.isPending && <p className="px-4 py-10 text-sm text-faint">Carregando…</p>}
 
         {transactions.isError && (
@@ -94,7 +87,6 @@ export function MonthList({ month }: MonthListProps) {
           <DayGroupSection
             key={group.date}
             group={group}
-            peakCents={peak}
             categories={categoryMap}
             onTogglePaid={handleToggle}
           />

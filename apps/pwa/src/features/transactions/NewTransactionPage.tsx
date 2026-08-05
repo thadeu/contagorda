@@ -11,7 +11,7 @@ export function NewTransactionPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-4 font-display text-xl">Novo lançamento</h1>
+      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Novo lançamento</h1>
 
       <TransactionForm
         submitLabel="Salvar"

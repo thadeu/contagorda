@@ -46,27 +46,27 @@ export function CategoryPicker({
   }
 
   return (
-    <div className="block border-b border-hairline py-4">
-      <span className="block pb-1.5 text-xs tracking-wide text-faint uppercase">Categoria</span>
+    <div className="card-shadow block rounded-2xl bg-surface px-4 py-3">
+      <span className="block pb-0.5 text-xs text-muted">Categoria</span>
 
       <select
         value={other ? OTHER : value}
         onChange={(e) => handleSelect(e.target.value)}
         aria-label="Categoria"
-        className="w-full bg-transparent text-base text-text outline-none"
+        className="w-full bg-transparent text-base text-ink outline-none"
       >
-        <option value="" className="bg-raised">
+        <option value="" className="bg-surface">
           Sem categoria
         </option>
 
         {available.map((category) => (
-          <option key={category.id} value={category.id} className="bg-raised">
+          <option key={category.id} value={category.id} className="bg-surface">
             {category.icon ? `${category.icon} ` : ''}
             {category.name}
           </option>
         ))}
 
-        <option value={OTHER} className="bg-raised">
+        <option value={OTHER} className="bg-surface">
           Outros…
         </option>
       </select>
@@ -78,7 +78,7 @@ export function CategoryPicker({
           placeholder="Nome da categoria"
           aria-label="Nome da nova categoria"
           autoFocus
-          className="mt-3 w-full border-b border-hairline bg-transparent pb-1 text-base text-text outline-none placeholder:text-faint focus:border-amber"
+          className="mt-2 w-full rounded-xl bg-sunken px-3 py-2 text-base text-ink outline-none placeholder:text-faint"
         />
       )}
     </div>

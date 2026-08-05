@@ -8,7 +8,7 @@ export function NewAccountPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-4 font-display text-xl">Nova conta</h1>
+      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Nova conta</h1>
 
       <AccountForm
         submitLabel="Salvar"

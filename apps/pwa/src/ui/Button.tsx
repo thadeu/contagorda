@@ -2,20 +2,20 @@ import type { ButtonHTMLAttributes } from 'react'
 
 type Variant = 'primary' | 'ghost' | 'danger'
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant
+const STYLES: Record<Variant, string> = {
+  primary: 'bg-brand text-white active:scale-[0.98]',
+  ghost: 'bg-surface text-ink card-shadow active:scale-[0.98]',
+  danger: 'bg-out/10 text-out active:scale-[0.98]',
 }
 
-const STYLES: Record<Variant, string> = {
-  primary: 'bg-text text-ink hover:bg-white',
-  ghost: 'border border-hairline text-text hover:border-hairline-strong hover:bg-raised',
-  danger: 'border border-out-dim text-out hover:bg-out-dim/20',
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: Variant
 }
 
 export function Button({ variant = 'primary', className = '', ...props }: ButtonProps) {
   return (
     <button
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-colors disabled:opacity-40 ${STYLES[variant]} ${className}`}
+      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-transform disabled:opacity-40 ${STYLES[variant]} ${className}`}
       {...props}
     />
   )

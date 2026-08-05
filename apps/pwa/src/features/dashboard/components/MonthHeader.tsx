@@ -1,4 +1,5 @@
 import { monthKey, monthLabel, shiftMonth, todayIso } from '../../../lib/dates'
+import { ChevronLeftIcon, ChevronRightIcon } from '../../../ui/icons'
 
 interface MonthHeaderProps {
   month: string
@@ -6,39 +7,61 @@ interface MonthHeaderProps {
 }
 
 /**
- * The month is the app's main axis, so it stays reachable from every screen
- * rather than living in a filter someone has to go find.
+ * The greeting and the month sit together at the top, the way the platform
+ * opens a screen: who you are, then what you are looking at. The month is the
+ * app's main axis, so it stays here rather than inside a filter someone has to
+ * go find.
  */
-// No safe-area padding here: this sits below the toolbar, which already accounts
-// for it, and adding it again pushes the month down a second time.
 export function MonthHeader({ month, onChange }: MonthHeaderProps) {
   const current = month === monthKey(todayIso())
 
   return (
-    <header className="flex items-center justify-between px-4 pt-3 pb-2">
-      <button
-        type="button"
-        onClick={() => onChange(shiftMonth(month, -1))}
-        aria-label="Mês anterior"
-        className="grid size-9 place-items-center rounded-full text-muted hover:bg-raised hover:text-text"
-      >
-        ‹
-      </button>
+    <header className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4">
+      <p className="text-sm text-muted">Conta Gorda</p>
 
-      <h2
-        className={`font-display text-base capitalize ${current ? 'text-text' : 'text-muted'}`}
-      >
-        {monthLabel(month)}
-      </h2>
+      <div className="flex items-center justify-between pt-0.5">
+        <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight capitalize">
+          {monthLabel(month)}
+        </h1>
 
-      <button
-        type="button"
-        onClick={() => onChange(shiftMonth(month, 1))}
-        aria-label="Próximo mês"
-        className="grid size-9 place-items-center rounded-full text-muted hover:bg-raised hover:text-text"
-      >
-        ›
-      </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <NavButton label="Mês anterior" onClick={() => onChange(shiftMonth(month, -1))}>
+            <ChevronLeftIcon className="size-4" />
+          </NavButton>
+          <NavButton
+            label="Próximo mês"
+            onClick={() => onChange(shiftMonth(month, 1))}
+            dimmed={current}
+          >
+            <ChevronRightIcon className="size-4" />
+          </NavButton>
+        </div>
+      </div>
     </header>
+  )
+}
+
+function NavButton({
+  label,
+  onClick,
+  dimmed = false,
+  children,
+}: {
+  label: string
+  onClick: () => void
+  dimmed?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={`card-shadow grid size-9 place-items-center rounded-full bg-surface transition-transform active:scale-95 ${
+        dimmed ? 'text-faint' : 'text-ink'
+      }`}
+    >
+      {children}
+    </button>
   )
 }

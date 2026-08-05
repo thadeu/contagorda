@@ -79,8 +79,8 @@ export function TransactionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="px-4 pb-8">
-      <div className="grid grid-cols-2 gap-2 pt-5" role="group" aria-label="Tipo">
+    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pb-8">
+      <div className="grid grid-cols-2 gap-2" role="group" aria-label="Tipo">
         <DirectionButton
           active={values.kind === 'expense'}
           onClick={() => set('kind', 'expense')}
@@ -99,14 +99,14 @@ export function TransactionForm({
 
       <Field label="Valor">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-lg text-faint">R$</span>
+          <span className="text-lg font-medium text-faint">R$</span>
           <input
             value={values.amount}
             onChange={(e) => set('amount', e.target.value)}
             inputMode="decimal"
             placeholder="0,00"
             autoFocus
-            className="tnum w-full bg-transparent font-mono text-3xl text-text outline-none placeholder:text-faint"
+            className="tnum w-full bg-transparent text-3xl font-semibold text-ink outline-none placeholder:text-faint"
           />
         </div>
       </Field>
@@ -116,7 +116,7 @@ export function TransactionForm({
           value={values.description}
           onChange={(e) => set('description', e.target.value)}
           placeholder="Mercado, aluguel, salário…"
-          className="w-full bg-transparent text-base text-text outline-none placeholder:text-faint"
+          className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
         />
       </Field>
 
@@ -125,7 +125,7 @@ export function TransactionForm({
           type="date"
           value={values.date}
           onChange={(e) => set('date', e.target.value)}
-          className="tnum w-full bg-transparent font-mono text-base text-text outline-none"
+          className="tnum w-full bg-transparent text-base text-ink outline-none"
         />
       </Field>
 
@@ -133,10 +133,10 @@ export function TransactionForm({
         <select
           value={resolvedAccount}
           onChange={(e) => set('accountId', e.target.value)}
-          className="w-full bg-transparent text-base text-text outline-none"
+          className="w-full bg-transparent text-base text-ink outline-none"
         >
           {(accounts.data ?? []).map((account) => (
-            <option key={account.id} value={account.id} className="bg-raised">
+            <option key={account.id} value={account.id} className="bg-surface">
               {account.name}
             </option>
           ))}
@@ -152,14 +152,14 @@ export function TransactionForm({
         onCustomNameChange={(name) => set('customCategory', name)}
       />
 
-      <label className="flex items-center gap-3 border-b border-hairline py-4">
+      <label className="card-shadow flex items-center gap-3 rounded-2xl bg-surface px-4 py-3.5">
         <input
           type="checkbox"
           checked={values.paid}
           onChange={(e) => set('paid', e.target.checked)}
           className="size-5 accent-[var(--color-in)]"
         />
-        <span className="text-sm text-text">
+        <span className="text-sm text-ink">
           {values.kind === 'expense' ? 'Já paguei' : 'Já recebi'}
         </span>
       </label>
@@ -170,7 +170,7 @@ export function TransactionForm({
         </p>
       )}
 
-      <div className="flex gap-2 pt-6">
+      <div className="flex gap-2 pt-3">
         <Button type="submit" className="flex-1" disabled={pending}>
           {pending ? 'Salvando…' : submitLabel}
         </Button>
@@ -186,8 +186,8 @@ export function TransactionForm({
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="block border-b border-hairline py-4">
-      <span className="block pb-1.5 text-xs tracking-wide text-faint uppercase">{label}</span>
+    <label className="card-shadow block rounded-2xl bg-surface px-4 py-3">
+      <span className="block pb-0.5 text-xs text-muted">{label}</span>
       {children}
     </label>
   )
@@ -205,7 +205,7 @@ function DirectionButton({
   children: ReactNode
 }) {
   const activeClass =
-    tone === 'in' ? 'border-in text-in bg-in-dim/15' : 'border-out text-out bg-out-dim/15'
+    tone === 'in' ? 'border-in bg-in text-white' : 'border-ink bg-ink text-white'
 
   return (
     <button
@@ -213,7 +213,7 @@ function DirectionButton({
       onClick={onClick}
       aria-pressed={active}
       className={`min-h-12 rounded-xl border text-sm font-medium transition-colors ${
-        active ? activeClass : 'border-hairline text-muted'
+        active ? activeClass : 'border-transparent bg-surface text-muted card-shadow'
       }`}
     >
       {children}

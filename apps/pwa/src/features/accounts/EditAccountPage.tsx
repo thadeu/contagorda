@@ -24,7 +24,7 @@ export function EditAccountPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-4 font-display text-xl">Editar conta</h1>
+      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Editar conta</h1>
 
       <AccountForm
         submitLabel="Salvar"
@@ -40,7 +40,7 @@ export function EditAccountPage() {
           update.mutate({ id, input }, { onSuccess: () => navigate('/contas') })
         }
         footer={
-          <div className="border-t border-hairline pt-6">
+          <div className="pt-4">
             <Button
               type="button"
               variant="danger"

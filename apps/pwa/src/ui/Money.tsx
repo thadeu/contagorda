@@ -1,37 +1,44 @@
 import { formatBRL, splitBRL, type Cents } from '../lib/money'
 
+type Tone = 'default' | 'in' | 'out' | 'muted'
+
 interface MoneyProps {
   cents: Cents
-  /** Colours the value by direction. Off for neutral figures like a category total. */
-  signed?: boolean
+  tone?: Tone
   /** Renders the cents smaller — for headline figures, not list rows. */
   emphasis?: boolean
+  /** Drops the R$ prefix, for rows where the column already reads as money. */
+  bare?: boolean
   className?: string
 }
 
+const TONES: Record<Tone, string> = {
+  default: 'text-ink',
+  in: 'text-in',
+  out: 'text-out',
+  muted: 'text-muted',
+}
+
 /**
- * Every amount on screen goes through here.
+ * Every amount goes through here.
  *
- * The cents are typeset smaller on headline figures because reading a balance
- * is about order of magnitude; giving the cents equal weight makes them compete
- * with the part that carries the meaning. In list rows they stay full size,
- * where the column is scanned rather than read.
+ * There is no automatic red for expenses. Nearly every row in this app is one,
+ * so colouring them all would distinguish nothing — the caller passes `out` for
+ * the rows that genuinely need attention, which in practice means overdue.
  */
-export function Money({ cents, signed = false, emphasis = false, className = '' }: MoneyProps) {
-  const tone = !signed ? 'text-text' : cents < 0 ? 'text-out' : 'text-in'
+export function Money({ cents, tone = 'default', emphasis = false, bare = false, className = '' }: MoneyProps) {
+  const text = bare ? formatBRL(cents).replace('R$ ', '') : formatBRL(cents)
 
   if (!emphasis) {
-    return (
-      <span className={`tnum font-mono ${tone} ${className}`}>{formatBRL(cents)}</span>
-    )
+    return <span className={`tnum ${TONES[tone]} ${className}`}>{text}</span>
   }
 
   const { head, tail } = splitBRL(cents)
 
   return (
-    <span className={`tnum font-mono ${tone} ${className}`}>
-      {head}
-      <span className="text-[0.6em] align-baseline opacity-55">{tail}</span>
+    <span className={`tnum ${TONES[tone]} ${className}`}>
+      {bare ? head.replace('R$ ', '') : head}
+      <span className="text-[0.55em] opacity-55">{tail}</span>
     </span>
   )
 }

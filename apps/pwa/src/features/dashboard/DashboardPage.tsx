@@ -1,33 +1,37 @@
 import { useMonth } from '../../app/useMonth'
-import { useMonthSummary } from '../transactions/hooks'
+import { useMonthSummary, useTransactions } from '../transactions/hooks'
 import { MonthList } from '../transactions/MonthList'
 import { MonthHeader } from './components/MonthHeader'
+import { RemainingCard } from './components/RemainingCard'
 import { Money } from '../../ui/Money'
 import { Card } from '../../ui/Card'
 
 export function DashboardPage() {
   const { month, setMonth } = useMonth()
   const summary = useMonthSummary(month)
+  const transactions = useTransactions(month)
+
+  const rows = transactions.data ?? []
+  const settled = rows.filter((t) => t.paid_at !== null).length
+  const remaining = rows
+    .filter((t) => t.paid_at === null && t.kind === 'expense')
+    .reduce((total, t) => total + t.amount_cents, 0)
 
   return (
     <>
       <MonthHeader month={month} onChange={setMonth} />
 
-      <section className="px-4 pt-2 pb-1">
-        <p className="text-xs tracking-wide text-faint uppercase">Sobrou no mês</p>
-        <p className="font-display text-[2.75rem] leading-none tracking-tight">
-          {summary.data ? (
-            <Money cents={summary.data.net_cents} signed emphasis />
-          ) : (
-            <span className="text-faint">—</span>
-          )}
-        </p>
-      </section>
+      <div className="px-4">
+        <RemainingCard
+          remainingCents={remaining}
+          settledCount={settled}
+          totalCount={rows.length}
+        />
+      </div>
 
-      <section className="grid grid-cols-3 gap-2 px-4 pt-4">
-        <Stat label="Entrou" cents={summary.data?.income_cents} tone="text-in" />
-        <Stat label="Saiu" cents={summary.data?.expense_cents} tone="text-out" />
-        <Stat label="A pagar" cents={summary.data?.upcoming_cents} tone="text-muted" />
+      <section className="grid grid-cols-2 gap-3 px-4 pt-3">
+        <Stat label="Entrou" cents={summary.data?.income_cents} tone="in" />
+        <Stat label="Saiu" cents={summary.data?.expense_cents} tone="default" />
       </section>
 
       <MonthList month={month} />
@@ -35,12 +39,24 @@ export function DashboardPage() {
   )
 }
 
-function Stat({ label, cents, tone }: { label: string; cents?: number; tone: string }) {
+function Stat({
+  label,
+  cents,
+  tone,
+}: {
+  label: string
+  cents?: number
+  tone: 'in' | 'default'
+}) {
   return (
-    <Card className="px-3 py-2.5">
-      <p className="text-[0.6875rem] tracking-wide text-faint uppercase">{label}</p>
-      <p className={`pt-0.5 text-sm ${tone}`}>
-        {cents === undefined ? <span className="text-faint">—</span> : <Money cents={cents} />}
+    <Card className="px-4 py-3">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="pt-0.5 text-lg font-semibold">
+        {cents === undefined ? (
+          <span className="text-faint">—</span>
+        ) : (
+          <Money cents={cents} tone={tone} />
+        )}
       </p>
     </Card>
   )

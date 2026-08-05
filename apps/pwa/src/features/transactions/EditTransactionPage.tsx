@@ -33,7 +33,7 @@ export function EditTransactionPage() {
 
   return (
     <>
-      <h1 className="px-4 pt-4 font-display text-xl">Editar lançamento</h1>
+      <h1 className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 text-[1.75rem] font-semibold tracking-tight">Editar lançamento</h1>
 
       <TransactionForm
         submitLabel="Salvar"
@@ -58,7 +58,7 @@ export function EditTransactionPage() {
           )
         }}
         footer={
-          <div className="border-t border-hairline pt-6">
+          <div className="pt-4">
             <Button
               type="button"
               variant="danger"

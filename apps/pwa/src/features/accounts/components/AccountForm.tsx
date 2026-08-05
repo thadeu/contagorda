@@ -49,14 +49,14 @@ export function AccountForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="px-4 pb-8">
+    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pb-8">
       <Field label="Nome">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nubank, Carteira…"
           autoFocus
-          className="w-full bg-transparent text-base text-text outline-none placeholder:text-faint"
+          className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
         />
       </Field>
 
@@ -64,10 +64,10 @@ export function AccountForm({
         <select
           value={kind}
           onChange={(e) => setKind(e.target.value as AccountKind)}
-          className="w-full bg-transparent text-base text-text outline-none"
+          className="w-full bg-transparent text-base text-ink outline-none"
         >
           {ACCOUNT_KINDS.map((option) => (
-            <option key={option.value} value={option.value} className="bg-raised">
+            <option key={option.value} value={option.value} className="bg-surface">
               {option.label}
             </option>
           ))}
@@ -79,19 +79,19 @@ export function AccountForm({
           value={institution}
           onChange={(e) => setInstitution(e.target.value)}
           placeholder="Opcional"
-          className="w-full bg-transparent text-base text-text outline-none placeholder:text-faint"
+          className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
         />
       </Field>
 
       <Field label="Saldo inicial">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-base text-faint">R$</span>
+          <span className="text-base text-faint">R$</span>
           <input
             value={balance}
             onChange={(e) => setBalance(e.target.value)}
             inputMode="decimal"
             placeholder="0,00"
-            className="tnum w-full bg-transparent font-mono text-base text-text outline-none placeholder:text-faint"
+            className="tnum w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
           />
         </div>
       </Field>
@@ -102,7 +102,7 @@ export function AccountForm({
         </p>
       )}
 
-      <div className="flex gap-2 pt-6">
+      <div className="flex gap-2 pt-3">
         <Button type="submit" className="flex-1" disabled={pending}>
           {pending ? 'Salvando…' : submitLabel}
         </Button>
@@ -118,8 +118,8 @@ export function AccountForm({
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="block border-b border-hairline py-4">
-      <span className="block pb-1.5 text-xs tracking-wide text-faint uppercase">{label}</span>
+    <label className="card-shadow block rounded-2xl bg-surface px-4 py-3">
+      <span className="block pb-0.5 text-xs text-muted">{label}</span>
       {children}
     </label>
   )

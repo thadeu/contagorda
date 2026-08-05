@@ -1,26 +1,28 @@
 import type { Status } from '../useStatusFilter'
-import { Money } from '../../../ui/Money'
 
 interface StatusTabsProps {
   status: Status
   onChange: (status: Status) => void
   pendingCount: number
-  pendingCents: number
 }
 
 /**
- * The pending tab carries its count and total, because that pair is the whole
- * answer to "am I okay this month" — how many things are left and how much they
- * add up to. Making someone open the tab to find out would hide the one number
- * they came for.
+ * A segmented control, the platform's own device for switching between two
+ * views of the same thing. The pending tab carries its count, because "how many
+ * are left" is the number someone opens the app for and hiding it behind a tap
+ * would hide the answer.
  */
-export function StatusTabs({ status, onChange, pendingCount, pendingCents }: StatusTabsProps) {
+export function StatusTabs({ status, onChange, pendingCount }: StatusTabsProps) {
   return (
-    <div className="flex gap-2 px-4 pt-3" role="tablist" aria-label="Situação">
+    <div
+      className="flex gap-1 rounded-full bg-sunken p-1"
+      role="tablist"
+      aria-label="Situação"
+    >
       <Tab selected={status === 'pending'} onClick={() => onChange('pending')}>
-        <span>A pagar</span>
+        A pagar
         {pendingCount > 0 && (
-          <span className="tnum rounded-full bg-out-dim/30 px-1.5 py-0.5 font-mono text-[0.6875rem] text-out">
+          <span className="tnum rounded-full bg-out/15 px-1.5 text-[0.6875rem] font-semibold text-out">
             {pendingCount}
           </span>
         )}
@@ -29,12 +31,6 @@ export function StatusTabs({ status, onChange, pendingCount, pendingCents }: Sta
       <Tab selected={status === 'paid'} onClick={() => onChange('paid')}>
         Pago
       </Tab>
-
-      {status === 'pending' && pendingCents > 0 && (
-        <p className="ml-auto self-center text-xs text-muted">
-          falta <Money cents={pendingCents} className="text-xs text-text" />
-        </p>
-      )}
     </div>
   )
 }
@@ -54,10 +50,8 @@ function Tab({
       role="tab"
       aria-selected={selected}
       onClick={onClick}
-      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${
-        selected
-          ? 'border-hairline-strong bg-raised text-text'
-          : 'border-transparent text-faint hover:text-muted'
+      className={`inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-medium transition-colors ${
+        selected ? 'bg-surface text-ink shadow-sm' : 'text-muted'
       }`}
     >
       {children}

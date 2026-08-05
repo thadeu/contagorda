@@ -108,19 +108,6 @@
     transform: translateY(calc(100% + 1rem));
   }
 
-  /* With an overlay open the app must not scroll behind it, and navigation does
-     not belong there either — a 35% backdrop does not hide a dark pill, it dims
-     it into a band under the sheet. Freezing is one property here because the
-     scrolling happens in a container: nothing moves, so there is no offset to
-     restore and closing a sheet cannot jump the list back to the top. */
-  html[data-overlay-open='true'] .app-scroll {
-    overflow: hidden;
-  }
-
-  html[data-overlay-open='true'] .slide-away {
-    display: none;
-  }
-
   /* Scrolling works, the bar never shows.
      `::-webkit-scrollbar` is ignored for the root scroller on iOS — that
      indicator belongs to the system — which is the other reason the app scrolls
@@ -157,6 +144,27 @@
 
 @utility card-shadow {
   box-shadow:
-    0 1px 2px rgb(13 20 16 / 0.04),
-    0 8px 24px -12px rgb(13 20 16 / 0.08);
+    0 1px 2px rgb(10 15 26 / 0.04),
+    0 8px 24px -12px rgb(10 15 26 / 0.1);
+}
+
+/*
+ * Deliberately outside every layer.
+ *
+ * These override Tailwind utilities on the same elements — `overflow-y-auto` on
+ * the scroller, `flex` on the tab bar — and layer order beats specificity, so a
+ * rule written inside `@layer base` loses to any utility no matter how it is
+ * selected. Unlayered CSS wins over all of them, which is the only way this
+ * takes effect without scattering `!important`.
+ *
+ * With an overlay open the app must not scroll behind it, and navigation does
+ * not belong there either: a 35% backdrop does not hide a dark pill, it dims it
+ * into a band under the sheet.
+ */
+html[data-overlay-open='true'] .app-scroll {
+  overflow: hidden;
+}
+
+html[data-overlay-open='true'] .slide-away {
+  display: none;
 }

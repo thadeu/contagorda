@@ -12,8 +12,10 @@ interface TransactionFormProps {
   pending: boolean
   /** `customCategory` is set when the user typed one under "Outros". */
   onSubmit: (input: NewTransaction, customCategory: string | null) => void
-  onCancel: () => void
-  /** Destructive actions live at the bottom, away from the primary path. */
+  /**
+   * Destructive actions stay in the scroll, away from the primary path. Only
+   * saving is pinned — the one thing worth reaching without a scroll.
+   */
   footer?: ReactNode
 }
 
@@ -23,13 +25,16 @@ interface TransactionFormProps {
  * Editing is not a rare path — an estimated bill gets corrected once the real
  * amount arrives — so it uses the same screen rather than a reduced one that
  * drifts from it.
+ *
+ * Save is pinned to the bottom, and there is no cancel. In a modal the close
+ * button already means cancel, and a second control saying the same thing sits
+ * next to the one action that matters, competing with it.
  */
 export function TransactionForm({
   initial,
   submitLabel,
   pending,
   onSubmit,
-  onCancel,
   footer,
 }: TransactionFormProps) {
   const accounts = useAccounts()
@@ -79,7 +84,7 @@ export function TransactionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pt-4 pb-8">
+    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pt-4">
       <div className="grid grid-cols-2 gap-2" role="group" aria-label="Tipo">
         <DirectionButton
           active={values.kind === 'expense'}
@@ -170,16 +175,13 @@ export function TransactionForm({
         </p>
       )}
 
-      <div className="flex gap-2 pt-3">
-        <Button type="submit" className="flex-1" disabled={pending}>
+      {footer}
+
+      <div className="sticky bottom-0 -mx-4 mt-1 border-t border-line bg-surface px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+        <Button type="submit" className="w-full" disabled={pending}>
           {pending ? 'Salvando…' : submitLabel}
         </Button>
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancelar
-        </Button>
       </div>
-
-      {footer}
     </form>
   )
 }

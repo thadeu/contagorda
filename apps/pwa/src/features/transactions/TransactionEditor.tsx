@@ -53,7 +53,6 @@ function NewTransactionModal({ onClose }: { onClose: () => void }) {
       <TransactionForm
         submitLabel="Salvar"
         pending={create.isPending}
-        onCancel={onClose}
         onSubmit={async (input, custom) => {
           const categoryId = custom ? await resolveCategory(custom, input.kind) : input.category_id
 
@@ -80,7 +79,6 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
       <TransactionForm
         submitLabel="Salvar"
         pending={update.isPending}
-        onCancel={onClose}
         initial={{
           kind: transaction.kind,
           amount: centsToInput(transaction.amount_cents),

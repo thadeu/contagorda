@@ -20,7 +20,7 @@ export function DashboardPage() {
 
   return (
     <>
-      <header className="flex items-start justify-between gap-4 px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-5">
+      <header className="flex items-start justify-between gap-4 px-5 pt-[calc(env(safe-area-inset-top)+0.20rem)] pb-5">
         <div className="min-w-0">
           <h1 className="text-[2rem] leading-[1.1] font-bold tracking-[-0.02em] text-ink">
             {salutation}

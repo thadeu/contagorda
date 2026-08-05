@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router'
 import type { Transaction } from '../../../services/types'
 import { formatBRL } from '../../../lib/money'
 import { BottomSheet, SheetAction, SheetActionCard } from '../../../ui/BottomSheet'
 import { DeleteIcon, EditIcon, PaidIcon, UnpaidIcon } from '../../../ui/icons'
+import { useTransactionEditor } from '../transactionEditorContext'
 
 interface TransactionSheetProps {
   transaction: Transaction
@@ -19,7 +19,7 @@ export function TransactionSheet({
   onTogglePaid,
   onDelete,
 }: TransactionSheetProps) {
-  const navigate = useNavigate()
+  const editor = useTransactionEditor()
   const paid = transaction.paid_at !== null
   const income = transaction.kind === 'income'
 
@@ -44,7 +44,10 @@ export function TransactionSheet({
         <SheetActionCard
           label="Editar"
           icon={EditIcon}
-          onClick={() => navigate(`/transactions/${transaction.id}/edit`)}
+          onClick={() => {
+            editor.openEdit(transaction.id)
+            onClose()
+          }}
         />
       </div>
 

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { useDeleteTransaction, useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '../accounts/hooks'
 import { groupByDay } from './groupByDay'
@@ -10,6 +9,7 @@ import { TransactionSheet } from './components/TransactionSheet'
 import { EmptyState } from '../../ui/EmptyState'
 import { Button } from '../../ui/Button'
 import { UndoBar } from '../../ui/UndoBar'
+import { useTransactionEditor } from './transactionEditorContext'
 import type { Transaction } from '../../services/types'
 
 interface MonthListProps {
@@ -31,6 +31,7 @@ export function MonthList({ month }: MonthListProps) {
   const [sheet, setSheet] = useState<Transaction | null>(null)
   const [undo, setUndo] = useState<Transaction | null>(null)
 
+  const editor = useTransactionEditor()
   const all = transactions.data ?? []
   const pending = all.filter((t) => t.paid_at === null)
   const visible = all.filter((t) => matchesStatus(t, status))
@@ -69,11 +70,7 @@ export function MonthList({ month }: MonthListProps) {
           <EmptyState
             title="Nada pendente neste mês"
             hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
-            action={
-              <Link to="/transactions/new">
-                <Button>Adicionar lançamento</Button>
-              </Link>
-            }
+            action={<Button onClick={editor.openNew}>Adicionar lançamento</Button>}
           />
         )}
 

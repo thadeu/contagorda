@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Trash2,
   Wallet,
+  X,
   type LucideProps,
 } from 'lucide-react'
 
@@ -52,3 +53,4 @@ export const UnpaidIcon = tuned(RotateCcw)
 export const EditIcon = tuned(Pencil)
 export const DeleteIcon = tuned(Trash2)
 export const SignOutIcon = tuned(LogOut)
+export const CloseIcon = tuned(X)

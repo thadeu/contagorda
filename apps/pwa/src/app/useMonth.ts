@@ -10,14 +10,14 @@ import { monthKey, todayIso } from '../lib/dates'
  */
 export function useMonth() {
   const [params, setParams] = useSearchParams()
-  const month = params.get('mes') ?? monthKey(todayIso())
+  const month = params.get('month') ?? monthKey(todayIso())
 
   function setMonth(next: string) {
     setParams(
       (current) => {
         const updated = new URLSearchParams(current)
 
-        updated.set('mes', next)
+        updated.set('month', next)
 
         return updated
       },

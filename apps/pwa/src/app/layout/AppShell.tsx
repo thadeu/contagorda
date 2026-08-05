@@ -1,7 +1,9 @@
 import { useRef } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import { HomeIcon, PlusIcon, WalletIcon } from '../../ui/icons'
 import { useHideOnScroll } from '../useHideOnScroll'
+import { TransactionEditorProvider } from '../../features/transactions/TransactionEditor'
+import { useTransactionEditor } from '../../features/transactions/transactionEditorContext'
 
 const TABS = [
   { to: '/', label: 'Mês', end: true, Icon: HomeIcon },
@@ -30,7 +32,16 @@ const TABS = [
  * repeated action in the app.
  */
 export function AppShell() {
+  return (
+    <TransactionEditorProvider>
+      <Shell />
+    </TransactionEditorProvider>
+  )
+}
+
+function Shell() {
   const { pathname } = useLocation()
+  const editor = useTransactionEditor()
   const scroller = useRef<HTMLElement>(null)
   const hidden = useHideOnScroll(scroller)
   const onForm = pathname.includes('/new') || pathname.includes('/edit')
@@ -67,13 +78,14 @@ export function AppShell() {
               </NavLink>
             ))}
 
-            <Link
-              to="/transactions/new"
+            <button
+              type="button"
+              onClick={editor.openNew}
               aria-label="Adicionar lançamento"
               className="grid size-11 place-items-center rounded-full bg-white text-brand"
             >
               <PlusIcon className="size-5" />
-            </Link>
+            </button>
           </div>
         </nav>
       )}

@@ -3,12 +3,12 @@ import { useGreeting } from '../../app/useGreeting'
 import { useTransactions } from '../transactions/hooks'
 import { MonthList } from '../transactions/MonthList'
 import { MonthStack } from './components/MonthStack'
-import { Avatar } from '../../ui/Avatar'
+import { ProfileButton } from './components/ProfileButton'
 import { Card } from '../../ui/Card'
 
 export function DashboardPage() {
   const { month, setMonth } = useMonth()
-  const { salutation, firstName, avatarUrl } = useGreeting()
+  const { salutation, firstName, avatarUrl, email } = useGreeting()
   const transactions = useTransactions(month)
 
   const rows = transactions.data ?? []
@@ -31,7 +31,7 @@ export function DashboardPage() {
           )}
         </h1>
 
-        <Avatar name={firstName} url={avatarUrl} />
+        <ProfileButton name={firstName} email={email} avatarUrl={avatarUrl} />
       </header>
 
       <div className="px-4">

@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router'
 import { AppShell } from './layout/AppShell'
+import { RequireAuth } from './auth/RequireAuth'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { NewTransactionPage } from '../features/transactions/NewTransactionPage'
 import { EditTransactionPage } from '../features/transactions/EditTransactionPage'
@@ -10,7 +11,11 @@ import { EditAccountPage } from '../features/accounts/EditAccountPage'
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <AppShell />,
+    element: (
+      <RequireAuth>
+        <AppShell />
+      </RequireAuth>
+    ),
     children: [
       // The month view is the transaction list; there is no separate screen for
       // it. Having both meant two routes rendering the same thing.

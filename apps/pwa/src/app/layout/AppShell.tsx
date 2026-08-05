@@ -36,7 +36,7 @@ export function AppShell() {
   const onForm = pathname.includes('/novo') || pathname.includes('/editar')
 
   return (
-    <div className="relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
+    <div className="app-frame relative mx-auto flex max-w-lg flex-col overflow-hidden bg-canvas">
       <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-32">
         <Outlet />
       </main>

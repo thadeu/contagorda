@@ -175,6 +175,29 @@
  * Under an overlay the visible colour is the canvas dimmed by the backdrop, so
  * that is the value the page has to hold for the seam to disappear.
  */
+/*
+ * The frame grows by the safe areas and is pulled back over them.
+ *
+ * In the installed app the frame kept coming up smaller than the screen, with
+ * the page showing around it — the band. This compensates for that directly
+ * rather than through the layout, because the cause sits outside anything the
+ * document controls: it never reproduces in the browser, where the same markup
+ * fills the screen exactly.
+ *
+ * The tab bar needs no adjustment. It already pads itself by
+ * `safe-area-inset-bottom`, so extending the frame by the same amount moves its
+ * anchor and its padding together and the pill lands where it did before.
+ *
+ * Overshooting costs nothing where the insets are zero: the frame clips its own
+ * content, so the extra is background and nothing more.
+ */
+.app-frame {
+  width: calc(100% + env(safe-area-inset-left) + env(safe-area-inset-right));
+  height: calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+  margin-top: calc(-1 * env(safe-area-inset-top));
+  margin-left: calc(-1 * env(safe-area-inset-left));
+}
+
 html[data-canvas='brand'],
 html[data-canvas='brand'] body {
   background-color: var(--color-brand);

@@ -46,7 +46,7 @@ export function CategoryPicker({
   }
 
   return (
-    <div className="card-shadow block rounded-2xl bg-surface px-4 py-3">
+    <div className="card-shadow block rounded-control bg-surface px-4 py-3">
       <span className="block pb-0.5 text-xs text-muted">Categoria</span>
 
       <select
@@ -78,7 +78,7 @@ export function CategoryPicker({
           placeholder="Nome da categoria"
           aria-label="Nome da nova categoria"
           autoFocus
-          className="mt-2 w-full rounded-xl bg-sunken px-3 py-2 text-base text-ink outline-none placeholder:text-faint"
+          className="mt-2 w-full rounded-control bg-sunken px-3 py-2 text-base text-ink outline-none placeholder:text-faint"
         />
       )}
     </div>

@@ -57,7 +57,7 @@ function NavButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`card-shadow grid size-9 place-items-center rounded-full bg-surface transition-transform active:scale-95 ${
+      className={`card-shadow grid size-9 place-items-center rounded-full bg-surface ${
         dimmed ? 'text-faint' : 'text-ink'
       }`}
     >

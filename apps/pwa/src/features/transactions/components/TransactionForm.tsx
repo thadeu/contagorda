@@ -152,7 +152,7 @@ export function TransactionForm({
         onCustomNameChange={(name) => set('customCategory', name)}
       />
 
-      <label className="card-shadow flex items-center gap-3 rounded-2xl bg-surface px-4 py-3.5">
+      <label className="card-shadow flex items-center gap-3 rounded-control bg-surface px-4 py-3.5">
         <input
           type="checkbox"
           checked={values.paid}
@@ -186,7 +186,7 @@ export function TransactionForm({
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="card-shadow block rounded-2xl bg-surface px-4 py-3">
+    <label className="card-shadow block rounded-control bg-surface px-4 py-3">
       <span className="block pb-0.5 text-xs text-muted">{label}</span>
       {children}
     </label>
@@ -212,7 +212,7 @@ function DirectionButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-12 rounded-xl border text-sm font-medium transition-colors ${
+      className={`min-h-12 rounded-control border text-sm font-medium ${
         active ? activeClass : 'border-transparent bg-surface text-muted card-shadow'
       }`}
     >

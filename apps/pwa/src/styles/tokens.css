@@ -32,7 +32,12 @@
 
   --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
+  /* One scale, three steps. Nothing in the app is square: cards are the widest
+     radius, controls sit a step down so they read as inside a card, and
+     anything tappable-and-small is a pill. */
   --radius-card: 1.5rem;
+  --radius-control: 1rem;
+  --radius-chip: 0.625rem;
 }
 
 @layer base {
@@ -69,13 +74,13 @@
     outline-offset: 2px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
+  /* Motion is switched off across the app for now, to be designed
+     deliberately later rather than accumulating by default. */
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
   }
 }
 

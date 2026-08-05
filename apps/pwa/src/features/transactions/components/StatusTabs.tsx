@@ -50,7 +50,7 @@ function Tab({
       role="tab"
       aria-selected={selected}
       onClick={onClick}
-      className={`inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-medium transition-colors ${
+      className={`inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-medium ${
         selected ? 'bg-surface text-ink shadow-sm' : 'text-muted'
       }`}
     >

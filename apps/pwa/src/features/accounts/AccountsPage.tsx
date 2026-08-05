@@ -34,7 +34,7 @@ export function AccountsPage() {
         {(accounts.data ?? []).map((account) => (
           <li key={account.id}>
             <Link to={`/contas/${account.id}/editar`}>
-              <Card className="flex items-center justify-between px-4 py-3 transition-colors ">
+              <Card className="flex items-center justify-between px-4 py-3 ">
                 <div className="min-w-0">
                   <p className="truncate text-[0.9375rem] font-medium text-ink">{account.name}</p>
                   <p className="truncate text-xs text-muted">

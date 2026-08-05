@@ -8,10 +8,10 @@ import { TransactionRow } from './TransactionRow'
 interface DayGroupSectionProps {
   group: DayGroup
   categories: Map<string, Category>
-  onTogglePaid: (transaction: Transaction) => void
+  onOpen: (transaction: Transaction) => void
 }
 
-export function DayGroupSection({ group, categories, onTogglePaid }: DayGroupSectionProps) {
+export function DayGroupSection({ group, categories, onOpen }: DayGroupSectionProps) {
   const today = isToday(group.date)
 
   return (
@@ -30,7 +30,7 @@ export function DayGroupSection({ group, categories, onTogglePaid }: DayGroupSec
               key={transaction.id}
               transaction={transaction}
               category={transaction.category_id ? categories.get(transaction.category_id) : undefined}
-              onTogglePaid={onTogglePaid}
+              onOpen={onOpen}
             />
           ))}
         </ul>

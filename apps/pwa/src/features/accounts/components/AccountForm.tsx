@@ -118,7 +118,7 @@ export function AccountForm({
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="card-shadow block rounded-2xl bg-surface px-4 py-3">
+    <label className="card-shadow block rounded-control bg-surface px-4 py-3">
       <span className="block pb-0.5 text-xs text-muted">{label}</span>
       {children}
     </label>

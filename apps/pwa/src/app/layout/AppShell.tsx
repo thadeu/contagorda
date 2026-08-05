@@ -34,7 +34,7 @@ export function AppShell() {
                 to={tab.to}
                 end={tab.end}
                 className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors ${
+                  `flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium ${
                     isActive ? 'bg-lime text-brand' : 'text-white/70 hover:text-white'
                   }`
                 }
@@ -51,7 +51,7 @@ export function AppShell() {
             <Link
               to="/transacoes/novo"
               aria-label="Adicionar lançamento"
-              className="grid size-11 place-items-center rounded-full bg-white text-brand transition-transform active:scale-95"
+              className="grid size-11 place-items-center rounded-full bg-white text-brand"
             >
               <PlusIcon className="size-5" />
             </Link>

@@ -21,7 +21,7 @@ export function RemainingCard({ remainingCents, settledCount, totalCount }: Rema
   const clear = remainingCents === 0
 
   return (
-    <section className="rounded-[--radius-card] bg-brand px-5 py-6 text-white">
+    <section className="rounded-card bg-brand px-5 py-6 text-white">
       <p className="text-sm text-white/60">{clear ? 'Tudo pago' : 'Falta pagar'}</p>
 
       <p className="tnum pt-1 text-[2.5rem] leading-none font-semibold tracking-tight">
@@ -39,7 +39,7 @@ export function RemainingCard({ remainingCents, settledCount, totalCount }: Rema
           aria-label="Lançamentos pagos no mês"
         >
           <div
-            className="h-full rounded-full bg-lime transition-[width] duration-500"
+            className="h-full rounded-full bg-lime"
             style={{ width: `${done * 100}%` }}
           />
         </div>

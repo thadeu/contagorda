@@ -1,10 +1,19 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import { useMonth } from '../../app/useMonth'
+import { monthLabel } from '../../lib/dates'
 import { Button } from '../../ui/Button'
 import { Modal } from '../../ui/Modal'
 import { centsToInput } from '../transactions/formValues'
 import { AccountForm } from './components/AccountForm'
 import { AccountEditorContext, type AccountEditor } from './accountEditorContext'
-import { useAccount, useArchiveAccount, useCreateAccount, useUpdateAccount } from './hooks'
+import {
+  useAccount,
+  useArchiveAccount,
+  useCreateAccount,
+  useOpeningBalances,
+  useSetOpeningBalance,
+  useUpdateAccount,
+} from './hooks'
 
 type Editing = { mode: 'new' } | { mode: 'edit'; id: string } | null
 
@@ -39,22 +48,33 @@ export function AccountEditorProvider({ children }: { children: ReactNode }) {
 }
 
 function NewAccountModal({ onClose }: { onClose: () => void }) {
+  const { month } = useMonth()
   const create = useCreateAccount()
+  const setOpening = useSetOpeningBalance(month)
 
   return (
     <Modal title="Nova conta" onClose={onClose}>
       <AccountForm
         submitLabel="Salvar"
-        pending={create.isPending}
-        onSubmit={(input) => create.mutate(input, { onSuccess: onClose })}
+        pending={create.isPending || setOpening.isPending}
+        balanceLabel={`Saldo no início de ${monthLabel(month)}`}
+        onSubmit={(input, openingCents) => {
+          create.mutate(input, {
+            onSuccess: (account) =>
+              setOpening.mutate({ accountId: account.id, cents: openingCents }, { onSuccess: onClose }),
+          })
+        }}
       />
     </Modal>
   )
 }
 
 function EditAccountModal({ id, onClose }: { id: string; onClose: () => void }) {
+  const { month } = useMonth()
   const account = useAccount(id)
+  const opening = useOpeningBalances(month)
   const update = useUpdateAccount()
+  const setOpening = useSetOpeningBalance(month)
   const archive = useArchiveAccount()
 
   if (!account) {
@@ -65,14 +85,23 @@ function EditAccountModal({ id, onClose }: { id: string; onClose: () => void }) 
     <Modal title="Editar conta" onClose={onClose}>
       <AccountForm
         submitLabel="Salvar"
-        pending={update.isPending}
+        pending={update.isPending || setOpening.isPending}
+        balanceLabel={`Saldo no início de ${monthLabel(month)}`}
         initial={{
           name: account.name,
           kind: account.kind,
           institution: account.institution ?? '',
-          balance: centsToInput(account.initial_balance_cents),
+          balance: centsToInput(opening.data?.[id] ?? 0),
         }}
-        onSubmit={(input) => update.mutate({ id, input }, { onSuccess: onClose })}
+        onSubmit={(input, openingCents) => {
+          update.mutate(
+            { id, input },
+            {
+              onSuccess: () =>
+                setOpening.mutate({ accountId: id, cents: openingCents }, { onSuccess: onClose }),
+            },
+          )
+        }}
         footer={
           <div className="pt-4">
             <Button

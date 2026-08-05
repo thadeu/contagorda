@@ -18,7 +18,7 @@ export function Avatar({ name, url }: AvatarProps) {
       <img
         src={url}
         alt=""
-        className="size-11 rounded-full object-cover"
+        className="size-9 rounded-full object-cover"
         referrerPolicy="no-referrer"
       />
     )
@@ -27,7 +27,7 @@ export function Avatar({ name, url }: AvatarProps) {
   return (
     <span
       aria-hidden="true"
-      className="grid size-11 place-items-center rounded-full bg-brand text-base font-semibold text-white"
+      className="grid size-9 place-items-center rounded-full bg-brand text-sm font-semibold text-white"
     >
       {initial}
     </span>

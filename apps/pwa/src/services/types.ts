@@ -18,7 +18,6 @@ export interface Account {
   name: string
   kind: AccountKind
   institution: string | null
-  initial_balance_cents: Cents
   archived_at: string | null
 }
 

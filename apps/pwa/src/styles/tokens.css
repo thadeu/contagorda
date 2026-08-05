@@ -58,7 +58,7 @@
   --radius-control: 1rem;
   --radius-chip: 0.625rem;
 
-  --bg-appshell: rgba(0,0,0,0.0);
+  --bg-appshell: transparent;
   --h-status-bar: env(safe-area-inset-top);
 }
 

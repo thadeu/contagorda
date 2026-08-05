@@ -5,14 +5,17 @@ import { Button } from '../../../ui/Button'
 import type { AccountKind } from '../../../services/types'
 import type { NewAccount } from '../../../services/ports'
 
-// The balance asked for is the starting one, not the current one: the balance is
-// derived from transactions, so an account can be added mid-life without
+// The balance asked for is what the account holds at the start of the selected
+// month, not its current total: the rest of the month is derived from the
+// transactions in it. That also means an account can be added mid-life without
 // entering everything that came before it.
 interface AccountFormProps {
   initial?: Partial<{ name: string; kind: AccountKind; institution: string; balance: string }>
   submitLabel: string
   pending: boolean
-  onSubmit: (input: NewAccount) => void
+  /** Named after the month, because the number belongs to one. */
+  balanceLabel: string
+  onSubmit: (input: NewAccount, openingCents: number) => void
   footer?: ReactNode
 }
 
@@ -20,6 +23,7 @@ export function AccountForm({
   initial,
   submitLabel,
   pending,
+  balanceLabel,
   onSubmit,
   footer,
 }: AccountFormProps) {
@@ -38,12 +42,14 @@ export function AccountForm({
       return
     }
 
-    onSubmit({
-      name: name.trim(),
-      kind,
-      institution: institution.trim() || null,
-      initial_balance_cents: parseBRLToCents(balance) ?? 0,
-    })
+    onSubmit(
+      {
+        name: name.trim(),
+        kind,
+        institution: institution.trim() || null,
+      },
+      parseBRLToCents(balance) ?? 0,
+    )
   }
 
   return (
@@ -80,7 +86,7 @@ export function AccountForm({
         />
       </Field>
 
-      <Field label="Saldo inicial">
+      <Field label={balanceLabel}>
         <div className="flex items-baseline gap-2">
           <span className="text-base text-faint">R$</span>
           <input

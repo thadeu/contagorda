@@ -18,6 +18,15 @@ let store: Transaction[] = [...seed]
 let accountStore = [...seedAccounts]
 let categoryStore = [...seedCategories]
 
+/**
+ * Opening balances, keyed by account and month. A missing entry is zero, which
+ * is what the port promises and what the first month of any account looks like.
+ */
+let openingStore: Record<string, number> = {
+  [`${seedAccounts[0].id}:${monthKey(todayIso())}`]: 250_000,
+  [`${seedAccounts[2].id}:${monthKey(todayIso())}`]: 12_000,
+}
+
 const LATENCY_MS = 180
 
 function delay<T>(value: T): Promise<T> {
@@ -53,6 +62,20 @@ export function createMockServices(): Services {
         accountStore = accountStore.map((a) => (a.id === id ? { ...a, ...input } : a))
 
         return delay(accountStore.find((a) => a.id === id)!)
+      },
+
+      openingBalances: (month) => {
+        const entries = Object.entries(openingStore)
+          .filter(([key]) => key.endsWith(`:${month}`))
+          .map(([key, cents]) => [key.slice(0, key.lastIndexOf(':')), cents] as const)
+
+        return delay(Object.fromEntries(entries))
+      },
+
+      setOpeningBalance: (accountId, month, cents) => {
+        openingStore = { ...openingStore, [`${accountId}:${month}`]: cents }
+
+        return delay(undefined)
       },
 
       archive: (id) => {

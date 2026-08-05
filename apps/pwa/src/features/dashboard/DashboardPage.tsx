@@ -4,6 +4,7 @@ import { useTransactions } from '../transactions/hooks'
 import { MonthList } from '../transactions/MonthList'
 import { MonthStack } from './components/MonthStack'
 import { ProfileButton } from './components/ProfileButton'
+import { AccountsButton } from './components/AccountsButton'
 import { Card } from '../../ui/Card'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 
@@ -35,7 +36,10 @@ export function DashboardPage() {
           )}
         </div>
 
-        <ProfileButton name={firstName} email={email} avatarUrl={avatarUrl} />
+        <div className="flex shrink-0 items-center gap-2">
+          <AccountsButton />
+          <ProfileButton name={firstName} email={email} avatarUrl={avatarUrl} />
+        </div>
       </header>
 
       <div className="px-4">

@@ -21,7 +21,6 @@ export const accounts: Account[] = [
     name: 'Nubank',
     kind: 'checking',
     institution: 'Nu Pagamentos',
-    initial_balance_cents: 250_000,
     archived_at: null,
   },
   {
@@ -29,7 +28,6 @@ export const accounts: Account[] = [
     name: 'Cartão Nubank',
     kind: 'credit_card',
     institution: 'Nu Pagamentos',
-    initial_balance_cents: 0,
     archived_at: null,
   },
   {
@@ -37,7 +35,6 @@ export const accounts: Account[] = [
     name: 'Carteira',
     kind: 'cash',
     institution: null,
-    initial_balance_cents: 12_000,
     archived_at: null,
   },
 ]

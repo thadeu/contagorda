@@ -49,7 +49,7 @@ export function AppShell() {
 }
 
 function Shell() {
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const editor = useTransactionEditor()
   const scroller = useRef<HTMLElement>(null)
   const hidden = useHideOnScroll(scroller)
@@ -70,7 +70,7 @@ function Shell() {
             {TABS.map((tab) => (
               <NavLink
                 key={tab.to}
-                to={tab.to}
+                to={{ pathname: tab.to, search }}
                 end={tab.end}
                 className={({ isActive }) =>
                   `flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium ${

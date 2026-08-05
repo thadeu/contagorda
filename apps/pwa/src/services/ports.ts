@@ -1,3 +1,4 @@
+import type { Cents } from '../lib/money'
 import type { Account, Category, MonthSummary, NewTransaction, Transaction } from './types'
 
 /**
@@ -33,7 +34,6 @@ export interface NewAccount {
   name: string
   kind: Account['kind']
   institution: string | null
-  initial_balance_cents: number
 }
 
 export interface AccountsPort {
@@ -42,6 +42,17 @@ export interface AccountsPort {
   update(id: string, input: Partial<NewAccount>): Promise<Account>
   /** Archived, never deleted: the transactions pointing at it are history. */
   archive(id: string): Promise<void>
+  /**
+   * What each account holds at the start of a month, keyed by account id.
+   *
+   * A balance belongs to a month, not to the account. An account carries one
+   * number for its whole life only until the second month arrives, and then
+   * every figure derived from it is wrong in a way nobody can see. An account
+   * missing from the map has not been opened for that month yet and starts at
+   * zero, which is a real answer rather than an error.
+   */
+  openingBalances(month: string): Promise<Record<string, Cents>>
+  setOpeningBalance(accountId: string, month: string, cents: Cents): Promise<void>
 }
 
 export interface CategoriesPort {

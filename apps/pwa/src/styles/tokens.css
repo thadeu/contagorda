@@ -44,6 +44,8 @@
   --radius-card: 1.5rem;
   --radius-control: 1rem;
   --radius-chip: 0.625rem;
+
+  --bg-appshell: #0e7c57;
 }
 
 @layer base {
@@ -198,44 +200,18 @@ html[data-overlay-open='true'] .slide-away {
  *
  * In `black-translucent` the web view owns the full screen, and every attempt to
  * size the frame around the status bar left a band along its edges. A plain
- * element in flow, ahead of the root, does not: the app begins below the bar and
- * meets every edge. Why this succeeds where sizing the frame failed is not
- * established — it was found by trying it on the device, and it is kept in the
- * shape that was tested rather than refactored into something tidier that has
- * never been on a phone.
+ * element in flow, ahead of the root, does not — see the spacer in index.html.
  *
- * Two things it must get right that a fixed 22px cannot:
+ * The app ends up one inset taller than the viewport, and that is the point, not
+ * an oversight. Subtracting the spacer back off the root so the arithmetic came
+ * to exactly one screen was tried, and the band returned immediately: the extra
+ * height is what removes it. Why is not established. It was found on the device.
  *
- * The height is the actual inset, so it is the notch on a notched phone and the
- * older bar on an iPhone 8.
+ * That overflow would once have been a bug of its own — a drag inside a sheet
+ * moving the whole app — but that is handled at the source now, by the touch
+ * guard cancelling any drag in an overlay that is not scrolling the overlay.
  *
- * The root gives back exactly what the spacer takes. Without that the page is
- * one inset taller than the screen, and the whole app slides up by that much on
- * any upward drag — including inside a bottom sheet, where it reads as the sheet
- * dragging the app along with it. This is also the whole defence against the
- * document scrolling: `overflow: hidden` on html and body was tried as a second
- * guard and brought a band back along the bottom edge, so the arithmetic has to
- * be right rather than fenced in.
- *
- * Standalone only. In a browser the chrome already accounts for the inset, and a
- * spacer there would push the app down for nothing.
- *
- * It carries the dark surface because iOS draws the clock in white over a
- * translucent bar, and white on the light canvas is unreadable. Setting it to
- * `transparent` gives the page colour through instead, at that cost.
+ * The subtraction lived behind `@media (display-mode: standalone)`, which did
+ * not match while the app had no manifest. Declaring one turned the query on and
+ * the band came back, months of argument compressed into one deploy.
  */
-.status-bar-spacer {
-  display: none;
-}
-
-@media (display-mode: standalone) {
-  .status-bar-spacer {
-    display: block;
-    height: env(safe-area-inset-top);
-    background-color: var(--color-brand);
-  }
-
-  #root {
-    height: calc(100% - env(safe-area-inset-top));
-  }
-}

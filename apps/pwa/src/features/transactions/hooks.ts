@@ -75,3 +75,33 @@ function invalidate(client: ReturnType<typeof useQueryClient>, month: string) {
     client.invalidateQueries({ queryKey: transactionKeys.summary(month) }),
   ])
 }
+
+/**
+ * Reads one transaction out of the month already in cache instead of fetching
+ * it. The edit screen is always reached from a list that just loaded, so a
+ * separate request would show a spinner over data the app already has.
+ */
+export function useTransaction(month: string, id: string): Transaction | undefined {
+  const { data } = useTransactions(month)
+
+  return data?.find((t) => t.id === id)
+}
+
+export function useUpdateTransaction(month: string) {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Partial<NewTransaction> }) =>
+      services.transactions.update(id, input),
+    onSuccess: () => invalidate(client, month),
+  })
+}
+
+export function useDeleteTransaction(month: string) {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => services.transactions.remove(id),
+    onSuccess: () => invalidate(client, month),
+  })
+}

@@ -8,13 +8,15 @@ export interface DayGroup {
 }
 
 /**
- * Groups a month into days, newest first.
+ * Groups a month into days.
  *
- * Newest first because the question people open the app with is "what happened
- * recently", not "how did the month begin". Within a day the original order is
- * kept, so a list does not reshuffle when something is edited.
+ * The order is a parameter rather than a constant because the two lists answer
+ * different questions: a pending list is read soonest-first, so anything overdue
+ * leads; a paid list is read newest-first, because it is a record of what just
+ * happened. Within a day the original order is kept, so nothing reshuffles when
+ * a row is edited.
  */
-export function groupByDay(transactions: Transaction[]): DayGroup[] {
+export function groupByDay(transactions: Transaction[], order: 'asc' | 'desc' = 'desc'): DayGroup[] {
   const byDate = new Map<IsoDate, Transaction[]>()
 
   for (const transaction of transactions) {
@@ -28,7 +30,7 @@ export function groupByDay(transactions: Transaction[]): DayGroup[] {
   }
 
   return [...byDate.entries()]
-    .sort(([a], [b]) => b.localeCompare(a))
+    .sort(([a], [b]) => (order === 'asc' ? a.localeCompare(b) : b.localeCompare(a)))
     .map(([date, rows]) => ({
       date,
       transactions: rows,

@@ -1,25 +1,13 @@
-import { Link } from 'react-router'
 import { useMonth } from '../../app/useMonth'
-import { useMonthSummary, useTransactions, useTogglePaid } from '../transactions/hooks'
-import { useCategories } from '../accounts/hooks'
-import { groupByDay, peakNet } from '../transactions/groupByDay'
-import { DayGroupSection } from '../transactions/components/DayGroupSection'
+import { useMonthSummary } from '../transactions/hooks'
+import { MonthList } from '../transactions/MonthList'
 import { MonthHeader } from './components/MonthHeader'
 import { Money } from '../../ui/Money'
 import { Card } from '../../ui/Card'
-import { EmptyState } from '../../ui/EmptyState'
-import { Button } from '../../ui/Button'
 
 export function DashboardPage() {
   const { month, setMonth } = useMonth()
   const summary = useMonthSummary(month)
-  const transactions = useTransactions(month)
-  const categories = useCategories()
-  const togglePaid = useTogglePaid(month)
-
-  const groups = groupByDay(transactions.data ?? [])
-  const peak = peakNet(groups)
-  const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
 
   return (
     <>
@@ -42,39 +30,7 @@ export function DashboardPage() {
         <Stat label="A pagar" cents={summary.data?.upcoming_cents} tone="text-muted" />
       </section>
 
-      <div className="pt-4">
-        {transactions.isPending && <p className="px-4 py-10 text-sm text-faint">Carregando…</p>}
-
-        {transactions.isError && (
-          <EmptyState
-            title="Não deu para carregar o mês"
-            hint="Verifique a conexão e tente de novo."
-            action={<Button onClick={() => transactions.refetch()}>Tentar de novo</Button>}
-          />
-        )}
-
-        {transactions.isSuccess && groups.length === 0 && (
-          <EmptyState
-            title="Nada lançado neste mês"
-            hint="Adicione um gasto ou uma entrada para começar a acompanhar."
-            action={
-              <Link to="/transacoes/novo">
-                <Button>Adicionar lançamento</Button>
-              </Link>
-            }
-          />
-        )}
-
-        {groups.map((group) => (
-          <DayGroupSection
-            key={group.date}
-            group={group}
-            peakCents={peak}
-            categories={categoryMap}
-            onTogglePaid={(t) => togglePaid.mutate({ id: t.id, paid: t.paid_at === null })}
-          />
-        ))}
-      </div>
+      <MonthList month={month} />
     </>
   )
 }

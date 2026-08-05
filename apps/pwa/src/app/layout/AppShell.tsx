@@ -40,7 +40,7 @@ export function AppShell() {
                 end={tab.end}
                 className={({ isActive }) =>
                   `flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium ${
-                    isActive ? 'bg-lime text-brand' : 'text-white/70'
+                    isActive ? 'bg-accent text-brand' : 'text-white/70'
                   }`
                 }
               >

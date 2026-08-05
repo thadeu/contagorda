@@ -22,9 +22,13 @@ export function DashboardPage() {
     <>
       <header className="flex items-start justify-between gap-4 px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-5">
         <h1 className="min-w-0 text-[1.75rem] leading-[1.15] font-bold tracking-[-0.02em] text-ink">
-          {salutation},
-          <br />
-          <span className="truncate">{firstName || 'tudo bem?'}</span>
+          {salutation}
+          {firstName && (
+            <>
+              <br />
+              {firstName}
+            </>
+          )}
         </h1>
 
         <Avatar name={firstName} url={avatarUrl} />

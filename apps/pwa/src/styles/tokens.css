@@ -3,29 +3,33 @@
 /*
  * Light, card-based, one dark surface.
  *
- * The page is a warm off-white so white cards read as raised without needing a
- * border to prove it. Almost everything is quiet; the deep green is spent in
- * two places only — the hero card and the tab bar — and the lime appears only
- * where something is active. An accent that shows up everywhere stops being an
- * accent.
+ * A deep navy rather than a saturated banking blue: it holds white text without
+ * glare and reads as money without borrowing any particular bank's identity.
+ * It is spent in two places only — the month strip and the tab bar — with the
+ * lighter blue marking whatever is active. An accent that shows up everywhere
+ * stops being an accent.
+ *
+ * The page is a cool off-white so white cards read as raised without needing a
+ * border to prove it.
  *
  * Red is not the colour of spending here. In a list where nearly every row is
- * an expense, colouring them all red is noise that distinguishes nothing, so
- * red is reserved for overdue — the one row that asks to be acted on.
+ * an expense, colouring them all is noise that distinguishes nothing, so red is
+ * reserved for overdue — the one row that asks to be acted on. Green stays with
+ * income, where the mapping is learned too deeply to fight.
  */
 @theme {
-  --color-canvas: #f4f5f3;
+  --color-canvas: #f2f4f7;
   --color-surface: #ffffff;
-  --color-sunken: #eef0ec;
+  --color-sunken: #e9edf2;
 
-  --color-brand: #10281c;
-  --color-brand-soft: #1b3a2a;
-  --color-lime: #c8f250;
+  --color-brand: #0a2540;
+  --color-brand-soft: #143a5e;
+  --color-accent: #4da3ff;
 
-  --color-ink: #0d1410;
-  --color-muted: #6b7770;
-  --color-faint: #9aa49e;
-  --color-line: #e6e9e4;
+  --color-ink: #0b1524;
+  --color-muted: #67748a;
+  --color-faint: #98a4b5;
+  --color-line: #e2e7ed;
 
   --color-in: #0e7c57;
   --color-out: #d4443c;
@@ -54,7 +58,7 @@
   body {
     /* Matches --color-canvas. The installed PWA paints this behind the status
        bar, and any mismatch reads as a seam above the header on iOS. */
-    background-color: #f4f5f3;
+    background-color: #f2f4f7;
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

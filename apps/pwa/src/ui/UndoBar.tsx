@@ -29,7 +29,7 @@ export function UndoBar({ message, onUndo, onDismiss, timeoutMs = 5000 }: UndoBa
       <button
         type="button"
         onClick={onUndo}
-        className="shrink-0 text-sm font-semibold text-lime"
+        className="shrink-0 text-sm font-semibold text-accent"
       >
         Desfazer
       </button>

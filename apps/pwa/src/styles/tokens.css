@@ -108,6 +108,28 @@
     transform: translateY(calc(100% + 1rem));
   }
 
+  /* Navigation does not belong behind a modal. A 35% backdrop does not hide the
+     tab bar, it dims it into a dark band under the sheet — and locking the page
+     resets scrollY to 0, which the hide-on-scroll hook reads as scrolling up and
+     brings the pill back exactly when the sheet opens. */
+  html[data-overlay-open='true'] .slide-away {
+    display: none;
+  }
+
+  /* Scrolling works, the bar never shows. On a phone the scrollbar is already
+     invisible, so this is about the desktop view and the sheet's inner scroll
+     area, where a track appearing over a rounded panel breaks the shape. */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
   /* The sheet settling after a drag. While the finger is down the panel is
      wherever the touch put it and must not lag behind it, so the transition is
      off during the gesture and only the release travels. */

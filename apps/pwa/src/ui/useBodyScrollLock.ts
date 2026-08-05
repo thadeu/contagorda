@@ -18,6 +18,7 @@ export function useBodyScrollLock(): void {
       top: body.style.top,
       left: body.style.left,
       right: body.style.right,
+      width: body.style.width,
       overflow: body.style.overflow,
     }
 
@@ -25,14 +26,23 @@ export function useBodyScrollLock(): void {
     body.style.top = `-${scrollY}px`
     body.style.left = '0'
     body.style.right = '0'
+    body.style.width = '100%'
     body.style.overflow = 'hidden'
+
+    // Lets CSS hide anything that must not sit behind an overlay. The tab bar
+    // is a dark pill on the bottom edge, and a 35% backdrop does not hide it —
+    // it just dims it into a band under the sheet.
+    document.documentElement.dataset.overlayOpen = 'true'
 
     return () => {
       body.style.position = previous.position
       body.style.top = previous.top
       body.style.left = previous.left
       body.style.right = previous.right
+      body.style.width = previous.width
       body.style.overflow = previous.overflow
+
+      delete document.documentElement.dataset.overlayOpen
 
       window.scrollTo(0, scrollY)
     }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '@clowk/react'
 import { Avatar } from '../../../ui/Avatar'
 import { BottomSheet, SheetAction } from '../../../ui/BottomSheet'
+import { SignOutIcon } from '../../../ui/icons'
 import { clearSignInAttempt } from '../../../app/auth/signIn'
 
 interface ProfileButtonProps {
@@ -37,15 +38,16 @@ export function ProfileButton({ name, email, avatarUrl }: ProfileButtonProps) {
         <BottomSheet title={name || 'Sua conta'} subtitle={email} onClose={() => setOpen(false)}>
           <SheetAction
             danger
-            className="w-full"
+            className="flex w-full items-center justify-center gap-2"
             onClick={() => {
-              // Clearing the attempt flag first: signing out on purpose must
-              // not look like a failed sign-in to the guard when the app
-              // reloads into the login redirect.
+              // Deliberate sign-out must not look like a failed sign-in to the
+              // guard, which reads this flag to decide whether a redirect
+              // already came back empty.
               clearSignInAttempt()
               signOut()
             }}
           >
+            <SignOutIcon className="size-4" strokeWidth={1.75} aria-hidden="true" />
             Sair
           </SheetAction>
         </BottomSheet>

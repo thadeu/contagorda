@@ -1,95 +1,54 @@
-interface IconProps {
-  className?: string
-}
+import type { ComponentType } from 'react'
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  CircleCheckBig,
+  Home,
+  Info,
+  LogOut,
+  Pencil,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  Trash2,
+  Wallet,
+  type LucideProps,
+} from 'lucide-react'
+
+export type AppIcon = ComponentType<LucideProps>
 
 /**
- * Drawn here rather than pulled from a set: four icons do not justify a
- * dependency, and stroke weight and corner radius stay under our control so
- * they sit with the type instead of next to it.
+ * One place naming every icon the app uses, and the only place its stroke is
+ * set.
+ *
+ * Leaving the weight to each call site is how a set drifts: some icons end up
+ * at the library default and some at ours, and the difference is visible next
+ * to type without being obvious in a diff. `absoluteStrokeWidth` keeps the line
+ * the same thickness at every size, so a 12px glyph in a list row does not look
+ * thinner than a 24px one in a sheet.
+ *
+ * Names describe the role rather than the picture — `PaidIcon` survives a change
+ * of glyph, `CheckIcon` does not.
  */
-const base = {
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.75,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-  viewBox: '0 0 24 24',
+function tuned(Icon: AppIcon): AppIcon {
+  return function TunedIcon(props: LucideProps) {
+    return <Icon strokeWidth={1.75} absoluteStrokeWidth aria-hidden="true" {...props} />
+  }
 }
 
-export function HomeIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <path d="M3 10.5 12 3l9 7.5" />
-      <path d="M5.5 9.5V20h13V9.5" />
-    </svg>
-  )
-}
-
-export function WalletIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <rect x="3" y="6" width="18" height="13" rx="3" />
-      <path d="M3 10h18" />
-      <circle cx="17" cy="14.5" r="1.1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-export function PlusIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  )
-}
-
-export function CheckIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} strokeWidth={2.25} aria-hidden="true">
-      <path d="m5 12.5 4.5 4.5L19 7" />
-    </svg>
-  )
-}
-
-export function ChevronLeftIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <path d="m14.5 5-7 7 7 7" />
-    </svg>
-  )
-}
-
-export function ChevronRightIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <path d="m9.5 5 7 7-7 7" />
-    </svg>
-  )
-}
-
-export function ChevronDownIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <path d="m5 9.5 7 7 7-7" />
-    </svg>
-  )
-}
-
-export function InfoIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v5" />
-      <circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-export function RepeatIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className} aria-hidden="true">
-      <path d="M4 9a5 5 0 0 1 5-5h9m0 0-3-3m3 3-3 3" />
-      <path d="M20 15a5 5 0 0 1-5 5H6m0 0 3 3m-3-3 3-3" />
-    </svg>
-  )
-}
+export const HomeIcon = tuned(Home)
+export const WalletIcon = tuned(Wallet)
+export const PlusIcon = tuned(Plus)
+export const CheckIcon = tuned(Check)
+export const ChevronLeftIcon = tuned(ChevronLeft)
+export const ChevronRightIcon = tuned(ChevronRight)
+export const ChevronDownIcon = tuned(ChevronDown)
+export const InfoIcon = tuned(Info)
+export const RepeatIcon = tuned(RefreshCw)
+export const PaidIcon = tuned(CircleCheckBig)
+export const UnpaidIcon = tuned(RotateCcw)
+export const EditIcon = tuned(Pencil)
+export const DeleteIcon = tuned(Trash2)
+export const SignOutIcon = tuned(LogOut)

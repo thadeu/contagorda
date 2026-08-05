@@ -9,10 +9,14 @@ const ATTEMPT_KEY = 'contagorda:sign_in_attempt'
  * login.
  */
 export async function redirectToSignIn(): Promise<void> {
-  sessionStorage.setItem(ATTEMPT_KEY, '1')
-
   const base = await new SubdomainResolver().resolveUrl()
   const back = `${window.location.origin}${window.location.pathname}`
+
+  // Marked only once the browser is actually leaving. Setting it before the
+  // lookup meant a navigation that never happened — a competing redirect, a
+  // failed resolve — still counted as an attempt, and the next load would
+  // report a failure that never took place.
+  sessionStorage.setItem(ATTEMPT_KEY, '1')
 
   window.location.href = `${base}/sign-in?redirect_uri=${encodeURIComponent(back)}`
 }

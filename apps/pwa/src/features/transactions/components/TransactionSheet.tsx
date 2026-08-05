@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router'
 import type { Transaction } from '../../../services/types'
 import { formatBRL } from '../../../lib/money'
-import { BottomSheet, SheetAction } from '../../../ui/BottomSheet'
+import { BottomSheet, SheetAction, SheetActionCard } from '../../../ui/BottomSheet'
+import { DeleteIcon, EditIcon, PaidIcon, UnpaidIcon } from '../../../ui/icons'
 
 interface TransactionSheetProps {
   transaction: Transaction
@@ -22,13 +23,7 @@ export function TransactionSheet({
   const paid = transaction.paid_at !== null
   const income = transaction.kind === 'income'
 
-  const payLabel = paid
-    ? income
-      ? 'Não recebida'
-      : 'Não paga'
-    : income
-      ? 'Recebida'
-      : 'Paga'
+  const payLabel = paid ? (income ? 'Não recebida' : 'Não paga') : income ? 'Recebida' : 'Paga'
 
   return (
     <BottomSheet
@@ -37,30 +32,33 @@ export function TransactionSheet({
       onClose={onClose}
     >
       <div className="grid grid-cols-2 gap-2">
-        <SheetAction
+        <SheetActionCard
+          label={payLabel}
+          icon={paid ? UnpaidIcon : PaidIcon}
           onClick={() => {
             onTogglePaid(transaction)
             onClose()
           }}
-        >
-          {payLabel}
-        </SheetAction>
+        />
 
-        <SheetAction onClick={() => navigate(`/transacoes/${transaction.id}/editar`)}>
-          Editar
-        </SheetAction>
+        <SheetActionCard
+          label="Editar"
+          icon={EditIcon}
+          onClick={() => navigate(`/transacoes/${transaction.id}/editar`)}
+        />
       </div>
 
       <hr className="my-2 border-line" />
 
       <SheetAction
         danger
-        className="w-full"
+        className="flex w-full items-center justify-center gap-2"
         onClick={() => {
           onDelete(transaction)
           onClose()
         }}
       >
+        <DeleteIcon className="size-4" strokeWidth={1.75} aria-hidden="true" />
         Excluir
       </SheetAction>
     </BottomSheet>

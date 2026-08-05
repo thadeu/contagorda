@@ -3,8 +3,10 @@
 /*
  * Light, card-based, one dark surface.
  *
- * A deep navy rather than a saturated banking blue: it holds white text without
- * glare and reads as money without borrowing any particular bank's identity.
+ * Near-black with blue in it, and a lighter blue on top. The dark surface reads
+ * as black at a glance and only shows its cast next to the page, which keeps it
+ * from looking like any particular bank while still reading as money.
+ *
  * It is spent in two places only — the month strip and the tab bar — with the
  * lighter blue marking whatever is active. An accent that shows up everywhere
  * stops being an accent.
@@ -22,11 +24,11 @@
   --color-surface: #ffffff;
   --color-sunken: #e9edf2;
 
-  --color-brand: #0a2540;
-  --color-brand-soft: #143a5e;
-  --color-accent: #4da3ff;
+  --color-brand: #0a0f1a;
+  --color-brand-soft: #18202f;
+  --color-accent: #5aa9ff;
 
-  --color-ink: #0b1524;
+  --color-ink: #0a0f1a;
   --color-muted: #67748a;
   --color-faint: #98a4b5;
   --color-line: #e2e7ed;
@@ -53,6 +55,13 @@
   body,
   #root {
     height: 100%;
+  }
+
+  /* The colour goes on html as well as body. Locking scroll takes the body out
+     of flow with `position: fixed`, and without this the document's default
+     white shows through underneath — a pale strip below every open sheet. */
+  html {
+    background-color: #f2f4f7;
   }
 
   body {

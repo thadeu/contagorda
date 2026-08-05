@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { useBodyScrollLock } from './useBodyScrollLock'
 
 interface BottomSheetProps {
@@ -142,6 +143,7 @@ interface SheetActionProps {
   children: ReactNode
 }
 
+/** A full-width row. For the list-shaped choices: sign out, a single option. */
 export function SheetAction({
   onClick,
   danger = false,
@@ -157,6 +159,36 @@ export function SheetAction({
       } ${className}`}
     >
       {children}
+    </button>
+  )
+}
+
+interface SheetActionCardProps {
+  onClick: () => void
+  label: string
+  icon: LucideIcon
+  danger?: boolean
+}
+
+/**
+ * A tall tile carrying a label and its icon.
+ *
+ * Used where two or three actions sit side by side: at that size the icon is
+ * what the eye picks first on the second visit, and a row of text labels forces
+ * a read every time. Full-width rows stay for list-shaped choices, where a grid
+ * would only stretch one option across the screen.
+ */
+export function SheetActionCard({ onClick, label, icon: Icon, danger = false }: SheetActionCardProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-control px-3 ${
+        danger ? 'bg-out/10 text-out' : 'bg-sunken text-ink'
+      }`}
+    >
+      <span className="text-[0.9375rem] font-semibold">{label}</span>
+      <Icon className="size-6" strokeWidth={1.75} aria-hidden="true" />
     </button>
   )
 }

@@ -1,6 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useMonth } from '../../app/useMonth'
-import { Button } from '../../ui/Button'
 import { Modal } from '../../ui/Modal'
 import { centsToInput } from './formValues'
 import { TransactionForm } from './components/TransactionForm'
@@ -9,7 +8,6 @@ import {
   type TransactionEditor,
 } from './transactionEditorContext'
 import {
-  useDeleteTransaction,
   useResolveCategory,
   useTransaction,
   useUpdateTransaction,
@@ -67,7 +65,6 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
   const { month } = useMonth()
   const transaction = useTransaction(month, id)
   const update = useUpdateTransaction(month)
-  const remove = useDeleteTransaction(month)
   const resolveCategory = useResolveCategory()
 
   if (!transaction) {
@@ -94,23 +91,6 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
 
           update.mutate({ id, input: { ...input, category_id: categoryId } }, { onSuccess: onClose })
         }}
-        footer={
-          <div className="pt-4">
-            <Button
-              type="button"
-              variant="danger"
-              className="w-full"
-              disabled={remove.isPending}
-              onClick={() => {
-                if (!confirm(`Apagar "${transaction.description}"?`)) return
-
-                remove.mutate(id, { onSuccess: onClose })
-              }}
-            >
-              Apagar lançamento
-            </Button>
-          </div>
-        }
       />
     </Modal>
   )

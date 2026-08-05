@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import type { LucideIcon } from 'lucide-react'
+import type { AppIcon } from './icons'
 import { useBodyScrollLock } from './useBodyScrollLock'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
@@ -176,7 +176,7 @@ export function SheetAction({
 interface SheetActionCardProps {
   onClick: () => void
   label: string
-  icon: LucideIcon
+  icon: AppIcon
   danger?: boolean
 }
 

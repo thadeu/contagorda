@@ -113,7 +113,7 @@ export function BottomSheet({
         data-dragging={dragging}
         style={{ transform: `translateY(${offset}px)` }}
         className={`sheet-snap relative mx-2 mb-2 flex w-full max-w-md flex-col rounded-card bg-surface p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] outline-none ${
-          expanded ? 'h-[92vh]' : 'max-h-[75vh]'
+          expanded ? 'h-[92dvh]' : 'max-h-[75dvh]'
         }`}
       >
         <header

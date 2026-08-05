@@ -45,8 +45,22 @@ function byDateThenCreation(a: Transaction, b: Transaction): number {
   return a.date === b.date ? a.id.localeCompare(b.id) : a.date.localeCompare(b.date)
 }
 
+let profileStore: { display_name: string | null } = { display_name: null }
+
 export function createMockServices(): Services {
   return {
+    profile: {
+      get: () => delay(profileStore),
+
+      update: ({ display_name }) => {
+        const trimmed = display_name.trim()
+
+        profileStore = { display_name: trimmed === '' ? null : trimmed }
+
+        return delay(profileStore)
+      },
+    },
+
     accounts: {
       list: () => delay(accountStore.filter((a) => a.archived_at === null)),
 

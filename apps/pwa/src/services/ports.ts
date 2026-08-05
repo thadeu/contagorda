@@ -65,8 +65,22 @@ export interface CategoriesPort {
   findOrCreate(name: string, kind: Category['kind']): Promise<Category>
 }
 
+export interface ProfilePort {
+  /**
+   * The name to call this person, when they have chosen one.
+   *
+   * `null` means they have not, and the identity provider's name stands. Storing
+   * a copy of that name instead would freeze it: change it at the provider and
+   * the app would keep greeting you by the old one forever, with no way to tell
+   * a stale copy from a deliberate choice.
+   */
+  get(): Promise<{ display_name: string | null }>
+  update(input: { display_name: string }): Promise<{ display_name: string | null }>
+}
+
 export interface Services {
   transactions: TransactionsPort
   accounts: AccountsPort
   categories: CategoriesPort
+  profile: ProfilePort
 }

@@ -28,6 +28,13 @@ const TABS = [
  * being read and returns the moment the finger goes back up. The add action
  * lives there, in the middle of the thumb's arc, because it is the most
  * repeated action in the app.
+ *
+ * The strip across the top is the price of filling the screen. In
+ * black-translucent iOS draws the clock in white, and white is unreadable on
+ * this page — so exactly the safe area is dark and the light app begins right
+ * under it. It is the height of the status bar and nothing more: a taller
+ * coloured header with a curved edge is the shape that dates a design, and this
+ * reads as the phone's own bar rather than as part of the app.
  */
 export function AppShell() {
   const { pathname } = useLocation()
@@ -37,6 +44,11 @@ export function AppShell() {
 
   return (
     <div className="app-frame relative mx-auto flex max-w-lg flex-col overflow-hidden bg-canvas">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 z-30 h-[env(safe-area-inset-top)] bg-brand"
+      />
+
       <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-32">
         <Outlet />
       </main>

@@ -21,6 +21,12 @@ const THRESHOLD = 90
  * visible above this panel, which is the whole message — you are still on the
  * month, with something in front of it.
  *
+ * The panel bleeds below its own bottom edge. A `position: fixed` box is inset
+ * by the safe areas in the installed app, so a panel meant to meet the bottom of
+ * the screen stops short of it and the dimmed page shows through as a band. The
+ * backdrop solves this for itself with `-inset-y-24`; the panel needs the same,
+ * and cannot use a negative inset without moving the content inside it.
+ *
  * It is deliberately not `BottomSheet`. That one is a short list of actions, and
  * its detents exist so a long list can be pulled taller. A form has one height:
  * as much as it needs, up to nearly the screen. Sharing a component between the
@@ -102,6 +108,8 @@ export function Modal({ title, onClose, children }: ModalProps) {
         <div ref={content} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {children}
         </div>
+
+        <div aria-hidden="true" className="absolute inset-x-0 top-full h-24 bg-surface" />
       </div>
     </div>
   )

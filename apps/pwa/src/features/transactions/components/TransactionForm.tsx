@@ -91,14 +91,14 @@ export function TransactionForm({
           onClick={() => set('kind', 'expense')}
           tone="out"
         >
-          Saiu
+          Despesa
         </DirectionButton>
         <DirectionButton
           active={values.kind === 'income'}
           onClick={() => set('kind', 'income')}
           tone="in"
         >
-          Entrou
+          Receita
         </DirectionButton>
       </div>
 

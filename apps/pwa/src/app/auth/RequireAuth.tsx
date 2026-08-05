@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useAuth } from '@clowk/react'
+import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 import { WelcomeScreen } from './WelcomeScreen'
 
 /**
@@ -17,9 +18,15 @@ import { WelcomeScreen } from './WelcomeScreen'
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { signedIn, isLoading } = useAuth()
 
-  if (isLoading) return <div className="min-h-dvh bg-brand" />
+  if (isLoading) return <BootScreen />
 
   if (!signedIn) return <WelcomeScreen />
 
   return <>{children}</>
+}
+
+function BootScreen() {
+  useDocumentCanvas('brand')
+
+  return <div className="min-h-dvh bg-brand" />
 }

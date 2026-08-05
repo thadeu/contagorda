@@ -101,7 +101,7 @@ export function BottomSheet({
         type="button"
         aria-label="Fechar"
         onClick={onClose}
-        className="absolute inset-0 bg-ink/35"
+        className="absolute inset-x-0 -inset-y-24 bg-ink/35"
       />
 
       <div

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 import { redirectToSignIn, redirectToSignUp } from './signIn'
 
 /**
@@ -15,6 +16,8 @@ import { redirectToSignIn, redirectToSignUp } from './signIn'
  */
 export function WelcomeScreen() {
   const [going, setGoing] = useState<'in' | 'up' | null>(null)
+
+  useDocumentCanvas('brand')
 
   function leave(where: 'in' | 'up') {
     setGoing(where)

@@ -161,6 +161,22 @@
  * not belong there either: a 35% backdrop does not hide a dark pill, it dims it
  * into a band under the sheet.
  */
+/*
+ * The document takes the colour of whatever full-screen surface is on top.
+ *
+ * In a standalone PWA `100dvh` can resolve to less than the physical screen, so
+ * a viewport-sized surface leaves a sliver of page along the bottom edge. Under
+ * an overlay the visible colour is the canvas dimmed by the backdrop, so that
+ * is what the document has to be for the seam to disappear.
+ */
+html[data-canvas='brand'] {
+  background-color: var(--color-brand);
+}
+
+html[data-overlay-open='true'] {
+  background-color: color-mix(in srgb, var(--color-ink) 35%, var(--color-canvas));
+}
+
 html[data-overlay-open='true'] .app-scroll {
   overflow: hidden;
 }

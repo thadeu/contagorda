@@ -8,11 +8,14 @@ import { Money } from '../../ui/Money'
 import { Button } from '../../ui/Button'
 import { EmptyState } from '../../ui/EmptyState'
 import { ChevronLeftIcon, PlusIcon } from '../../ui/icons'
+import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 
 export function AccountsPage() {
   const accounts = useAccounts()
   const editor = useAccountEditor()
   const navigate = useNavigate()
+
+  useDocumentCanvas('dusk')
 
   return (
     <>

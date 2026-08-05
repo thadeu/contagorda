@@ -34,6 +34,13 @@
   --color-sky: #4a9df2;
   --color-sky-soft: #8fc4f8;
 
+  /* Accounts. The same blue walked towards indigo — far enough that the two
+     screens are told apart before anything is read, close enough that they are
+     obviously the same app. Green and red were not available: they mean income
+     and overdue here, and a screen painted in either would say something. */
+  --color-dusk: #6f76e8;
+  --color-dusk-soft: #a6abf3;
+
   --color-ink: #0a0f1a;
   --color-muted: #67748a;
   --color-faint: #98a4b5;
@@ -190,23 +197,42 @@ html[data-canvas='brand'] body {
 }
 
 /*
- * The sky is painted on the frame, which does not scroll, so it stays put while
- * the month moves over it. Painting it into the page instead would carry it
- * away on the first scroll and leave the strip above the app still blue.
+ * A screen can paint the whole surface behind itself.
+ *
+ * The gradient goes on the frame, which does not scroll, so the content moves
+ * over it. Painting it into the page instead would carry it away on the first
+ * scroll and leave the strip above the app coloured on its own.
  *
  * The document takes the top colour for that strip: it sits above the root and
  * shows whatever the page is, so it has to agree with the frame at the seam.
+ *
+ * Each screen contributes two colours and nothing else. Adding one is a pair of
+ * custom properties and a name in the hook's union — the gradient, the seam, and
+ * the fade into the canvas are written once and shared.
  */
-html[data-canvas='sky'],
-html[data-canvas='sky'] body {
-  background-color: var(--color-sky);
+html[data-canvas='sky'] {
+  --canvas-top: var(--color-sky);
+  --canvas-mid: var(--color-sky-soft);
 }
 
-html[data-canvas='sky'] .app-surface {
+html[data-canvas='dusk'] {
+  --canvas-top: var(--color-dusk);
+  --canvas-mid: var(--color-dusk-soft);
+}
+
+html[data-canvas='sky'],
+html[data-canvas='sky'] body,
+html[data-canvas='dusk'],
+html[data-canvas='dusk'] body {
+  background-color: var(--canvas-top);
+}
+
+html[data-canvas='sky'] .app-surface,
+html[data-canvas='dusk'] .app-surface {
   background-image: linear-gradient(
     180deg,
-    var(--color-sky) 0%,
-    var(--color-sky-soft) 38%,
+    var(--canvas-top) 0%,
+    var(--canvas-mid) 38%,
     var(--color-canvas) 100%
   );
   background-repeat: no-repeat;

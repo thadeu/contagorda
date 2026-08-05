@@ -202,3 +202,22 @@ html[data-overlay-open='true'] .slide-away {
   display: none;
 }
 
+/* ─────────────────────────── TEMPORARY ───────────────────────────
+ *
+ * Paint over the numbers, because the numbers stopped being decisive.
+ *
+ *   red      the app frame
+ *   magenta  the body behind it
+ *
+ * If red reaches all four edges of the screen, the frame is fine and the empty
+ * space is padding inside it. If magenta shows anywhere, that edge is where the
+ * frame stops. Remove this block once the answer is known.
+ */
+[data-probe-frame] {
+  background-color: red !important;
+}
+
+body {
+  background-color: magenta !important;
+}
+

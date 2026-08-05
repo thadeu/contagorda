@@ -1,38 +1,20 @@
 import { SubdomainResolver } from '@clowk/core'
 
-/** Survives the round trip to Clowk, which a ref or state cannot. */
-const ATTEMPT_KEY = 'contagorda:sign_in_attempt'
-
 /**
- * Sends the browser to Clowk's sign-in page, coming back to the path the user
- * was on rather than always to the root — deep links stay usable through a
- * login.
+ * Sends the browser to Clowk, coming back to the path the user was on rather
+ * than always to the root — a deep link stays usable through a login.
  */
-export async function redirectToSignIn(): Promise<void> {
+export function redirectToSignIn(): Promise<void> {
+  return go('sign-in')
+}
+
+export function redirectToSignUp(): Promise<void> {
+  return go('sign-up')
+}
+
+async function go(path: 'sign-in' | 'sign-up'): Promise<void> {
   const base = await new SubdomainResolver().resolveUrl()
   const back = `${window.location.origin}${window.location.pathname}`
 
-  // Marked only once the browser is actually leaving. Setting it before the
-  // lookup meant a navigation that never happened — a competing redirect, a
-  // failed resolve — still counted as an attempt, and the next load would
-  // report a failure that never took place.
-  sessionStorage.setItem(ATTEMPT_KEY, '1')
-
-  window.location.href = `${base}/sign-in?redirect_uri=${encodeURIComponent(back)}`
-}
-
-/**
- * True when we already sent the user to sign in and they came back still
- * signed out.
- *
- * Without this the guard would bounce them straight out again, and a failing
- * exchange turns into an infinite redirect that looks like a frozen app rather
- * than an error.
- */
-export function signInAlreadyAttempted(): boolean {
-  return sessionStorage.getItem(ATTEMPT_KEY) === '1'
-}
-
-export function clearSignInAttempt(): void {
-  sessionStorage.removeItem(ATTEMPT_KEY)
+  window.location.href = `${base}/${path}?redirect_uri=${encodeURIComponent(back)}`
 }

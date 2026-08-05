@@ -15,11 +15,12 @@
          once the app is installed. -->
     <meta name="theme-color" content="#f4f5f3" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- black-translucent puts the web view under the status bar, so a full-screen
-         overlay dims the whole display instead of stopping below the clock. iOS
-         draws the status bar text white in this mode, which is why the top of
-         every screen carries the brand colour. -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- `default`, not black-translucent. The latter puts the view under the
+         status bar, but iOS then draws the clock in white, which forces a dark
+         band across the top of every screen — and a curved dark header is a
+         dated shape. A light header is worth more than an overlay reaching the
+         last 40px of the display. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Conta Gorda" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

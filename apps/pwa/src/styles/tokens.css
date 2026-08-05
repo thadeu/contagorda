@@ -82,6 +82,24 @@
     transition: none !important;
     animation: none !important;
   }
+
+  /* The one exception, and only because instant would read as a bug: the tab
+     bar leaving and returning on scroll has to travel, or the pill appears to
+     flicker in and out of existence. Movement here is the feature, not decoration. */
+  .slide-away {
+    transition: transform 0.22s ease !important;
+    will-change: transform;
+  }
+
+  .slide-away[data-hidden='true'] {
+    transform: translateY(calc(100% + 1rem));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide-away {
+      transition: none !important;
+    }
+  }
 }
 
 @utility card-shadow {

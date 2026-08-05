@@ -8,8 +8,9 @@ export function useGreeting() {
   const { user } = useAuth()
   const full = typeof user?.name === 'string' ? user.name : ''
   const firstName = full.trim().split(' ')[0] ?? ''
+  const avatarUrl = typeof user?.avatar_url === 'string' ? user.avatar_url : null
 
-  return { salutation: salutationFor(new Date().getHours()), firstName }
+  return { salutation: salutationFor(new Date().getHours()), firstName, avatarUrl }
 }
 
 function salutationFor(hour: number): string {

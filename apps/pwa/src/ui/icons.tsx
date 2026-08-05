@@ -67,6 +67,24 @@ export function ChevronRightIcon({ className }: IconProps) {
   )
 }
 
+export function ChevronDownIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} aria-hidden="true">
+      <path d="m5 9.5 7 7 7-7" />
+    </svg>
+  )
+}
+
+export function InfoIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5" />
+      <circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export function RepeatIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className} aria-hidden="true">

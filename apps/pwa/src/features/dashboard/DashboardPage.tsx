@@ -1,63 +1,63 @@
 import { useMonth } from '../../app/useMonth'
 import { useGreeting } from '../../app/useGreeting'
-import { useMonthSummary, useTransactions } from '../transactions/hooks'
+import { useTransactions } from '../transactions/hooks'
 import { MonthList } from '../transactions/MonthList'
-import { RemainingCard } from './components/RemainingCard'
-import { MonthNav } from './components/MonthNav'
-import { ScreenHeader } from '../../ui/ScreenHeader'
-import { Money } from '../../ui/Money'
+import { MonthStack } from './components/MonthStack'
+import { Avatar } from '../../ui/Avatar'
 import { Card } from '../../ui/Card'
 
+// The greeting stays one quiet line. The figure below is the hero, and two
+// headlines competing means neither of them wins.
 export function DashboardPage() {
   const { month, setMonth } = useMonth()
-  const { salutation, firstName } = useGreeting()
-  const summary = useMonthSummary(month)
+  const { salutation, firstName, avatarUrl } = useGreeting()
   const transactions = useTransactions(month)
 
   const rows = transactions.data ?? []
-  const settled = rows.filter((t) => t.paid_at !== null).length
-  const remaining = rows
-    .filter((t) => t.paid_at === null && t.kind === 'expense')
-    .reduce((total, t) => total + t.amount_cents, 0)
+  const expenses = rows.filter((t) => t.kind === 'expense')
+  const paid = expenses.filter((t) => t.paid_at !== null)
+
+  const totalCents = sum(expenses)
+  const paidCents = sum(paid)
 
   return (
     <>
-      <ScreenHeader
-        eyebrow={salutation}
-        title={firstName || 'Olá'}
-        actions={<MonthNav month={month} onChange={setMonth} />}
-      />
+      <header className="flex items-center justify-between gap-3 px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4">
+        <p className="truncate text-[0.9375rem] text-muted">
+          {salutation}
+          {firstName && <span className="font-semibold text-ink">, {firstName}</span>}
+        </p>
 
-      <div className="px-4 pt-4">
-        <RemainingCard
+        <Avatar name={firstName} url={avatarUrl} />
+      </header>
+
+      <div className="px-4">
+        <MonthStack
           month={month}
-          remainingCents={remaining}
-          settledCount={settled}
-          totalCount={rows.length}
+          onMonthChange={setMonth}
+          remainingCents={totalCents - paidCents}
+          paidCents={paidCents}
+          totalCents={totalCents}
         />
       </div>
 
-      <section className="grid grid-cols-2 gap-3 px-4 pt-3">
-        <Stat label="Entrou" cents={summary.data?.income_cents} tone="in" />
-        <Stat label="Saiu" cents={summary.data?.expense_cents} tone="default" />
-      </section>
+      <div className="px-4 pt-3">
+        <Card className="flex items-center gap-2.5 px-4 py-3">
+          <span aria-hidden="true">✨</span>
+          <p className="text-sm text-muted">
+            <span className="font-semibold text-ink">
+              {paid.length} de {expenses.length}
+            </span>{' '}
+            {expenses.length === 1 ? 'lançamento pago' : 'lançamentos pagos'} neste mês
+          </p>
+        </Card>
+      </div>
 
       <MonthList month={month} />
     </>
   )
 }
 
-function Stat({ label, cents, tone }: { label: string; cents?: number; tone: 'in' | 'default' }) {
-  return (
-    <Card className="px-4 py-3">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="pt-0.5 text-lg font-semibold">
-        {cents === undefined ? (
-          <span className="text-faint">—</span>
-        ) : (
-          <Money cents={cents} tone={tone} />
-        )}
-      </p>
-    </Card>
-  )
+function sum(rows: { amount_cents: number }[]): number {
+  return rows.reduce((total, row) => total + row.amount_cents, 0)
 }

@@ -184,3 +184,33 @@ html[data-overlay-open='true'] .app-scroll {
 html[data-overlay-open='true'] .slide-away {
   display: none;
 }
+
+/* ─────────────────────────── TEMPORARY ───────────────────────────
+ *
+ * Debug paint for the band that only appears in the installed PWA. Each
+ * candidate gets its own colour, so the band identifies itself instead of just
+ * confirming or denying one guess:
+ *
+ *   red      the document — `100dvh` shorter than the screen, page showing
+ *   magenta  the body, sized differently from html
+ *   lime     the app frame, not filling its container
+ *   cyan     the scroll area, short of the frame
+ *
+ * `!important` so this beats the data-attribute rules above. Remove this whole
+ * block once the culprit is known.
+ */
+html {
+  background-color: red !important;
+}
+
+body {
+  background-color: magenta !important;
+}
+
+#root {
+  background-color: lime !important;
+}
+
+.app-scroll {
+  background-color: cyan !important;
+}

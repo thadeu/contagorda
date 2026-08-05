@@ -110,7 +110,6 @@ export function TransactionForm({
             onChange={(e) => set('amount', e.target.value)}
             inputMode="decimal"
             placeholder="0,00"
-            autoFocus
             className="tnum w-full bg-transparent text-3xl font-semibold text-ink outline-none placeholder:text-faint"
           />
         </div>

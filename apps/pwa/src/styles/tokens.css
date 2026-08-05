@@ -63,14 +63,6 @@
     background-color: #f2f4f7;
   }
 
-  /* The document never scrolls — the app scrolls inside `main`. Anything that
-     makes the page itself scrollable shows up as the whole app sliding under a
-     sheet, which is the bug the spacer caused before it was compensated for. */
-  html,
-  body {
-    overflow: hidden;
-  }
-
   body {
     /* Matches --color-canvas. The installed PWA paints this behind the status
        bar, and any mismatch reads as a seam above the header on iOS. */
@@ -220,7 +212,10 @@ html[data-overlay-open='true'] .slide-away {
  * The root gives back exactly what the spacer takes. Without that the page is
  * one inset taller than the screen, and the whole app slides up by that much on
  * any upward drag — including inside a bottom sheet, where it reads as the sheet
- * dragging the app along with it.
+ * dragging the app along with it. This is also the whole defence against the
+ * document scrolling: `overflow: hidden` on html and body was tried as a second
+ * guard and brought a band back along the bottom edge, so the arithmetic has to
+ * be right rather than fenced in.
  *
  * Standalone only. In a browser the chrome already accounts for the inset, and a
  * spacer there would push the app down for nothing.

@@ -63,6 +63,14 @@
     background-color: #f2f4f7;
   }
 
+  /* The document never scrolls — the app scrolls inside `main`. Anything that
+     makes the page itself scrollable shows up as the whole app sliding under a
+     sheet, which is the bug the spacer caused before it was compensated for. */
+  html,
+  body {
+    overflow: hidden;
+  }
+
   body {
     /* Matches --color-canvas. The installed PWA paints this behind the status
        bar, and any mismatch reads as a seam above the header on iOS. */
@@ -191,4 +199,48 @@ html[data-overlay-open='true'] .app-scroll {
 
 html[data-overlay-open='true'] .slide-away {
   display: none;
+}
+
+/*
+ * The status bar, solved by hand on the phone.
+ *
+ * In `black-translucent` the web view owns the full screen, and every attempt to
+ * size the frame around the status bar left a band along its edges. A plain
+ * element in flow, ahead of the root, does not: the app begins below the bar and
+ * meets every edge. Why this succeeds where sizing the frame failed is not
+ * established — it was found by trying it on the device, and it is kept in the
+ * shape that was tested rather than refactored into something tidier that has
+ * never been on a phone.
+ *
+ * Two things it must get right that a fixed 22px cannot:
+ *
+ * The height is the actual inset, so it is the notch on a notched phone and the
+ * older bar on an iPhone 8.
+ *
+ * The root gives back exactly what the spacer takes. Without that the page is
+ * one inset taller than the screen, and the whole app slides up by that much on
+ * any upward drag — including inside a bottom sheet, where it reads as the sheet
+ * dragging the app along with it.
+ *
+ * Standalone only. In a browser the chrome already accounts for the inset, and a
+ * spacer there would push the app down for nothing.
+ *
+ * It carries the dark surface because iOS draws the clock in white over a
+ * translucent bar, and white on the light canvas is unreadable. Setting it to
+ * `transparent` gives the page colour through instead, at that cost.
+ */
+.status-bar-spacer {
+  display: none;
+}
+
+@media (display-mode: standalone) {
+  .status-bar-spacer {
+    display: block;
+    height: env(safe-area-inset-top);
+    background-color: var(--color-brand);
+  }
+
+  #root {
+    height: calc(100% - env(safe-area-inset-top));
+  }
 }

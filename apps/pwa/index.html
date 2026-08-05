@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" >
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -21,7 +21,7 @@
          strip across the top to stay readable. `default` reserves the status bar
          outside the web view and iOS draws it to match — verified to look right
          on the phone, which beats a full-screen mode that does not. -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Conta Gorda" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -34,6 +34,11 @@
     <title>Conta Gorda</title>
   </head>
   <body>
+    <div style='height: 22px; background: rgba(0, 0, 0, 0.0)'></div>
+    <!-- Found on the device: an element of its own, before the root, is what
+         puts the app under the status bar without leaving a band around it.
+         Sized and shown from CSS — see .status-bar-spacer. -->
+    <div class="status-bar-spacer" aria-hidden="true"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

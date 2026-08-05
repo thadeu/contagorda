@@ -51,15 +51,16 @@
     color-scheme: light;
   }
 
+  /* Measured in dvh, the same basis the app frame uses. With `100%` here and
+     `100dvh` on the frame the two resolve against different boxes in a
+     standalone PWA, and the difference shows up as a strip of page below the
+     app. */
   html,
   body,
   #root {
-    height: 100%;
+    height: 100dvh;
   }
 
-  /* The colour goes on html as well as body. Locking scroll takes the body out
-     of flow with `position: fixed`, and without this the document's default
-     white shows through underneath — a pale strip below every open sheet. */
   html {
     background-color: #f2f4f7;
   }
@@ -162,18 +163,27 @@
  * into a band under the sheet.
  */
 /*
- * The document takes the colour of whatever full-screen surface is on top.
+ * The page takes the colour of whatever full-screen surface is on top.
  *
- * In a standalone PWA `100dvh` can resolve to less than the physical screen, so
- * a viewport-sized surface leaves a sliver of page along the bottom edge. Under
- * an overlay the visible colour is the canvas dimmed by the backdrop, so that
- * is what the document has to be for the seam to disappear.
+ * In a standalone PWA a viewport-sized surface can come up short of the physical
+ * screen, leaving a sliver of page along the bottom edge — a band under a dark
+ * screen, and only in the installed app, which is why it never shows in the
+ * browser.
+ *
+ * Both html and body carry the colour. Painting only html does nothing, because
+ * body sits on top of it and is the surface actually on show — confirmed by
+ * painting each one a different colour and looking at which one the band was.
+ *
+ * Under an overlay the visible colour is the canvas dimmed by the backdrop, so
+ * that is the value the page has to hold for the seam to disappear.
  */
-html[data-canvas='brand'] {
+html[data-canvas='brand'],
+html[data-canvas='brand'] body {
   background-color: var(--color-brand);
 }
 
-html[data-overlay-open='true'] {
+html[data-overlay-open='true'],
+html[data-overlay-open='true'] body {
   background-color: color-mix(in srgb, var(--color-ink) 35%, var(--color-canvas));
 }
 
@@ -185,32 +195,3 @@ html[data-overlay-open='true'] .slide-away {
   display: none;
 }
 
-/* ─────────────────────────── TEMPORARY ───────────────────────────
- *
- * Debug paint for the band that only appears in the installed PWA. Each
- * candidate gets its own colour, so the band identifies itself instead of just
- * confirming or denying one guess:
- *
- *   red      the document — `100dvh` shorter than the screen, page showing
- *   magenta  the body, sized differently from html
- *   lime     the app frame, not filling its container
- *   cyan     the scroll area, short of the frame
- *
- * `!important` so this beats the data-attribute rules above. Remove this whole
- * block once the culprit is known.
- */
-html {
-  background-color: red !important;
-}
-
-body {
-  background-color: magenta !important;
-}
-
-#root {
-  background-color: lime !important;
-}
-
-.app-scroll {
-  background-color: cyan !important;
-}

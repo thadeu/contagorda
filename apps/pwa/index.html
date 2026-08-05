@@ -15,12 +15,13 @@
          once the app is installed. -->
     <meta name="theme-color" content="#f2f4f7" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- black-translucent is what makes the installed app fill the screen: any
-         other value has iOS reserve the status bar outside the web view, and no
-         amount of CSS reaches an area that is not part of the page. The cost is
-         that iOS draws the clock in white, so whatever sits at the top of a
-         screen has to be dark enough to read it against. -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- `default`, chosen on the device. black-translucent fills the screen but
+         left a band around the app in the installed PWA that no combination of
+         frame sizing removed, and it forces a white clock, which needs a dark
+         strip across the top to stay readable. `default` reserves the status bar
+         outside the web view and iOS draws it to match — verified to look right
+         on the phone, which beats a full-screen mode that does not. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Conta Gorda" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

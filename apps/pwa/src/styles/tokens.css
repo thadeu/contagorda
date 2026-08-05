@@ -45,7 +45,8 @@
   --radius-control: 1rem;
   --radius-chip: 0.625rem;
 
-  --bg-appshell: #0e7c57;
+  --bg-appshell: transparent;
+  --h-status-bar: env(safe-area-inset-top);
 }
 
 @layer base {

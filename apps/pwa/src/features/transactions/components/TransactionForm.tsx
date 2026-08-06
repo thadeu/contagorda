@@ -4,6 +4,7 @@ import { parseBRLToCents } from '../../../lib/money'
 import { CategoryPicker } from './CategoryPicker'
 import { AccountPicker } from './AccountPicker'
 import { Switch } from '../../../ui/Switch'
+import { useMemberName } from '../../ledgers/useMemberName'
 import { emptyValues, type TransactionFormValues } from '../formValues'
 import type { NewTransaction } from '../../../services/types'
 
@@ -11,6 +12,8 @@ import type { NewTransaction } from '../../../services/types'
 interface TransactionFormProps {
   /** Ties the form to a submit button that lives outside it, in the nav bar. */
   id: string
+  /** Who entered it, when editing one that exists. Shown, never edited. */
+  authorId?: string | null
   initial?: Partial<TransactionFormValues>
   /** `customCategory` is set when the user typed one under "Outros". */
   onSubmit: (input: NewTransaction) => void
@@ -39,11 +42,13 @@ interface TransactionFormProps {
  */
 export function TransactionForm({
   id,
+  authorId = null,
   initial,
   onSubmit,
 }: TransactionFormProps) {
   const accounts = useAccounts()
   const categories = useCategories()
+  const author = useMemberName(authorId)
 
   const base = { ...emptyValues(), ...initial }
   const [values, setValues] = useState<TransactionFormValues>(base)
@@ -152,6 +157,16 @@ export function TransactionForm({
           value={values.categoryId}
           onChange={(id) => set('categoryId', id)}
         />
+
+        {/* A fact about the row, not a field: who entered it is decided when it
+            is created and by whom, and an editable author would be a way to
+            claim someone else's typing. */}
+        {author && (
+          <div className="flex min-h-13 items-center justify-between gap-3">
+            <span className="text-sm text-muted">Lançado por</span>
+            <span className="min-w-0 truncate text-base text-muted">{author}</span>
+          </div>
+        )}
 
         <div className="flex min-h-13 items-center justify-between gap-3">
           <span className="text-sm text-muted">

@@ -8,6 +8,9 @@ import { monthKey, shiftMonth, todayIso } from '../../lib/dates'
  * problems that only appear once a real id is on screen.
  */
 
+/** The one member the fixtures were entered by. */
+const SEED_MEMBER = '019fce00-0000-7000-8000-0000000000e1'
+
 const thisMonth = monthKey(todayIso())
 const lastMonth = shiftMonth(thisMonth, -1)
 
@@ -78,6 +81,7 @@ function tx(
     description,
     paid_at: paid ? `${date}T12:00:00Z` : null,
     recurring_series_id: options.series ?? null,
+    created_by_id: SEED_MEMBER,
   }
 }
 

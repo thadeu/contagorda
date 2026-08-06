@@ -76,6 +76,12 @@ export interface Transaction {
   description: string
   paid_at: string | null
   recurring_series_id: string | null
+  /**
+   * Which member entered it. Stamped by the server from whoever was
+   * authenticated, never sent by the client — otherwise the answer to "who
+   * added this" is whatever the app felt like claiming.
+   */
+  created_by_id: string | null
 }
 
 /**

@@ -386,6 +386,7 @@ export function createMockServices(): Services {
           description: input.description,
           paid_at: input.paid ? new Date().toISOString() : null,
           recurring_series_id: null,
+          created_by_id: you.id,
         }
 
         patch({ transactions: [...data().transactions, created] })

@@ -175,33 +175,6 @@ export function BottomSheet({
   )
 }
 
-interface SheetActionProps {
-  onClick: () => void
-  danger?: boolean
-  className?: string
-  children: ReactNode
-}
-
-/** A full-width row. For the list-shaped choices: sign out, a single option. */
-export function SheetAction({
-  onClick,
-  danger = false,
-  className = '',
-  children,
-}: SheetActionProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`min-h-13 rounded-control px-4 text-[0.9375rem] font-medium ${
-        danger ? 'bg-out/10 text-out' : 'bg-sunken text-ink'
-      } ${className}`}
-    >
-      {children}
-    </button>
-  )
-}
-
 interface SheetActionCardProps {
   onClick: () => void
   label: string

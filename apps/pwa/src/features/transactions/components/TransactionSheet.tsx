@@ -1,8 +1,14 @@
+import { useState } from 'react'
 import type { Transaction } from '../../../services/types'
 import { formatBRL } from '../../../lib/money'
-import { BottomSheet, SheetAction, SheetActionCard } from '../../../ui/BottomSheet'
-import { DeleteIcon, EditIcon, PaidIcon, UnpaidIcon } from '../../../ui/icons'
+import { BottomSheet, SheetActionCard } from '../../../ui/BottomSheet'
+import { ConfirmSheet } from '../../../ui/ConfirmSheet'
+import { Button } from '../../../ui/Button'
+import { EditIcon, PaidIcon, UnpaidIcon } from '../../../ui/icons'
 import { useTransactionEditor } from '../transactionEditorContext'
+import { useCategories } from '../../accounts/hooks'
+import { useMemberName } from '../../ledgers/useMemberName'
+import { dayLabel } from '../../../lib/dates'
 
 interface TransactionSheetProps {
   transaction: Transaction
@@ -11,8 +17,20 @@ interface TransactionSheetProps {
   onDelete: (transaction: Transaction) => void
 }
 
-// Action labels say what will happen, not what is true now: a control that reads
-// as a status leaves you guessing which way it will move.
+/**
+ * Action labels say what will happen, not what is true now: a control that reads
+ * as a status leaves you guessing which way it will move.
+ *
+ * Deleting sits in a block of its own, with the sentence that answers the
+ * question someone actually hesitates over — the same shape as archiving an
+ * account and removing a category. There is no divider above it, because the
+ * block already separates itself; a rule as well would be saying the same thing
+ * twice.
+ *
+ * It asks first. Marking something paid can be undone from the notice that
+ * follows it; deleting cannot be undone at all, and the two sit two taps apart
+ * in the same sheet.
+ */
 export function TransactionSheet({
   transaction,
   onClose,
@@ -20,50 +38,99 @@ export function TransactionSheet({
   onDelete,
 }: TransactionSheetProps) {
   const editor = useTransactionEditor()
+  const [deleting, setDeleting] = useState(false)
+
+  const categories = useCategories()
+  const author = useMemberName(transaction.created_by_id)
+
   const paid = transaction.paid_at !== null
   const income = transaction.kind === 'income'
-
   const payLabel = paid ? (income ? 'Não recebida' : 'Não paga') : income ? 'Recebida' : 'Paga'
 
+  const category = (categories.data ?? []).find((c) => c.id === transaction.category_id)
+
   return (
-    <BottomSheet
-      title={transaction.description}
-      subtitle={formatBRL(transaction.amount_cents)}
-      onClose={onClose}
-    >
-      <div className="grid grid-cols-2 gap-2">
-        <SheetActionCard
-          label={payLabel}
-          icon={paid ? UnpaidIcon : PaidIcon}
-          onClick={() => {
-            onTogglePaid(transaction)
-            onClose()
-          }}
-        />
-
-        <SheetActionCard
-          label="Editar"
-          icon={EditIcon}
-          onClick={() => {
-            editor.openEdit(transaction.id)
-            onClose()
-          }}
-        />
-      </div>
-
-      <hr className="my-2 border-line" />
-
-      <SheetAction
-        danger
-        className="flex w-full items-center justify-center gap-2"
-        onClick={() => {
-          onDelete(transaction)
-          onClose()
-        }}
+    <>
+      <BottomSheet
+        title={transaction.description}
+        subtitle={formatBRL(transaction.amount_cents)}
+        onClose={onClose}
       >
-        <DeleteIcon className="size-4" strokeWidth={1.75} aria-hidden="true" />
-        Excluir
-      </SheetAction>
-    </BottomSheet>
+        {/* What the row could not fit. The list shows a description and an
+            amount because that is what is scanned; everything that answers "wait,
+            which one was this" lives here, where someone has already stopped to
+            look. */}
+        <dl className="mb-4 divide-y divide-line rounded-card bg-surface px-4">
+          <Detail label="Valor" value={formatBRL(transaction.amount_cents)} />
+          <Detail label="Data" value={dayLabel(transaction.date)} />
+          <Detail
+            label="Categoria"
+            value={
+              category ? [category.icon, category.name].filter(Boolean).join(' ') : 'Sem categoria'
+            }
+          />
+          {author && <Detail label="Lançado por" value={author} />}
+        </dl>
+
+        <div className="grid grid-cols-2 gap-2">
+          <SheetActionCard
+            label={payLabel}
+            icon={paid ? UnpaidIcon : PaidIcon}
+            onClick={() => {
+              onTogglePaid(transaction)
+              onClose()
+            }}
+          />
+
+          <SheetActionCard
+            label="Editar"
+            icon={EditIcon}
+            onClick={() => {
+              editor.openEdit(transaction.id)
+              onClose()
+            }}
+          />
+        </div>
+
+        <div className="mt-4 rounded-card bg-surface p-4">
+          <p className="text-xs leading-relaxed text-muted">
+            Excluir apaga este lançamento do mês. O saldo da conta volta ao que era antes dele, e
+            não dá para desfazer.
+          </p>
+
+          <Button
+            type="button"
+            variant="danger"
+            className="mt-3 w-full"
+            onClick={() => setDeleting(true)}
+          >
+            Excluir lançamento
+          </Button>
+        </div>
+      </BottomSheet>
+
+      {deleting && (
+        <ConfirmSheet
+          danger
+          title={`Excluir ${transaction.description}?`}
+          message={`${formatBRL(transaction.amount_cents)} sai do mês e do saldo da conta. Isso não pode ser desfeito.`}
+          confirmLabel="Excluir"
+          onClose={() => setDeleting(false)}
+          onConfirm={() => {
+            onDelete(transaction)
+            onClose()
+          }}
+        />
+      )}
+    </>
+  )
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-h-12 items-center justify-between gap-3">
+      <dt className="shrink-0 text-sm text-muted">{label}</dt>
+      <dd className="min-w-0 truncate text-right text-[0.9375rem] text-ink">{value}</dd>
+    </div>
   )
 }

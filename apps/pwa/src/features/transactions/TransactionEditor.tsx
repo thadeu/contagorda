@@ -100,6 +100,7 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
     >
       <TransactionForm
         id={FORM_ID}
+        authorId={transaction.created_by_id}
         initial={{
           kind: transaction.kind,
           amount: centsToInput(transaction.amount_cents),

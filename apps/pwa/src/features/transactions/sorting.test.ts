@@ -13,6 +13,7 @@ function row(partial: Partial<Transaction>): Transaction {
     description: '',
     paid_at: null,
     recurring_series_id: null,
+    created_by_id: null,
     ...partial,
   }
 }

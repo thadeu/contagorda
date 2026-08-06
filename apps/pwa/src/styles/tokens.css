@@ -334,22 +334,6 @@ html[data-canvas='dusk'] .app-surface {
 html[data-overlay-open='true'],
 html[data-overlay-open='true'] body {
   background-color: color-mix(in srgb, black var(--overlay-scrim), var(--color-canvas));
-
-  /*
-   * The document itself, held still while an overlay is up.
-   *
-   * The page is one safe-area inset taller than the viewport — that extra height
-   * is what removes the band — so the document can always scroll by that much.
-   * A scroller inside a modal hands its leftover movement to it on iOS, and it
-   * does so during the momentum phase, after the finger has gone: there is no
-   * `touchmove` left to cancel, which is why guarding the gesture was not
-   * enough.
-   *
-   * Held only while an overlay is open, never permanently. Permanently is what
-   * brought the band back, and it cannot appear here: something is covering the
-   * screen for as long as this applies.
-   */
-  overflow: hidden;
 }
 
 html[data-overlay-open='true'] .app-scroll {

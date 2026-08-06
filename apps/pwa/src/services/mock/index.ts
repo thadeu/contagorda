@@ -137,6 +137,10 @@ export function createMockServices(): Services {
       invites: (ledgerId) => delay(ledgerData[ledgerId]?.invites ?? []),
 
       createInvite: (ledgerId) => {
+        // Stand-in only. The real token is minted by the server from a
+        // cryptographic source and stored as a digest — see
+        // docs/decisions/0002-server-minted-secrets.md. A client has no business
+        // choosing a value that lets someone into a ledger.
         const created: LedgerInvite = {
           id: uuid(),
           token: uuid(),

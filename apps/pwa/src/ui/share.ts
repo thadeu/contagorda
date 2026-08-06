@@ -12,6 +12,9 @@ export type ShareResult = 'shared' | 'copied' | 'dismissed' | 'failed'
  * their mind rather than a failure, and is reported as such — the difference
  * matters because one deserves an error message and the other deserves silence.
  *
+ * Both of the modern calls are secure-context only, so on a plain-http origin
+ * neither is defined and the whole thing falls through to `execCommand`.
+ *
  * Must be called straight from a tap: browsers refuse a share that is not tied
  * to a gesture, and an await before it can be enough to lose that.
  */
@@ -28,11 +31,48 @@ export async function shareOrCopy(url: string, title: string): Promise<ShareResu
     }
   }
 
-  try {
-    await navigator.clipboard.writeText(url)
+  if (navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(url)
 
-    return 'copied'
+      return 'copied'
+    } catch {
+      // Falls through to the old way rather than giving up here.
+    }
+  }
+
+  return legacyCopy(url) ? 'copied' : 'failed'
+}
+
+/**
+ * The copy that works without a secure context.
+ *
+ * Both `navigator.share` and `navigator.clipboard` are gated behind https, so on
+ * a phone opening the dev server over plain http neither exists and the modern
+ * path cannot run at all. `execCommand` is deprecated and still the only thing
+ * that answers there — and a link nobody can copy is a sharing feature that does
+ * not share.
+ *
+ * The textarea is off-screen rather than hidden: a `display: none` element
+ * cannot be selected, so it copies nothing and reports success.
+ */
+function legacyCopy(text: string): boolean {
+  const field = document.createElement('textarea')
+
+  field.value = text
+  field.setAttribute('readonly', '')
+  field.style.position = 'fixed'
+  field.style.top = '-1000px'
+  document.body.appendChild(field)
+
+  try {
+    field.select()
+    field.setSelectionRange(0, text.length)
+
+    return document.execCommand('copy')
   } catch {
-    return 'failed'
+    return false
+  } finally {
+    field.remove()
   }
 }

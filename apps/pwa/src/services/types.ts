@@ -21,6 +21,12 @@ export interface Ledger {
   name: string
   /** How many people can see it. Drives whether the app mentions ledgers at all. */
   member_count: number
+  /**
+   * The viewer's own role here, not the ledger's. The same ledger is owned by
+   * one person and joined by another, so this differs per reader — which is why
+   * it is answered by the API rather than derived on the client.
+   */
+  role: 'owner' | 'member'
 }
 
 export interface LedgerMember {

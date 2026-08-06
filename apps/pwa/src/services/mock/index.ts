@@ -56,7 +56,9 @@ const you: LedgerMember = {
   role: 'owner',
 }
 
-let ledgerList: Ledger[] = [{ id: SEED_LEDGER, name: 'Nossa casa', member_count: 1 }]
+let ledgerList: Ledger[] = [
+  { id: SEED_LEDGER, name: 'Nossa casa', member_count: 1, role: 'owner' },
+]
 
 let ledgerData: Record<string, LedgerData> = {
   [SEED_LEDGER]: {
@@ -125,7 +127,7 @@ export function createMockServices(): Services {
       list: () => delay(ledgerList),
 
       create: (name) => {
-        const created: Ledger = { id: uuid(), name: name.trim(), member_count: 1 }
+        const created: Ledger = { id: uuid(), name: name.trim(), member_count: 1, role: 'owner' }
 
         ledgerList = [...ledgerList, created]
         ledgerData = { ...ledgerData, [created.id]: emptyLedger() }

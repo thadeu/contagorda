@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useActiveLedger } from '../../../app/ledger/activeLedgerContext'
+import { canInvite } from '../canInvite'
 import { inviteUrl, useCreateInvite, useInvites, useMembers, useRevokeInvite } from '../hooks'
 import { Button } from '../../../ui/Button'
 import { shareOrCopy, type ShareResult } from '../../../ui/share'
@@ -12,9 +13,14 @@ import type { LedgerInvite } from '../../../services/types'
  * The switcher only appears once there is a choice to make. A person using this
  * alone should never meet the concept: one ledger, no list, nothing to pick.
  * Sharing is what introduces it, and by then the word means something.
+ *
+ * Inviting is the owner's alone, so a member is not shown the control. That is
+ * politeness rather than protection — the rule that matters lives where the
+ * invite is minted, and the day this is a real API a member who wants to invite
+ * someone will not be asking this screen for permission.
  */
 export function LedgerSection() {
-  const { ledgers, ledgerId, switchTo } = useActiveLedger()
+  const { ledgers, ledgerId, current, switchTo } = useActiveLedger()
   const members = useMembers(ledgerId)
   const invites = useInvites(ledgerId)
   const create = useCreateInvite(ledgerId)
@@ -66,7 +72,7 @@ export function LedgerSection() {
         </p>
       )}
 
-      {live.length === 0 ? (
+      {canInvite(current) && live.length === 0 && (
         <Button
           type="button"
           variant="ghost"
@@ -76,7 +82,9 @@ export function LedgerSection() {
         >
           {create.isPending ? 'Criando convite…' : 'Convidar alguém'}
         </Button>
-      ) : (
+      )}
+
+      {canInvite(current) &&
         live.map((invite) => (
           <div key={invite.id} className="grid gap-2 rounded-control bg-sunken px-4 py-3">
             <p className="text-xs text-muted">
@@ -100,8 +108,7 @@ export function LedgerSection() {
               </Button>
             </div>
           </div>
-        ))
-      )}
+        ))}
     </div>
   )
 }

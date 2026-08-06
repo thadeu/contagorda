@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { scrollAllowedFrom } from './useTouchScrollGuard'
+import { isDrag, scrollAllowedFrom } from './useTouchScrollGuard'
 
 /**
  * jsdom gives every element a size of zero, so both measurements are set
@@ -38,5 +38,18 @@ describe('scrollAllowedFrom', () => {
 
   it('blocks before the scroller exists', () => {
     expect(scrollAllowedFrom(document.createElement('p'), null)).toBe(false)
+  })
+})
+
+describe('isDrag', () => {
+  it('treats the wobble of a tap as a tap', () => {
+    expect(isDrag(0)).toBe(false)
+    expect(isDrag(3)).toBe(false)
+    expect(isDrag(-6)).toBe(false)
+  })
+
+  it('treats a real pull as a drag, in either direction', () => {
+    expect(isDrag(40)).toBe(true)
+    expect(isDrag(-40)).toBe(true)
   })
 })

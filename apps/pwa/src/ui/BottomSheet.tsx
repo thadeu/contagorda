@@ -18,6 +18,8 @@ interface BottomSheetProps {
    * content, and the gesture teaches nothing because nothing changes.
    */
   expandable?: boolean
+  /** Controls that belong to the sheet itself, on the title's line. */
+  actions?: ReactNode
   children: ReactNode
 }
 
@@ -46,6 +48,7 @@ export function BottomSheet({
   subtitle,
   onClose,
   expandable = false,
+  actions,
   children,
 }: BottomSheetProps) {
   const panel = useRef<HTMLDivElement>(null)
@@ -153,8 +156,14 @@ export function BottomSheet({
             <span className="h-1 w-10 rounded-full bg-ink/30" />
           </div>
 
-          <p className="truncate text-base font-semibold text-ink">{title}</p>
-          {subtitle && <p className="truncate pt-0.5 text-sm text-muted">{subtitle}</p>}
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold text-ink">{title}</p>
+              {subtitle && <p className="truncate pt-0.5 text-sm text-muted">{subtitle}</p>}
+            </div>
+
+            {actions && <div className="flex shrink-0 items-center gap-1.5">{actions}</div>}
+          </div>
         </header>
 
         <div ref={content} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">

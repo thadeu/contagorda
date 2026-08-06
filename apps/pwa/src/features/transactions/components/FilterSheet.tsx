@@ -1,5 +1,6 @@
 import { BottomSheet } from '../../../ui/BottomSheet'
-import { CheckIcon } from '../../../ui/icons'
+import { NavButton } from '../../../ui/NavBar'
+import { CheckIcon, ClearIcon } from '../../../ui/icons'
 import { SORTS, type Sort } from '../sorting'
 import type { Status } from '../useStatusFilter'
 
@@ -24,7 +25,14 @@ const STATUSES: { value: Status; label: string }[] = [
  * to put sorting without taking another strip.
  *
  * It stays open after a choice. Sorting is usually adjusted twice in a row, and
- * a sheet that closes on the first tap makes the second one a round trip.
+ * a sheet that closes on the first tap makes the second one a round trip — so
+ * the tick in the header closes rather than applies. Every choice is already
+ * live behind the sheet; there is nothing left to commit, and a button that
+ * pretended otherwise would invite someone to wonder what happens if they close
+ * without it.
+ *
+ * Clearing goes back to the defaults and greys out when it is already there,
+ * which is the only honest way to say a reset would do nothing.
  */
 export function FilterSheet({
   status,
@@ -33,8 +41,28 @@ export function FilterSheet({
   onSortChange,
   onClose,
 }: FilterSheetProps) {
+  const untouched = status === 'pending' && sort === 'date'
+
   return (
-    <BottomSheet title="Filtros" onClose={onClose}>
+    <BottomSheet
+      title="Filtros"
+      onClose={onClose}
+      actions={
+        <>
+          <NavButton
+            icon={ClearIcon}
+            label="Limpar filtros"
+            disabled={untouched}
+            onClick={() => {
+              onStatusChange('pending')
+              onSortChange('date')
+            }}
+          />
+
+          <NavButton primary icon={CheckIcon} label="Aplicar" onClick={onClose} />
+        </>
+      }
+    >
       <Group label="Situação">
         {STATUSES.map((option) => (
           <Choice
@@ -63,7 +91,7 @@ export function FilterSheet({
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="pb-2">
-      <p className="px-4 pt-2 pb-1 text-[0.6875rem] font-medium tracking-[0.08em] text-faint uppercase">
+      <p className="px-3 pt-2 pb-1 text-[0.6875rem] font-medium tracking-[0.08em] text-faint uppercase">
         {label}
       </p>
 
@@ -86,7 +114,7 @@ function Choice({
       type="button"
       onClick={onClick}
       aria-pressed={chosen}
-      className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left"
+      className="flex min-h-12 w-full items-center justify-between gap-3 px-3 text-left"
     >
       <span className="text-[0.9375rem] text-ink">{label}</span>
 

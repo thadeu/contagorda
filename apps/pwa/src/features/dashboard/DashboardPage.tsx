@@ -1,17 +1,24 @@
+
+import { useState } from 'react'
 import { useMonth } from '../../app/useMonth'
 import { useGreeting } from '../../app/useGreeting'
 import { useTransactions } from '../transactions/hooks'
 import { MonthList } from '../transactions/MonthList'
 import { MonthStack } from './components/MonthStack'
-import { ProfileButton } from './components/ProfileButton'
-import { AccountsButton } from './components/AccountsButton'
+import { ProfileSheet } from './components/ProfileButton'
 import { Card } from '../../ui/Card'
+import { IdentityRow } from './components/IdentityRow'
+import { SpendingCard } from './components/SpendingCard'
+import { TotalBalance } from './components/TotalBalance'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 import { useActiveLedger } from '../../app/ledger/activeLedgerContext'
+import { AccountsSheet } from '../accounts/AccountsSheet'
 
 export function DashboardPage() {
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [accountsOpen, setAccountsOpen] = useState(false)
   const { month, setMonth } = useMonth()
-  const { salutation, firstName, avatarUrl, email } = useGreeting()
+  const { firstName, avatarUrl, email } = useGreeting()
   const transactions = useTransactions(month)
 
   const { current, shared } = useActiveLedger()
@@ -26,29 +33,29 @@ export function DashboardPage() {
   const paidCents = sum(paid)
 
   return (
-    <>
-      <header className="flex items-start justify-between gap-4 px-5 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-5">
-        <div className="min-w-0">
-          {shared && current && (
-            <p className="truncate pb-0.5 text-xs font-medium tracking-wide text-ink/60 uppercase">
-              {current.name}
-            </p>
-          )}
-          <h1 className="text-[1.625rem] leading-[1.15] font-bold tracking-[-0.02em] text-ink">
-            {salutation}
-          </h1>
-          {firstName && (
-            <p className="truncate pt-0.5 text-base leading-tight font-medium text-ink/70">
-              {firstName}
-            </p>
-          )}
-        </div>
+    <div className="pb-10">
+      <IdentityRow
+        name={firstName}
+        avatarUrl={avatarUrl}
+        onOpenProfile={() => setProfileOpen(true)}
+        onOpenAccounts={() => setAccountsOpen(true)}
+      />
 
-        <div className="flex shrink-0 items-center gap-2">
-          <AccountsButton />
-          <ProfileButton name={firstName} email={email} avatarUrl={avatarUrl} />
-        </div>
-      </header>
+      {profileOpen && (
+        <ProfileSheet
+          name={firstName || 'Sua conta'}
+          email={email}
+          onClose={() => setProfileOpen(false)}
+        />
+      )}
+
+      {accountsOpen && <AccountsSheet onClose={() => setAccountsOpen(false)} />}
+
+      {shared && current && (
+        <p className="truncate px-5 pb-2 text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
+          {current.name}
+        </p>
+      )}
 
       <div className="px-4">
         <MonthStack
@@ -58,6 +65,11 @@ export function DashboardPage() {
           paidCents={paidCents}
           totalCents={totalCents}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 px-4 pt-3">
+        <SpendingCard month={month} />
+        <TotalBalance month={month} />
       </div>
 
       <div className="px-4 pt-3">
@@ -73,7 +85,7 @@ export function DashboardPage() {
       </div>
 
       <MonthList month={month} />
-    </>
+    </div>
   )
 }
 

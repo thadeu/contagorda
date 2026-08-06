@@ -7,6 +7,8 @@ import { DayGroupSection } from './components/DayGroupSection'
 import { StatusTabs } from './components/StatusTabs'
 import { TransactionSheet } from './components/TransactionSheet'
 import { EmptyState } from '../../ui/EmptyState'
+import { NavButton } from '../../ui/NavBar'
+import { PlusIcon } from '../../ui/icons'
 import { Button } from '../../ui/Button'
 import { UndoBar } from '../../ui/UndoBar'
 import { useTransactionEditor } from './transactionEditorContext'
@@ -51,8 +53,14 @@ export function MonthList({ month }: MonthListProps) {
 
   return (
     <>
-      <div className="px-4 pt-4">
-        <StatusTabs status={status} onChange={setStatus} pendingCount={pending.length} />
+      <div className="flex items-center gap-2 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <StatusTabs status={status} onChange={setStatus} pendingCount={pending.length} />
+        </div>
+
+        <div className="flex shrink-0 rounded-full bg-sunken p-1">
+          <NavButton circle primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
+        </div>
       </div>
 
       <div className="px-4">
@@ -78,14 +86,18 @@ export function MonthList({ month }: MonthListProps) {
           <EmptyState title="Nada pago neste mês" hint="O que você marcar como pago aparece aqui." />
         )}
 
-        {groups.map((group) => (
-          <DayGroupSection
-            key={group.date}
-            group={group}
-            categories={categoryMap}
-            onOpen={setSheet}
-          />
-        ))}
+        {groups.length > 0 && (
+          <div className="rounded-card bg-surface px-4 pt-1 pb-4">
+            {groups.map((group) => (
+              <DayGroupSection
+                key={group.date}
+                group={group}
+                categories={categoryMap}
+                onOpen={setSheet}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {sheet && (

@@ -168,7 +168,7 @@ export function TransactionForm({
         </p>
       )}
 
-      <div className="sticky bottom-0 -mx-4 mt-1 border-t border-line bg-surface px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+      <div className="sticky bottom-0 -mx-4 mt-1 border-t border-line bg-overlay px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? 'Salvando…' : submitLabel}
         </Button>

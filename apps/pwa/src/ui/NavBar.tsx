@@ -47,22 +47,47 @@ interface NavButtonProps {
   onClick: () => void
   /** The one action the screen is for. There is at most one per bar. */
   primary?: boolean
+  /** Round only where it sits inside a pill and has to match it. */
+  circle?: boolean
+  disabled?: boolean
 }
 
 /**
- * A circle the size of a fingertip.
+ * A squircle the size of a fingertip — the rounded square the platform moved to,
+ * which reads as a control rather than as a badge. It stays a circle only where
+ * it sits inside a pill and has to match its curve.
  *
- * The primary one carries the dark surface so the eye finds it without reading;
- * everything else is quiet. Two filled circles in one bar would cancel that out.
+ * The primary one carries the accent, which is the one colour that holds its
+ * contrast whichever way the theme goes. It used to be the near-black, and that
+ * only ever worked against a light page — on a dark one it was a black circle on
+ * a black background, which is how the add button went missing.
+ *
+ * The ring and the glow are the same accent at low opacity, so the button reads
+ * as lit from within rather than outlined. A border in a second colour would be
+ * a new decision to justify; this one is the fill, spread.
+ *
+ * Everything else is quiet. Two filled circles in one bar would cancel that out.
  */
-export function NavButton({ icon: Icon, label, onClick, primary = false }: NavButtonProps) {
+export function NavButton({
+  icon: Icon,
+  label,
+  onClick,
+  primary = false,
+  circle = false,
+  disabled = false,
+}: NavButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
-      className={`grid size-9 shrink-0 place-items-center rounded-full ${
-        primary ? 'bg-brand text-white' : 'bg-sunken text-ink'
+      className={`grid shrink-0 place-items-center disabled:opacity-30 ${
+        circle ? 'size-9 rounded-full' : 'size-10 rounded-2xl'
+      } ${
+        primary
+          ? 'bg-accent text-brand ring-2 ring-accent/35 shadow-[0_3px_14px_-3px_var(--color-accent)]'
+          : 'bg-sunken text-ink'
       }`}
     >
       <Icon className="size-4" strokeWidth={2} aria-hidden="true" />

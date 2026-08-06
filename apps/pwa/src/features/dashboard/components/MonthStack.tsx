@@ -38,7 +38,7 @@ export function MonthStack({
 
   return (
     <section>
-      <div className="flex items-center justify-between rounded-card bg-brand px-4 pt-3.5 pb-12">
+      <div className="flex items-center justify-between rounded-card bg-inverse px-4 pt-3.5 pb-12">
         <MonthPicker month={month} onChange={onMonthChange} />
 
         <button
@@ -89,6 +89,12 @@ export function MonthStack({
  * The spent part is solid, the rest is hatched. Stripes read as "not yet" in a
  * way a flat grey does not — it looks like space still to be filled instead of
  * a track that happens to be empty.
+ *
+ * Both halves are drawn from the ink rather than from a fixed colour. The fill
+ * was the near-black that reads on a white card and disappears on a dark one,
+ * and the hatch was a hardcoded dark rgba with the same problem. Taking both
+ * from `--color-ink` means each theme gets the contrast it needs from the same
+ * line of code: near-black stripes on a light card, near-white on a dark one.
  */
 function ProgressTrack({ value }: { value: number }) {
   return (
@@ -101,10 +107,10 @@ function ProgressTrack({ value }: { value: number }) {
       aria-label="Parte do mês já paga"
       style={{
         backgroundImage:
-          'repeating-linear-gradient(115deg, transparent 0 5px, rgba(13,20,16,0.07) 5px 10px)',
+          'repeating-linear-gradient(115deg, transparent 0 5px, color-mix(in srgb, var(--color-ink) 12%, transparent) 5px 10px)',
       }}
     >
-      <div className="h-full rounded-full bg-brand" style={{ width: `${value * 100}%` }} />
+      <div className="h-full rounded-full bg-ink" style={{ width: `${value * 100}%` }} />
     </div>
   )
 }

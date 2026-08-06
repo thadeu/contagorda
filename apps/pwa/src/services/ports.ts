@@ -6,6 +6,7 @@ import type {
   LedgerInvite,
   LedgerMember,
   MonthSummary,
+  MonthTotal,
   NewTransaction,
   Transaction,
 } from './types'
@@ -38,6 +39,20 @@ export interface TransactionsPort {
    * ones that lead nowhere.
    */
   months(): Promise<string[]>
+  /**
+   * Every month that holds anything, with its totals, oldest first.
+   *
+   * Chart-shaped on purpose: the history view draws one bar per month and needs
+   * nothing else, so this is the whole payload rather than a list of ids to
+   * follow. It stays cheap as the history grows because the size is months, not
+   * transactions.
+   *
+   * The category narrows the aggregate rather than the result. Filtering a
+   * finished total on the client is not possible — the breakdown is gone by
+   * then — and fetching every transaction to keep it would give up the one
+   * property this call has.
+   */
+  monthlyTotals(categoryId?: string | null): Promise<MonthTotal[]>
   create(input: NewTransaction): Promise<Transaction>
   update(id: string, input: Partial<NewTransaction>): Promise<Transaction>
   remove(id: string): Promise<void>
@@ -95,6 +110,12 @@ export interface LedgersPort {
    */
   createInvite(ledgerId: string): Promise<LedgerInvite>
   revokeInvite(id: string): Promise<void>
+  /**
+   * Takes someone's access away. The owner cannot be removed, and neither can
+   * you remove yourself here — leaving is a different act with a different
+   * confirmation, and conflating them is how a ledger ends up with nobody in it.
+   */
+  removeMember(ledgerId: string, memberId: string): Promise<void>
   acceptInvite(token: string): Promise<Ledger>
 }
 

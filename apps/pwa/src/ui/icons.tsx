@@ -13,6 +13,9 @@ import {
   RefreshCw,
   RotateCcw,
   Trash2,
+  MoreHorizontal,
+  Search,
+  Bell,
   Wallet,
   X,
   type LucideProps,
@@ -54,3 +57,6 @@ export const EditIcon = tuned(Pencil)
 export const DeleteIcon = tuned(Trash2)
 export const SignOutIcon = tuned(LogOut)
 export const CloseIcon = tuned(X)
+export const SearchIcon = tuned(Search)
+export const BellIcon = tuned(Bell)
+export const MoreIcon = tuned(MoreHorizontal)

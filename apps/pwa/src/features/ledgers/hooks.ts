@@ -36,6 +36,18 @@ export function useRevokeInvite(ledgerId: string | null) {
   })
 }
 
+export function useRemoveMember(ledgerId: string | null) {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: (memberId: string) => services.ledgers.removeMember(ledgerId!, memberId),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ledgerKeys.members(ledgerId ?? '') })
+      void client.invalidateQueries({ queryKey: ledgerKeys.list })
+    },
+  })
+}
+
 export function useAcceptInvite() {
   const client = useQueryClient()
 

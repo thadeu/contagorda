@@ -1,23 +1,33 @@
 import { useState } from 'react'
 import { useActiveLedger } from '../../../app/ledger/activeLedgerContext'
 import { canInvite } from '../canInvite'
-import { inviteUrl, useCreateInvite, useInvites, useMembers, useRevokeInvite } from '../hooks'
-import { Button } from '../../../ui/Button'
+import {
+  inviteUrl,
+  useCreateInvite,
+  useInvites,
+  useMembers,
+  useRemoveMember,
+  useRevokeInvite,
+} from '../hooks'
+import { ConfirmSheet } from '../../../ui/ConfirmSheet'
 import { shareOrCopy, type ShareResult } from '../../../ui/share'
-import { CheckIcon } from '../../../ui/icons'
-import type { LedgerInvite } from '../../../services/types'
+import { CheckIcon, PlusIcon } from '../../../ui/icons'
+import type { LedgerInvite, LedgerMember } from '../../../services/types'
 
 /**
- * Choosing a ledger, and letting someone else into it.
+ * Who is in this space, and how someone else gets in.
+ *
+ * A list rather than a panel of buttons. Everything here is a person or an
+ * invitation — one row each, its single action on the right — so reading it
+ * answers "who can see my money" before anything is tapped.
  *
  * The switcher only appears once there is a choice to make. A person using this
  * alone should never meet the concept: one ledger, no list, nothing to pick.
- * Sharing is what introduces it, and by then the word means something.
  *
- * Inviting is the owner's alone, so a member is not shown the control. That is
- * politeness rather than protection — the rule that matters lives where the
- * invite is minted, and the day this is a real API a member who wants to invite
- * someone will not be asking this screen for permission.
+ * Inviting and removing are the owner's alone, so a member is shown neither.
+ * That is politeness rather than protection — the rules that matter live where
+ * the invite is minted and where access is checked, and a member who wants
+ * either will not be asking this screen for permission.
  */
 export function LedgerSection() {
   const { ledgers, ledgerId, current, switchTo } = useActiveLedger()
@@ -25,11 +35,14 @@ export function LedgerSection() {
   const invites = useInvites(ledgerId)
   const create = useCreateInvite(ledgerId)
   const revoke = useRevokeInvite(ledgerId)
+  const remove = useRemoveMember(ledgerId)
 
   const [sent, setSent] = useState<ShareResult | null>(null)
+  const [removing, setRemoving] = useState<LedgerMember | null>(null)
 
   const live = (invites.data ?? []).filter(usable)
   const people = members.data ?? []
+  const owner = canInvite(current)
 
   async function share(token: string) {
     setSent(
@@ -42,99 +55,115 @@ export function LedgerSection() {
   }
 
   return (
-    <div className="grid gap-2">
-      {ledgers.length > 1 && (
-        <ul className="grid gap-1">
-          {ledgers.map((ledger) => (
-            <li key={ledger.id}>
-              <button
-                type="button"
-                onClick={() => switchTo(ledger.id)}
-                className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-control px-4 text-left text-[0.9375rem] ${
-                  ledger.id === ledgerId ? 'bg-brand text-white' : 'bg-sunken text-ink'
-                }`}
-              >
-                <span className="min-w-0">
-                  <span className="block truncate font-medium">{ledger.name}</span>
-                  <span
-                    className={`block text-xs ${
-                      ledger.id === ledgerId ? 'text-white/60' : 'text-muted'
-                    }`}
-                  >
-                    {ledger.member_count === 1 ? 'só você' : `${ledger.member_count} pessoas`}
-                  </span>
-                </span>
+    <section className="grid">
+      {ledgers.length > 1 &&
+        ledgers.map((ledger) => (
+          <Row key={ledger.id} onClick={() => switchTo(ledger.id)}>
+            <span className="min-w-0">
+              <span className="block truncate text-[0.9375rem] font-medium text-ink">
+                {ledger.name}
+              </span>
+              <span className="block text-xs text-muted">
+                {ledger.member_count === 1 ? 'só você' : `${ledger.member_count} pessoas`}
+              </span>
+            </span>
 
-                {ledger.id === ledgerId && <CheckIcon className="size-4 shrink-0" />}
+            {ledger.id === ledgerId && <CheckIcon className="size-4 shrink-0 text-accent" />}
+          </Row>
+        ))}
+
+      {people.map((person) => (
+        <div key={person.id} className="flex min-h-12 items-center gap-3 px-4 py-2">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[0.9375rem] text-ink">{person.name}</span>
+            <span className="block truncate text-xs text-muted">
+              {person.role === 'owner' ? 'dono' : person.email}
+            </span>
+          </span>
+
+          {owner && person.role !== 'owner' && (
+            <button
+              type="button"
+              onClick={() => setRemoving(person)}
+              className="shrink-0 text-sm font-semibold text-out"
+            >
+              Remover
+            </button>
+          )}
+        </div>
+      ))}
+
+      {live.map((invite) => (
+        <div key={invite.id} className="flex min-h-12 items-center gap-3 px-4 py-2">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[0.9375rem] text-ink">Convite pendente</span>
+            <span className="block truncate text-xs text-muted">
+              Vale até {new Date(invite.expires_at).toLocaleDateString('pt-BR')} ·{' '}
+              <button type="button" onClick={() => share(invite.token)} className="text-accent">
+                {label(sent)}
               </button>
-            </li>
-          ))}
-        </ul>
-      )}
+            </span>
+          </span>
 
-      {people.length > 1 && (
-        <p className="px-1 text-xs text-muted">
-          Neste espaço: {people.map((person) => person.name).join(', ')}
-        </p>
-      )}
+          <button
+            type="button"
+            onClick={() => revoke.mutate(invite.id)}
+            disabled={revoke.isPending}
+            className="shrink-0 text-sm font-semibold text-out"
+          >
+            Revogar
+          </button>
+        </div>
+      ))}
 
       {create.isError && (
-        <p role="alert" className="px-1 text-xs text-out">
+        <p role="alert" className="px-4 py-1 text-xs text-out">
           Não deu para criar o convite. Tente de novo.
         </p>
       )}
 
-      {canInvite(current) && live.length === 0 && (
-        <Button
-          type="button"
-          variant="ghost"
-          className="w-full"
-          disabled={create.isPending}
-          onClick={() => create.mutate()}
-        >
-          {create.isPending ? 'Criando convite…' : 'Convidar alguém'}
-        </Button>
+      {owner && live.length === 0 && (
+        <Row onClick={() => create.mutate()}>
+          <span className="text-[0.9375rem] text-ink">
+            {create.isPending ? 'Criando convite…' : 'Convidar alguém'}
+          </span>
+          <PlusIcon className="size-4 shrink-0 text-muted" />
+        </Row>
       )}
 
-      {canInvite(current) &&
-        live.map((invite) => (
-          <div key={invite.id} className="grid gap-2 rounded-control bg-sunken px-4 py-3">
-            <p className="text-xs text-muted">
-              Convite válido até {new Date(invite.expires_at).toLocaleDateString('pt-BR')}. Quem
-              abrir o link e entrar passa a ver este espaço.
-            </p>
-
-            <p className="truncate text-xs text-faint">{inviteUrl(invite.token)}</p>
-
-            <div className="flex gap-2">
-              <Button type="button" className="flex-1" onClick={() => share(invite.token)}>
-                {label(sent)}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={revoke.isPending}
-                onClick={() => revoke.mutate(invite.id)}
-              >
-                Revogar
-              </Button>
-            </div>
-          </div>
-        ))}
-    </div>
+      {removing && (
+        <ConfirmSheet
+          danger
+          title={`Remover ${removing.name}?`}
+          message="Ela perde o acesso a este espaço. Os lançamentos que criou continuam aqui — o histórico é do espaço, não de quem digitou."
+          confirmLabel="Remover"
+          pending={remove.isPending}
+          onClose={() => setRemoving(null)}
+          onConfirm={() => remove.mutate(removing.id, { onSuccess: () => setRemoving(null) })}
+        />
+      )}
+    </section>
   )
 }
 
-/**
- * The button says what happened, because the two outcomes look nothing alike.
- * A native sheet is its own confirmation; a silent clipboard write is not.
- */
+function Row({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-2 text-left"
+    >
+      {children}
+    </button>
+  )
+}
+
 function label(sent: ShareResult | null): string {
-  if (sent === 'copied') return 'Link copiado'
+  if (sent === 'copied') return 'link copiado'
 
-  if (sent === 'failed') return 'Não deu para compartilhar'
+  if (sent === 'failed') return 'não deu para compartilhar'
 
-  return 'Compartilhar convite'
+  return 'compartilhar'
 }
 
 function usable(invite: LedgerInvite): boolean {

@@ -6,6 +6,7 @@ import type {
   LedgerInvite,
   LedgerMember,
   MonthSummary,
+  MonthTotal,
   NewTransaction,
   Transaction,
 } from '../types'
@@ -175,6 +176,23 @@ export function createMockServices(): Services {
         return delay(undefined)
       },
 
+      removeMember: (ledgerId, memberId) => {
+        const target = ledgerData[ledgerId]
+
+        if (target) {
+          const members = target.members.filter(
+            (member) => member.id !== memberId || member.role === 'owner',
+          )
+
+          ledgerData = { ...ledgerData, [ledgerId]: { ...target, members } }
+          ledgerList = ledgerList.map((ledger) =>
+            ledger.id === ledgerId ? { ...ledger, member_count: members.length } : ledger,
+          )
+        }
+
+        return delay(undefined)
+      },
+
       acceptInvite: (token) => {
         const entry = Object.entries(ledgerData).find(([, value]) =>
           value.invites.some((invite) => usable(invite) && invite.token === token),
@@ -286,6 +304,29 @@ export function createMockServices(): Services {
             b.localeCompare(a),
           ),
         ),
+
+      monthlyTotals: (categoryId): Promise<MonthTotal[]> => {
+        const byMonth = new Map<string, MonthTotal>()
+        const rows =
+          categoryId == null
+            ? data().transactions
+            : data().transactions.filter((t) => (t.category_id ?? 'none') === categoryId)
+
+        for (const row of rows) {
+          const key = monthKey(row.date)
+          const entry = byMonth.get(key) ?? { month: key, expense_cents: 0, income_cents: 0 }
+
+          if (row.kind === 'expense') {
+            entry.expense_cents += row.amount_cents
+          } else {
+            entry.income_cents += row.amount_cents
+          }
+
+          byMonth.set(key, entry)
+        }
+
+        return delay([...byMonth.values()].sort((a, b) => a.month.localeCompare(b.month)))
+      },
 
       summary: (month): Promise<MonthSummary> => {
         const rows = data().transactions.filter(inMonth(month))

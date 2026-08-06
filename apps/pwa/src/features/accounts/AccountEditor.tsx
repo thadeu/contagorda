@@ -3,6 +3,7 @@ import { useMonth } from '../../app/useMonth'
 import { monthLabel } from '../../lib/dates'
 import { Button } from '../../ui/Button'
 import { Modal } from '../../ui/Modal'
+import { ConfirmSheet } from '../../ui/ConfirmSheet'
 import { centsToInput } from '../transactions/formValues'
 import { AccountForm } from './components/AccountForm'
 import { AccountEditorContext, type AccountEditor } from './accountEditorContext'
@@ -70,6 +71,7 @@ function NewAccountModal({ onClose }: { onClose: () => void }) {
 }
 
 function EditAccountModal({ id, onClose }: { id: string; onClose: () => void }) {
+  const [archiving, setArchiving] = useState(false)
   const { month } = useMonth()
   const account = useAccount(id)
   const opening = useOpeningBalances(month)
@@ -103,28 +105,36 @@ function EditAccountModal({ id, onClose }: { id: string; onClose: () => void }) 
           )
         }}
         footer={
-          <div className="pt-4">
+          <div className="mt-6 rounded-card bg-surface p-4">
+            <p className="text-xs leading-relaxed text-muted">
+              Arquivar tira a conta das listas e dos formulários. Os lançamentos dela continuam no
+              histórico, com a conta onde aconteceram.
+            </p>
+
             <Button
               type="button"
               variant="danger"
-              className="w-full"
+              className="mt-3 w-full"
               disabled={archive.isPending}
-              onClick={() => {
-                if (!confirm(`Arquivar "${account.name}"? Os lançamentos dela continuam no histórico.`)) {
-                  return
-                }
-
-                archive.mutate(id, { onSuccess: onClose })
-              }}
+              onClick={() => setArchiving(true)}
             >
               Arquivar conta
             </Button>
-            <p className="pt-2 text-center text-xs text-faint">
-              Arquivar tira a conta das listas e mantém o histórico.
-            </p>
           </div>
         }
       />
+
+      {archiving && (
+        <ConfirmSheet
+          danger
+          title={`Arquivar ${account.name}?`}
+          message="Ela sai das listas e dos formulários. Os lançamentos dela continuam no histórico, com a conta onde aconteceram."
+          confirmLabel="Arquivar"
+          pending={archive.isPending}
+          onClose={() => setArchiving(false)}
+          onConfirm={() => archive.mutate(id, { onSuccess: onClose })}
+        />
+      )}
     </Modal>
   )
 }

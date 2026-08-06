@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-type Canvas = 'brand' | 'sky' | 'dusk'
+type Canvas = 'brand' | 'sky' | 'dusk' | 'deep'
 
 /**
  * Paints the document behind a full-screen surface.

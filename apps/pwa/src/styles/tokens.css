@@ -46,6 +46,25 @@
   --color-faint: #98a4b5;
   --color-line: #e2e7ed;
 
+  /* The strong surface that carries white text, whichever theme is on. Light
+     mode spends the near-black here; dark mode cannot, because there the page
+     is already near-black and the card would disappear into it. */
+  --color-inverse: #0a0f1a;
+
+  /* The surface of anything presented over the app. It is its own token because
+     a sheet and a card are not the same thing wearing the same colour: the card
+     belongs to the page, the sheet is on top of it, and telling them apart is
+     what makes the sheet read as a layer instead of a taller card. */
+  --color-overlay: #ffffff;
+
+  /* Below the canvas. For a screen whose subject is a panel: the page drops so
+     the panel can rise without being lightened past the cards elsewhere. */
+  --color-deep: #e7ebf1;
+
+  /* How far the page is dimmed behind an overlay. Black, always — a scrim means
+     less light, not the app's dark colour, so it must not follow the ink. */
+  --overlay-scrim: 45%;
+
   --color-in: #0e7c57;
   --color-out: #d4443c;
 
@@ -59,7 +78,7 @@
   --radius-chip: 0.625rem;
 
   --bg-appshell: transparent;
-  --h-status-bar: env(safe-area-inset-top);
+  --h-status-bar: env(safe-area-inset-top, 22px);
 }
 
 @layer base {
@@ -138,11 +157,27 @@
     display: none;
   }
 
-  /* The sheet settling after a drag. While the finger is down the panel is
-     wherever the touch put it and must not lag behind it, so the transition is
-     off during the gesture and only the release travels. */
+  /* The sheet's whole motion language: arriving, and settling after a drag.
+     While the finger is down the panel is wherever the touch put it and must not
+     lag behind it, so the transition is off during the gesture and only the
+     release travels.
+
+     The curve is the platform's own for sheets — quick to leave, slow to arrive,
+     with no bounce. Linear reads as machinery and `ease` reads as a web page;
+     this is what makes a panel feel like it was pushed rather than assigned a
+     new position. Transform and opacity are composited, so the slide costs
+     nothing on the main thread; height is here for the docked sheet's detents,
+     which are short and infrequent enough to afford it. */
   .sheet-snap {
-    transition: transform 0.2s ease !important;
+    transition:
+      transform 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+      height 0.34s cubic-bezier(0.32, 0.72, 0, 1) !important;
+  }
+
+  /* The scrim, which fades rather than slides. A backdrop arriving with the
+     panel would be a second thing moving, and the eye should follow one. */
+  .fade-in {
+    transition: opacity 0.28s ease-out !important;
   }
 
   .sheet-snap[data-dragging='true'] {
@@ -151,7 +186,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .slide-away,
-    .sheet-snap {
+    .sheet-snap,
+    .fade-in {
       transition: none !important;
     }
   }
@@ -210,6 +246,43 @@ html[data-canvas='brand'] body {
  * custom properties and a name in the hook's union — the gradient, the seam, and
  * the fade into the canvas are written once and shared.
  */
+/*
+ * The strip above the app takes its colour from the screen underneath it.
+ *
+ * Each screen already declares what it is through `data-canvas`, so the tint
+ * follows from that rather than being set by hand — which also means there is
+ * nothing to undo on the way out. Setting it imperatively left the last screen's
+ * colour behind on the next one, and the next screen has no way to know it was
+ * given a colour it did not ask for.
+ *
+ * Every screen uses the first stop of whatever it paints, so the strip and the
+ * top of the page are the same colour and the seam between them disappears. A
+ * strip in a colour of its own — even a considered one — is a band across the
+ * top, which is the thing this whole arrangement exists to remove.
+ */
+html[data-canvas='sky'] {
+  --bg-appshell: var(--color-sky);
+}
+
+html[data-canvas='dusk'] {
+  --bg-appshell: var(--color-dusk);
+}
+
+html[data-canvas='deep'] {
+  --bg-appshell: var(--color-deep);
+}
+
+html[data-canvas='brand'] {
+  --bg-appshell: var(--color-brand);
+}
+
+/* Flat and deep. The stats screen has no gradient, because the docked panel is
+   what should be read as raised and a gradient behind it competes. */
+html[data-canvas='deep'],
+html[data-canvas='deep'] body {
+  background-color: var(--color-deep);
+}
+
 html[data-canvas='sky'] {
   --canvas-top: var(--color-sky);
   --canvas-mid: var(--color-sky-soft);
@@ -239,13 +312,52 @@ html[data-canvas='dusk'] .app-surface {
   background-size: 100% 26rem;
 }
 
+/*
+ * The page under an overlay, matching the backdrop exactly.
+ *
+ * Black, not ink. A scrim darkens whatever is behind it in every theme, and ink
+ * is the text colour — following it meant the dark theme dimmed the page by
+ * painting it white, which is not dimming at all. This is the one place a
+ * literal colour is right, because the intent is "less light", not "the app's
+ * dark colour".
+ */
 html[data-overlay-open='true'],
 html[data-overlay-open='true'] body {
-  background-color: color-mix(in srgb, var(--color-ink) 35%, var(--color-canvas));
+  background-color: color-mix(in srgb, black var(--overlay-scrim), var(--color-canvas));
+
+  /*
+   * The document itself, held still while an overlay is up.
+   *
+   * The page is one safe-area inset taller than the viewport — that extra height
+   * is what removes the band — so the document can always scroll by that much.
+   * A scroller inside a modal hands its leftover movement to it on iOS, and it
+   * does so during the momentum phase, after the finger has gone: there is no
+   * `touchmove` left to cancel, which is why guarding the gesture was not
+   * enough.
+   *
+   * Held only while an overlay is open, never permanently. Permanently is what
+   * brought the band back, and it cannot appear here: something is covering the
+   * screen for as long as this applies.
+   */
+  overflow: hidden;
 }
 
 html[data-overlay-open='true'] .app-scroll {
   overflow: hidden;
+}
+
+/*
+ * A finger is down on a sheet. Held from `touchstart` rather than from the first
+ * movement, because the browser decides what a gesture is in the moment it
+ * begins — waiting for movement means arguing with a decision already made.
+ *
+ * `touch-action` is what actually stops it; `overflow` covers anything the page
+ * could still scroll on its own.
+ */
+html[data-sheet-dragging='true'] .app-scroll,
+html[data-sheet-dragging='true'] .app-surface {
+  overflow: hidden;
+  touch-action: none;
 }
 
 html[data-overlay-open='true'] .slide-away {
@@ -272,3 +384,48 @@ html[data-overlay-open='true'] .slide-away {
  * not match while the app had no manifest. Declaring one turned the query on and
  * the band came back, months of argument compressed into one deploy.
  */
+
+/*
+ * Dark theme — a POC.
+ *
+ * It repoints the semantic tokens and nothing else. No component is touched,
+ * because none of them name a colour: they ask for the canvas, a surface, the
+ * ink. That is the whole return on having named things by role instead of by
+ * appearance, and it is also the test of whether the naming was honest — a
+ * `--color-white` would have needed every call site rewritten.
+ *
+ * Two of them cannot simply invert. `--color-inverse` is the near-black that
+ * carries white text in light mode; here the page is already near-black, so it
+ * has to lift instead of drop or the card vanishes into the page. And the
+ * screen gradients lose almost all of their range: a saturated sky over a dark
+ * app reads as a coloured band, so they become a suggestion of one.
+ */
+html[data-theme='dark'] {
+  --color-canvas: #0b0e13;
+  --color-surface: #151922;
+  --color-sunken: #1e2430;
+  --color-inverse: #232b3a;
+
+  /* Deeper than the cards, not lighter. Dark themes usually raise a surface by
+     lightening it, and here that made the sheet land on exactly the colour of
+     the dashboard cards — tested on a phone, and read as one confusing plane.
+     Going down separates them, and the darker scrim does the lifting instead. */
+  --color-overlay: #0e1218;
+  --color-deep: #05070a;
+
+  --color-ink: #f2f5f9;
+  --color-muted: #8b95a6;
+  --color-faint: #5f6a7d;
+  --color-line: #232936;
+
+  --color-sky: #16233a;
+  --color-sky-soft: #101725;
+  --color-dusk: #1d1f3a;
+  --color-dusk-soft: #131426;
+
+  color-scheme: dark;
+}
+
+html[data-theme='dark'] body {
+  background-color: #0b0e13;
+}

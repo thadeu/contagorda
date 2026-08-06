@@ -78,6 +78,20 @@ export interface Transaction {
   recurring_series_id: string | null
 }
 
+/**
+ * One bar of the history chart.
+ *
+ * Aggregated by whoever holds the data, never by fetching the months and adding
+ * them up here — ten years of imported statements is a hundred and twenty
+ * requests and every transaction ever made, to draw a hundred and twenty
+ * rectangles.
+ */
+export interface MonthTotal {
+  month: string
+  expense_cents: Cents
+  income_cents: Cents
+}
+
 export interface MonthSummary {
   month: string
   income_cents: Cents

@@ -105,13 +105,11 @@ export function AccountForm({
         </p>
       )}
 
-      {footer}
+      <Button type="submit" className="mt-1 w-full" disabled={pending}>
+        {pending ? 'Salvando…' : submitLabel}
+      </Button>
 
-      <div className="sticky bottom-0 -mx-4 mt-1 border-t border-line bg-surface px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? 'Salvando…' : submitLabel}
-        </Button>
-      </div>
+      {footer}
     </form>
   )
 }

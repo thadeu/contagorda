@@ -11,21 +11,52 @@ import { useEffect, type RefObject } from 'react'
  */
 const DRAG_SLOP = 10
 
+/** Rounding in scroll measurements; a scroller one pixel short is still at its end. */
+const EDGE = 1
+
+export interface Gesture {
+  target: Node | null
+  scroller: HTMLElement | null
+  /** Positive when the finger has moved down the screen. */
+  travelled: number
+}
+
 /**
- * Whether a touch drag on this element should be allowed to scroll.
+ * Whether a drag inside an overlay may be left to the browser.
  *
- * Only one thing inside an overlay has any business scrolling: its own content,
- * and only when there is more of it than fits. Everywhere else — the drag
- * handle, the backdrop, a list short enough to sit still — a drag has nothing to
- * move, and iOS answers by scrolling whatever is underneath instead. That is the
- * whole app travelling behind the sheet.
+ * Three ways it may not, and the third is the one that took two attempts.
+ *
+ * Nothing to scroll: the drag handle, the backdrop, a list short enough to sit
+ * still. iOS answers a gesture with nowhere to go by scrolling whatever is
+ * underneath — the whole app travelling behind the sheet.
+ *
+ * Not a drag at all: a tap wobbles a few pixels, and cancelling that gesture is
+ * how the click synthesised from it never arrives.
+ *
+ * And chaining at the boundary: a scroller already at its top, pulled down
+ * further, hands the rest of the gesture to the page behind it. That is what
+ * makes the screen creep while a modal is open — the form scrolls perfectly, and
+ * the moment it runs out the movement is passed on. `overscroll-contain` is
+ * supposed to stop this and cannot be relied on for nested scrollers on iOS, so
+ * the edges are checked directly.
  */
-export function scrollAllowedFrom(target: Node | null, scroller: HTMLElement | null): boolean {
+export function scrollAllowed({ target, scroller, travelled }: Gesture): boolean {
   if (!scroller || !target) return false
+
+  if (!isDrag(travelled)) return true
 
   if (!scroller.contains(target)) return false
 
-  return scroller.scrollHeight > scroller.clientHeight
+  if (scroller.scrollHeight <= scroller.clientHeight) return false
+
+  const atTop = scroller.scrollTop <= 0
+  const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - EDGE
+
+  if (atTop && travelled > 0) return false
+
+  if (atBottom && travelled < 0) return false
+
+  return true
 }
 
 /** A gesture is only worth cancelling once it is going somewhere. */
@@ -40,14 +71,6 @@ export function isDrag(travelled: number): boolean {
  * the root as passive, and a passive listener's `preventDefault` is ignored by
  * the browser without an error — so the identical call written as an
  * `onTouchMove` prop looks right, runs, and does nothing.
- *
- * Only drags are cancelled, never taps. Cancelling a gesture the browser was
- * about to turn into a click is how every button inside a sheet quietly stops
- * working, and it only shows up on a real finger — a synthetic click in a test
- * never moves.
- *
- * Boundary chaining, where a scroller already at its end hands the gesture on,
- * is a different problem and belongs to `overscroll-contain` on the scroller.
  */
 export function useTouchScrollGuard(
   overlay: RefObject<HTMLElement | null>,
@@ -67,11 +90,9 @@ export function useTouchScrollGuard(
     function block(event: TouchEvent) {
       if (startY === null) return
 
-      if (!isDrag((event.touches[0]?.clientY ?? startY) - startY)) {
-        return
-      }
+      const travelled = (event.touches[0]?.clientY ?? startY) - startY
 
-      if (scrollAllowedFrom(event.target as Node | null, scroller.current)) {
+      if (scrollAllowed({ target: event.target as Node | null, scroller: scroller.current, travelled })) {
         return
       }
 

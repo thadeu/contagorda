@@ -2,11 +2,15 @@ import { useRef, useState, type ReactNode } from 'react'
 import { CloseIcon } from './icons'
 import { NavBar, NavButton } from './NavBar'
 import { useBodyScrollLock } from './useBodyScrollLock'
+import { useDragLock } from './useDragLock'
+import { useEnter } from './useEnter'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
 interface ModalProps {
   title: string
   onClose: () => void
+  /** The screen's own action, opposite the close button. */
+  trailing?: ReactNode
   children: ReactNode
 }
 
@@ -33,7 +37,7 @@ const THRESHOLD = 90
  * as much as it needs, up to nearly the screen. Sharing a component between the
  * two would mean a prop for every place they disagree.
  */
-export function Modal({ title, onClose, children }: ModalProps) {
+export function Modal({ title, onClose, trailing, children }: ModalProps) {
   const overlay = useRef<HTMLDivElement>(null)
   const content = useRef<HTMLDivElement>(null)
   const startY = useRef<number | null>(null)
@@ -41,12 +45,16 @@ export function Modal({ title, onClose, children }: ModalProps) {
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
 
+  const lock = useDragLock()
+  const entered = useEnter()
+
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
 
   function handleTouchStart(event: React.TouchEvent) {
     startY.current = event.touches[0].clientY
     setDragging(true)
+    lock.start()
   }
 
   function handleTouchMove(event: React.TouchEvent) {
@@ -63,6 +71,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
     setOffset(0)
     setDragging(false)
     startY.current = null
+    lock.end()
   }
 
   return (
@@ -71,7 +80,9 @@ export function Modal({ title, onClose, children }: ModalProps) {
         type="button"
         aria-label="Fechar"
         onClick={onClose}
-        className="absolute inset-x-0 -inset-y-24 bg-ink/35"
+        className={`fade-in absolute inset-x-0 -inset-y-24 bg-black/45 ${
+          entered ? 'opacity-100' : 'opacity-0'
+        }`}
       />
 
       <div
@@ -79,8 +90,8 @@ export function Modal({ title, onClose, children }: ModalProps) {
         aria-modal="true"
         aria-label={title}
         data-dragging={dragging}
-        style={{ transform: `translateY(${offset}px)` }}
-        className="sheet-snap relative flex h-[calc(100%-env(safe-area-inset-top)-2.5rem)] w-full max-w-lg flex-col rounded-t-card bg-surface"
+        style={{ transform: entered ? `translateY(${offset}px)` : 'translateY(100%)' }}
+        className="sheet-snap relative flex h-[calc(100%-env(safe-area-inset-top)-2.5rem)] w-full max-w-lg flex-col rounded-t-card bg-overlay"
       >
         <div
           onTouchStart={handleTouchStart}
@@ -89,12 +100,13 @@ export function Modal({ title, onClose, children }: ModalProps) {
           className="shrink-0 select-none"
         >
           <div className="flex justify-center pt-2" aria-hidden="true">
-            <span className="h-1 w-10 rounded-full bg-line" />
+            <span className="h-1 w-10 rounded-full bg-ink/30" />
           </div>
 
           <NavBar
             title={title}
             leading={<NavButton icon={CloseIcon} label="Fechar" onClick={onClose} />}
+            trailing={trailing}
           />
         </div>
 

@@ -28,10 +28,11 @@ describe('LedgerSection', () => {
     fireEvent.click(button)
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /compartilhar convite/i })).toBeTruthy()
+      expect(screen.getByText(/convite pendente/i)).toBeTruthy()
     })
 
-    expect(screen.getByText(/quem\s+abrir o link/i)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^compartilhar$/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /revogar/i })).toBeTruthy()
   })
 })
 

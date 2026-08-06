@@ -1,10 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { useAuth } from '@clowk/react'
 import { useGreeting, useUpdateProfile } from '../../../app/useGreeting'
 import { Avatar } from '../../../ui/Avatar'
 import { Button } from '../../../ui/Button'
-import { BottomSheet, SheetAction } from '../../../ui/BottomSheet'
-import { SignOutIcon } from '../../../ui/icons'
+import { BottomSheet } from '../../../ui/BottomSheet'
+import { ChevronRightIcon, SignOutIcon } from '../../../ui/icons'
 import { LedgerSection } from '../../ledgers/components/LedgerSection'
 
 interface ProfileButtonProps {
@@ -14,13 +14,11 @@ interface ProfileButtonProps {
 }
 
 /**
- * The avatar is the way out, and the way to your name.
+ * The avatar is the way to everything about you.
  *
  * Once sign-in is required there has to be a sign-out, and the face in the
  * corner is where people already look for it — burying it in a settings screen
  * that does not otherwise exist would be inventing a screen to hold one button.
- * The name sits in the same place for the same reason: it is the only thing
- * about yourself this app has to hold, and one field does not justify a screen.
  */
 export function ProfileButton({ name, email, avatarUrl }: ProfileButtonProps) {
   const [open, setOpen] = useState(false)
@@ -38,7 +36,12 @@ export function ProfileButton({ name, email, avatarUrl }: ProfileButtonProps) {
       </button>
 
       {open && (
-        <ProfileSheet name={name || 'Sua conta'} email={email} onClose={() => setOpen(false)} />
+        <ProfileSheet
+          name={name || 'Sua conta'}
+          email={email}
+          avatarUrl={avatarUrl}
+          onClose={() => setOpen(false)}
+        />
       )}
     </>
   )
@@ -47,19 +50,80 @@ export function ProfileButton({ name, email, avatarUrl }: ProfileButtonProps) {
 interface ProfileSheetProps {
   name: string
   email: string
+  avatarUrl?: string | null
   onClose: () => void
 }
 
 /**
- * The email is shown and not editable. It is the identity Clowk signed you in
- * with, and letting it be typed over here would either lie or quietly break the
- * account it belongs to.
+ * A menu, not a form.
+ *
+ * It used to open straight onto the name field with sign-out beside it, which
+ * put an edit box and the way out of the app on the same plane. This lists what
+ * there is — you, the people in this space, and leaving — and each row opens
+ * where it belongs.
+ *
+ * Sign-out sits alone under a divider. It is the only row that ends the session,
+ * and the gap is the whole warning it needs.
  */
-function ProfileSheet({ name, email, onClose }: ProfileSheetProps) {
+export function ProfileSheet({ name, email, avatarUrl = null, onClose }: ProfileSheetProps) {
   const { signOut } = useAuth()
+  const [editing, setEditing] = useState(false)
+
+  return (
+    <>
+      <BottomSheet title={name} subtitle={email} onClose={onClose}>
+        <MenuRow onClick={() => setEditing(true)}>
+          <span className="text-[0.9375rem] font-medium text-ink">Perfil</span>
+          <ChevronRightIcon className="size-4 shrink-0 text-muted" />
+        </MenuRow>
+
+        <p className="px-4 pt-3 pb-1 text-[0.6875rem] font-medium tracking-[0.08em] text-faint uppercase">
+          Usuários
+        </p>
+
+        <LedgerSection />
+
+        <hr className="my-2 border-line opacity-30" />
+
+        <MenuRow onClick={signOut}>
+          <span className="text-[0.9375rem] font-medium text-out">Sair</span>
+          <SignOutIcon className="size-4 shrink-0 text-out" />
+        </MenuRow>
+      </BottomSheet>
+
+      {editing && (
+        <ProfileFormSheet
+          name={name}
+          email={email}
+          avatarUrl={avatarUrl}
+          onClose={() => setEditing(false)}
+        />
+      )}
+    </>
+  )
+}
+
+/**
+ * The one thing about yourself this app holds.
+ *
+ * The face and the address sit above the field as a heading rather than as rows
+ * of their own: they come from the account that signed you in, and only the name
+ * below them is ours to change. Showing them as a header says that without
+ * needing a sentence to explain it.
+ */
+function ProfileFormSheet({
+  name,
+  email,
+  avatarUrl,
+  onClose,
+}: {
+  name: string
+  email: string
+  avatarUrl: string | null
+  onClose: () => void
+}) {
   const { name: currentName } = useGreeting()
   const update = useUpdateProfile()
-
   const [draft, setDraft] = useState(currentName)
 
   const trimmed = draft.trim()
@@ -76,8 +140,18 @@ function ProfileSheet({ name, email, onClose }: ProfileSheetProps) {
   }
 
   return (
-    <BottomSheet title={name} subtitle={email} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="grid gap-2">
+    <BottomSheet title="Perfil" onClose={onClose}>
+      <div className="flex flex-col items-center gap-2 px-4 pb-5">
+        <span className="rounded-full bg-gradient-to-br from-[#f0475f] via-[#b06cf5] to-[#4fb0f7] p-[3px]">
+          <span className="block rounded-full bg-overlay p-[3px]">
+            <Avatar name={name} url={avatarUrl} />
+          </span>
+        </span>
+
+        <p className="truncate text-sm text-muted">{email}</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="grid gap-2 px-4">
         <label className="block rounded-control bg-sunken px-4 py-3">
           <span className="block pb-0.5 text-xs text-muted">Nome</span>
           <input
@@ -93,24 +167,21 @@ function ProfileSheet({ name, email, onClose }: ProfileSheetProps) {
           className="w-full"
           disabled={update.isPending || unchanged || trimmed === ''}
         >
-          {update.isPending ? 'Salvando…' : 'Salvar nome'}
+          {update.isPending ? 'Salvando…' : 'Salvar'}
         </Button>
       </form>
-
-      <hr className="my-2 border-line" />
-
-      <LedgerSection />
-
-      <hr className="my-2 border-line" />
-
-      <SheetAction
-        danger
-        className="flex w-full items-center justify-center gap-2"
-        onClick={signOut}
-      >
-        <SignOutIcon className="size-4" strokeWidth={1.75} aria-hidden="true" />
-        Sair
-      </SheetAction>
     </BottomSheet>
+  )
+}
+
+function MenuRow({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-2 text-left"
+    >
+      {children}
+    </button>
   )
 }

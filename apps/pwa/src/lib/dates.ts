@@ -39,6 +39,20 @@ export function monthLabel(key: string): string {
   return `${MONTHS[month - 1]} de ${year}`
 }
 
+/**
+ * Three letters and the year only when it changes.
+ *
+ * A chart of ten years cannot repeat "de 2026" under every bar — the year is
+ * what separates one January from the next, and the month is what separates the
+ * bars within a year. January carries both; everything else carries one.
+ */
+export function monthShortLabel(key: string): string {
+  const [year, month] = key.split('-').map(Number)
+  const name = MONTHS[month - 1].slice(0, 3)
+
+  return month === 1 ? `${name} ${String(year).slice(2)}` : name
+}
+
 export function shiftMonth(key: string, delta: number): string {
   const [year, month] = key.split('-').map(Number)
   const index = year * 12 + (month - 1) + delta

@@ -1,16 +1,8 @@
-import { useRef } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router'
-import { HomeIcon, PlusIcon, WalletIcon } from '../../ui/icons'
-import { useHideOnScroll } from '../useHideOnScroll'
+import { Outlet } from 'react-router'
 import { ActiveLedgerProvider } from '../ledger/ActiveLedgerProvider'
+import { ErrorBoundary } from '../ErrorBoundary'
 import { AccountEditorProvider } from '../../features/accounts/AccountEditor'
 import { TransactionEditorProvider } from '../../features/transactions/TransactionEditor'
-import { useTransactionEditor } from '../../features/transactions/transactionEditorContext'
-
-const TABS = [
-  { to: '/', label: 'Mês', end: true, Icon: HomeIcon },
-  { to: '/accounts', label: 'Contas', end: false, Icon: WalletIcon },
-]
 
 /**
  * The frame is in normal flow, filling `#root`, and nothing here is `fixed`.
@@ -18,8 +10,12 @@ const TABS = [
  * On iOS a `position: fixed` box gets inset by the safe areas in the installed
  * app, so a frame pinned to all four sides came up smaller than the screen with
  * the page showing around it — which is the band, and why it never appeared in
- * the browser. A flow box filling a `height: 100%` chain has no such surprise,
- * and the tab bar is absolute inside it for the same reason.
+ * the browser. A flow box filling a `height: 100%` chain has no such surprise.
+ *
+ * `main` adds no padding of its own. A screen that fills the height — the stats
+ * view, whose panel is meant to reach the bottom edge — cannot have the frame
+ * reserving a strip underneath it, and the screens that do want breathing room
+ * at the end know better than the shell how much.
  *
  * The app scrolls inside `main`, not the document. On iOS the scroll indicator
  * for the root scroller is drawn by the system and CSS cannot touch it; on any
@@ -27,17 +23,14 @@ const TABS = [
  * behind a sheet a matter of one `overflow` property instead of pinning the
  * body and restoring its offset afterwards.
  *
- * The tab bar belongs to the month view alone. Accounts is reached from it and
- * carries a back button, which makes it a screen you went into rather than a
- * place you switch to — and a tab bar there would offer to switch away from a
- * screen that already knows the way home. Forms are modals now, so there is no
- * third case to handle.
+ * There is no tab bar. It ended up holding one tab that led where you already
+ * were and one action, having lost accounts to the header and forms to modals —
+ * a floating button-holder that covered the last row of the list, which is why
+ * it had to learn to hide on scroll.
  *
- * The tab bar is a floating pill — the shape iOS moved to once the home
- * indicator took the bottom strip. It gets out of the way while the list is
- * being read and returns the moment the finger goes back up. The add action
- * lives there, in the middle of the thumb's arc, because it is the most
- * repeated action in the app.
+ * Adding a transaction now sits beside the filter it adds to, and accounts is
+ * reached from the header. Each screen offers what belongs to it, and nothing
+ * floats over the content to do it.
  */
 export function AppShell() {
   return (
@@ -52,55 +45,13 @@ export function AppShell() {
 }
 
 function Shell() {
-  const { pathname, search } = useLocation()
-  const editor = useTransactionEditor()
-  const scroller = useRef<HTMLElement>(null)
-  const hidden = useHideOnScroll(scroller)
-  const root = pathname === '/'
-
   return (
     <div className="app-surface relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
-      <main ref={scroller} className="app-scroll flex-1 overflow-y-auto overscroll-contain pb-[6em]">
-        <Outlet />
+      <main className="app-scroll flex-1 overflow-y-auto overscroll-contain">
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
-
-      {root && (
-        <nav
-          data-hidden={hidden}
-          className="slide-away pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center pb-[calc(env(safe-area-inset-bottom)+1rem)]"
-        >
-          <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-brand p-1.5 shadow-[0_8px_32px_-8px_rgba(10,15,26,0.45)]">
-            {TABS.map((tab) => (
-              <NavLink
-                key={tab.to}
-                to={{ pathname: tab.to, search }}
-                end={tab.end}
-                className={({ isActive }) =>
-                  `flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium ${
-                    isActive ? 'bg-accent text-brand' : 'text-white/70'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <tab.Icon className="size-4" />
-                    {isActive && tab.label}
-                  </>
-                )}
-              </NavLink>
-            ))}
-
-            <button
-              type="button"
-              onClick={editor.openNew}
-              aria-label="Adicionar lançamento"
-              className="grid size-11 place-items-center rounded-full bg-white text-brand"
-            >
-              <PlusIcon className="size-5" />
-            </button>
-          </div>
-        </nav>
-      )}
     </div>
   )
 }

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { AppIcon } from './icons'
 import { useBodyScrollLock } from './useBodyScrollLock'
+import { useDragLock } from './useDragLock'
+import { useEnter } from './useEnter'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
 interface BottomSheetProps {
@@ -21,8 +23,9 @@ interface BottomSheetProps {
 /** Far enough that a scroll gesture does not trigger a detent by accident. */
 const THRESHOLD = 70
 
-/** How far an expandable panel rubber-bands upward, so pulling up answers. */
-const PULL_LIMIT = 48
+/** The two heights of an expandable sheet, as a share of the viewport. */
+const COMPACT = 75
+const EXPANDED = 92
 
 /**
  * Actions come to the thumb rather than the thumb going to them.
@@ -53,8 +56,19 @@ export function BottomSheet({
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
 
+  const lock = useDragLock()
+  const entered = useEnter()
+
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
+
+  /**
+   * The gesture splits in two. Downward moves the whole panel toward being
+   * dismissed; upward grows it, and only when there is a taller detent to grow
+   * into. Both are driven live — a pull that stores up its effect until release
+   * reads as a sheet that ignored you and then jumped.
+   */
+  const pulledUp = expandable ? Math.max(-offset, 0) : 0
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -70,6 +84,7 @@ export function BottomSheet({
   function handleTouchStart(event: React.TouchEvent) {
     startY.current = event.touches[0].clientY
     setDragging(true)
+    lock.start()
   }
 
   function handleTouchMove(event: React.TouchEvent) {
@@ -77,14 +92,8 @@ export function BottomSheet({
 
     const delta = event.touches[0].clientY - startY.current
 
-    if (delta > 0) {
-      setOffset(delta)
-
-      return
-    }
-
     // A fixed sheet does not answer an upward pull, so it does not invite one.
-    setOffset(expandable ? Math.max(delta, -PULL_LIMIT) : 0)
+    setOffset(delta > 0 || expandable ? delta : 0)
   }
 
   function handleTouchEnd() {
@@ -94,13 +103,14 @@ export function BottomSheet({
       } else {
         onClose()
       }
-    } else if (expandable && offset < -THRESHOLD / 2) {
+    } else if (expandable && offset < -THRESHOLD) {
       setExpanded(true)
     }
 
     setOffset(0)
     setDragging(false)
     startY.current = null
+    lock.end()
   }
 
   return (
@@ -109,7 +119,9 @@ export function BottomSheet({
         type="button"
         aria-label="Fechar"
         onClick={onClose}
-        className="absolute inset-x-0 -inset-y-24 bg-ink/35"
+        className={`fade-in absolute inset-x-0 -inset-y-24 bg-black/45 ${
+          entered ? 'opacity-100' : 'opacity-0'
+        }`}
       />
 
       <div
@@ -119,19 +131,24 @@ export function BottomSheet({
         aria-label={title}
         tabIndex={-1}
         data-dragging={dragging}
-        style={{ transform: `translateY(${offset}px)` }}
-        className={`sheet-snap relative mx-2 mb-2 flex w-full max-w-md flex-col rounded-card bg-surface p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] outline-none ${
-          expanded ? 'h-[92dvh]' : 'max-h-[75dvh]'
+        style={{
+          transform: entered ? `translateY(${Math.max(offset, 0)}px)` : 'translateY(100%)',
+          height: expandable
+            ? `clamp(${COMPACT}dvh, calc(${expanded ? EXPANDED : COMPACT}dvh + ${pulledUp}px), ${EXPANDED}dvh)`
+            : undefined,
+        }}
+        className={`sheet-snap relative mx-2 mb-2 flex w-full max-w-md flex-col rounded-card bg-overlay p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] outline-none ${
+          expandable ? '' : 'max-h-[75dvh]'
         }`}
       >
         <header
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="shrink-0 px-3 pt-2 pb-4 select-none"
+          className="shrink-0 touch-none px-3 pt-2 pb-4 select-none"
         >
           <div className="flex justify-center pb-3" aria-hidden="true">
-            <span className="h-1 w-10 rounded-full bg-line" />
+            <span className="h-1 w-10 rounded-full bg-ink/30" />
           </div>
 
           <p className="truncate text-base font-semibold text-ink">{title}</p>

@@ -38,7 +38,7 @@ describe('ProfileButton', () => {
     fireEvent.click(invite)
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /compartilhar convite/i })).toBeTruthy()
+      expect(screen.getByText(/convite pendente/i)).toBeTruthy()
     })
   })
 })

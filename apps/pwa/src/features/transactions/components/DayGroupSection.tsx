@@ -2,7 +2,6 @@ import type { Category, Transaction } from '../../../services/types'
 import type { DayGroup } from '../groupByDay'
 import { dayLabel, isToday } from '../../../lib/dates'
 import { Money } from '../../../ui/Money'
-import { Card } from '../../../ui/Card'
 import { TransactionRow } from './TransactionRow'
 
 interface DayGroupSectionProps {
@@ -11,6 +10,14 @@ interface DayGroupSectionProps {
   onOpen: (transaction: Transaction) => void
 }
 
+/**
+ * A day, flat on whatever surface it is placed on.
+ *
+ * The rows used to sit in a card of their own, one per day, which turned a month
+ * into a stack of small boxes and put a border between every day. Placing the
+ * whole list on one surface instead lets the date headings do the separating —
+ * which is what a heading is for.
+ */
 export function DayGroupSection({ group, categories, onOpen }: DayGroupSectionProps) {
   const today = isToday(group.date)
 
@@ -23,18 +30,16 @@ export function DayGroupSection({ group, categories, onOpen }: DayGroupSectionPr
         <Money cents={Math.abs(group.netCents)} tone="muted" className="text-xs" />
       </header>
 
-      <Card>
-        <ul className="divide-y divide-line">
-          {group.transactions.map((transaction) => (
-            <TransactionRow
-              key={transaction.id}
-              transaction={transaction}
-              category={transaction.category_id ? categories.get(transaction.category_id) : undefined}
-              onOpen={onOpen}
-            />
-          ))}
-        </ul>
-      </Card>
+      <ul>
+        {group.transactions.map((transaction) => (
+          <TransactionRow
+            key={transaction.id}
+            transaction={transaction}
+            category={transaction.category_id ? categories.get(transaction.category_id) : undefined}
+            onOpen={onOpen}
+          />
+        ))}
+      </ul>
     </section>
   )
 }

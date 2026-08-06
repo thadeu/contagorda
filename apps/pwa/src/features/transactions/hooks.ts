@@ -17,6 +17,16 @@ export const transactionKeys = {
   month: (month: string) => ['transactions', getActiveLedgerId(), month] as const,
   summary: (month: string) => ['summary', getActiveLedgerId(), month] as const,
   months: () => ['months', getActiveLedgerId()] as const,
+  totals: (categoryId: string | null) =>
+    ['monthly-totals', getActiveLedgerId(), categoryId] as const,
+}
+
+/** One row per month that holds anything, oldest first. Draws the history chart. */
+export function useMonthlyTotals(categoryId: string | null = null) {
+  return useQuery({
+    queryKey: transactionKeys.totals(categoryId),
+    queryFn: () => services.transactions.monthlyTotals(categoryId),
+  })
 }
 
 /** Months holding data, newest first. Drives the month picker's range. */
@@ -92,6 +102,7 @@ function invalidate(client: ReturnType<typeof useQueryClient>, month: string) {
     // The first entry in a month has to make that month appear in the picker,
     // and deleting the last one has to take it out again.
     client.invalidateQueries({ queryKey: transactionKeys.months() }),
+    client.invalidateQueries({ queryKey: ['monthly-totals', getActiveLedgerId()] }),
   ])
 }
 

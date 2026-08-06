@@ -20,6 +20,15 @@ interface BottomSheetProps {
   expandable?: boolean
   /** Controls that belong to the sheet itself, on the title's line. */
   actions?: ReactNode
+  /**
+   * Sits under the heading and drags with it.
+   *
+   * For anything that is read rather than tapped. The handle is four pixels of
+   * drawn line and the heading is barely more; a sheet whose only grab area is
+   * its title asks for precision the gesture does not need, when the whole top
+   * of it is doing nothing else.
+   */
+  grab?: ReactNode
   children: ReactNode
 }
 
@@ -49,6 +58,7 @@ export function BottomSheet({
   onClose,
   expandable = false,
   actions,
+  grab,
   children,
 }: BottomSheetProps) {
   const panel = useRef<HTMLDivElement>(null)
@@ -150,7 +160,7 @@ export function BottomSheet({
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="shrink-0 touch-none px-3 pt-2 pb-4 select-none"
+          className="shrink-0 touch-none px-3 pt-2 pb-3 select-none"
         >
           <div className="flex justify-center pb-3" aria-hidden="true">
             <span className="h-1 w-10 rounded-full bg-ink/30" />
@@ -164,6 +174,8 @@ export function BottomSheet({
 
             {actions && <div className="flex shrink-0 items-center gap-1.5">{actions}</div>}
           </div>
+
+          {grab}
         </header>
 
         <div ref={content} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">

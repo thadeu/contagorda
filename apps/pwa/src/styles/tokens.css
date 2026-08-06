@@ -334,6 +334,7 @@ html[data-canvas='dusk'] .app-surface {
 html[data-overlay-open='true'],
 html[data-overlay-open='true'] body {
   background-color: color-mix(in srgb, black var(--overlay-scrim), var(--color-canvas));
+  overflow: hidden;
 }
 
 html[data-overlay-open='true'] .app-scroll {

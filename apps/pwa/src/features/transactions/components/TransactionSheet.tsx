@@ -56,21 +56,26 @@ export function TransactionSheet({
         subtitle={formatBRL(transaction.amount_cents)}
         onClose={onClose}
         actions={<span className="text-sm text-muted">{dayLabel(transaction.date)}</span>}
+        grab={
+          /* Two lines, not a panel: the heading already carries what the row is
+             and what it cost, and a card around these would announce them as a
+             section of their own. They live in the grab area because nothing
+             here is tapped — which makes the top third of the sheet one target
+             for the pull that closes it. */
+          <dl className="pt-3">
+            <Detail
+              label="Categoria"
+              value={
+                category
+                  ? [category.icon, category.name].filter(Boolean).join(' ')
+                  : 'Sem categoria'
+              }
+            />
+            {author && <Detail label="Lançado por" value={author} />}
+          </dl>
+        }
       >
-        {/* Two lines, not a panel. The heading already carries what the row is
-            and what it cost; these are the two things it could not fit, and a
-            card around them would announce them as a section of their own. */}
-        <dl className="mb-4 px-3">
-          <Detail
-            label="Categoria"
-            value={
-              category ? [category.icon, category.name].filter(Boolean).join(' ') : 'Sem categoria'
-            }
-          />
-          {author && <Detail label="Lançado por" value={author} />}
-        </dl>
-
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 pt-1">
           <SheetActionCard
             label={payLabel}
             icon={paid ? UnpaidIcon : PaidIcon}

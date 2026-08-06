@@ -36,7 +36,7 @@ export function LedgerSection() {
       await shareOrCopy({
         url: inviteUrl(token),
         title: 'Conta Gorda',
-        text: 'Estou te convidando para participar da minha Conta Gorda.',
+        message: 'Estou te convidando para participar da minha Conta Gorda.',
       }),
     )
   }

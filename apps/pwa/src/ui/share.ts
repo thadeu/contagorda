@@ -4,11 +4,8 @@ export interface Shareable {
   url: string
   /** Names the sheet itself. Most apps never show it. */
   title: string
-  /**
-   * The message that travels with the link, without repeating it. Every target
-   * places the url itself, so a message carrying one too arrives with it twice.
-   */
-  text: string
+  /** The line before the link. The link is placed by us, right under it. */
+  message: string
 }
 
 /**
@@ -26,17 +23,25 @@ export interface Shareable {
  * Both of the modern calls are secure-context only, so on a plain-http origin
  * neither is defined and the whole thing falls through to `execCommand`.
  *
- * The clipboard path keeps message and link together, because a bare url pasted
- * into a chat is a stranger asking to be clicked. The share sheet puts them side
- * by side already.
+ * The link goes inside the text rather than in `url`, which is the only way to
+ * control how the two are laid out. Passing both leaves the join to the
+ * receiving app, and most of them concatenate with a space — the message and the
+ * link arrive as one run-on line. Building the string here puts the link on its
+ * own line, everywhere, because there is nothing left to decide.
+ *
+ * The cost is that a target which only understands links no longer gets one as a
+ * link. That is a fair trade for a message someone can read: this is going to a
+ * chat, not to a bookmark list.
  *
  * Must be called straight from a tap: browsers refuse a share that is not tied
  * to a gesture, and an await before it can be enough to lose that.
  */
-export async function shareOrCopy({ url, title, text }: Shareable): Promise<ShareResult> {
+export async function shareOrCopy({ url, title, message }: Shareable): Promise<ShareResult> {
+  const text = `${message}\n\n${url}`
+
   if (typeof navigator.share === 'function') {
     try {
-      await navigator.share({ title, text, url })
+      await navigator.share({ title, text })
 
       return 'shared'
     } catch (error) {
@@ -46,11 +51,9 @@ export async function shareOrCopy({ url, title, text }: Shareable): Promise<Shar
     }
   }
 
-  const written = `${text}\n\n${url}`
-
   if (navigator.clipboard) {
     try {
-      await navigator.clipboard.writeText(written)
+      await navigator.clipboard.writeText(text)
 
       return 'copied'
     } catch {
@@ -58,7 +61,7 @@ export async function shareOrCopy({ url, title, text }: Shareable): Promise<Shar
     }
   }
 
-  return legacyCopy(written) ? 'copied' : 'failed'
+  return legacyCopy(text) ? 'copied' : 'failed'
 }
 
 /**

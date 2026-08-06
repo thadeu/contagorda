@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { HomeIcon, PlusIcon, WalletIcon } from '../../ui/icons'
 import { useHideOnScroll } from '../useHideOnScroll'
+import { ActiveLedgerProvider } from '../ledger/ActiveLedgerProvider'
 import { AccountEditorProvider } from '../../features/accounts/AccountEditor'
 import { TransactionEditorProvider } from '../../features/transactions/TransactionEditor'
 import { useTransactionEditor } from '../../features/transactions/transactionEditorContext'
@@ -40,11 +41,13 @@ const TABS = [
  */
 export function AppShell() {
   return (
-    <TransactionEditorProvider>
-      <AccountEditorProvider>
-        <Shell />
-      </AccountEditorProvider>
-    </TransactionEditorProvider>
+    <ActiveLedgerProvider>
+      <TransactionEditorProvider>
+        <AccountEditorProvider>
+          <Shell />
+        </AccountEditorProvider>
+      </TransactionEditorProvider>
+    </ActiveLedgerProvider>
   )
 }
 

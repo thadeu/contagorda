@@ -9,6 +9,37 @@ import type { IsoDate } from '../lib/dates'
  * work to the day you can least afford it.
  */
 
+/**
+ * A ledger is who the data belongs to.
+ *
+ * Every account, category and transaction lives in one. A person is not the
+ * owner of their money here — a ledger is, and people are members of it. That is
+ * what lets two phones write to the same month without either of them owning it.
+ */
+export interface Ledger {
+  id: string
+  name: string
+  /** How many people can see it. Drives whether the app mentions ledgers at all. */
+  member_count: number
+}
+
+export interface LedgerMember {
+  id: string
+  name: string
+  email: string
+  /** Only an owner may invite or remove. A ledger always keeps one. */
+  role: 'owner' | 'member'
+}
+
+export interface LedgerInvite {
+  id: string
+  /** What the link carries. Whoever opens it and signs in claims the place. */
+  token: string
+  expires_at: string
+  revoked_at: string | null
+  accepted_at: string | null
+}
+
 export type Direction = 'expense' | 'income'
 
 export type AccountKind = 'checking' | 'savings' | 'credit_card' | 'cash' | 'investment'

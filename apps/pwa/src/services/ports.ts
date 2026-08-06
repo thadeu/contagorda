@@ -1,5 +1,14 @@
 import type { Cents } from '../lib/money'
-import type { Account, Category, MonthSummary, NewTransaction, Transaction } from './types'
+import type {
+  Account,
+  Category,
+  Ledger,
+  LedgerInvite,
+  LedgerMember,
+  MonthSummary,
+  NewTransaction,
+  Transaction,
+} from './types'
 
 /**
  * The seam.
@@ -11,6 +20,11 @@ import type { Account, Category, MonthSummary, NewTransaction, Transaction } fro
  *
  * Keeping this explicit is also how the API contract gets designed: whatever
  * the screens need shows up here first, and the endpoints follow.
+ *
+ * None of these take a ledger. The active one is ambient — see `activeLedger` —
+ * because that is what it will be over HTTP, where it rides on a header set once
+ * by the client. Threading it through every signature here would invent a
+ * parameter the API does not have and let a screen pass the wrong one.
  */
 
 export interface TransactionsPort {
@@ -65,6 +79,25 @@ export interface CategoriesPort {
   findOrCreate(name: string, kind: Category['kind']): Promise<Category>
 }
 
+export interface LedgersPort {
+  /** Every ledger this person is a member of. Never empty: signing up makes one. */
+  list(): Promise<Ledger[]>
+  create(name: string): Promise<Ledger>
+  members(ledgerId: string): Promise<LedgerMember[]>
+  invites(ledgerId: string): Promise<LedgerInvite[]>
+  /**
+   * Mints a link rather than sending mail.
+   *
+   * The token is the invitation — not the email address it was meant for. An
+   * invite tied to an address locks out anyone who signs in with a different
+   * one, which is most people: the address you type is rarely the one their
+   * Google account carries, and there is no way to repair it afterwards.
+   */
+  createInvite(ledgerId: string): Promise<LedgerInvite>
+  revokeInvite(id: string): Promise<void>
+  acceptInvite(token: string): Promise<Ledger>
+}
+
 export interface ProfilePort {
   /**
    * The name to call this person, when they have chosen one.
@@ -83,4 +116,5 @@ export interface Services {
   accounts: AccountsPort
   categories: CategoriesPort
   profile: ProfilePort
+  ledgers: LedgersPort
 }

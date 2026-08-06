@@ -1,21 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '../../services'
+import { getActiveLedgerId } from '../../services/activeLedger'
+import { categoryKeys } from '../accounts/hooks'
 import type { Direction, NewTransaction, Transaction } from '../../services/types'
 
 /**
  * Query keys are built here rather than inline so an invalidation cannot miss a
  * cache by spelling the key differently at the call site.
+ *
+ * Every key carries the ledger, read from the same ambient value the request
+ * itself will carry — so a key and its invalidation can never disagree about
+ * which ledger they meant. Switching also clears the cache; this is the layer
+ * underneath that, for a request already in flight when the switch happened.
  */
 export const transactionKeys = {
-  month: (month: string) => ['transactions', month] as const,
-  summary: (month: string) => ['summary', month] as const,
-  months: ['months'] as const,
+  month: (month: string) => ['transactions', getActiveLedgerId(), month] as const,
+  summary: (month: string) => ['summary', getActiveLedgerId(), month] as const,
+  months: () => ['months', getActiveLedgerId()] as const,
 }
 
 /** Months holding data, newest first. Drives the month picker's range. */
 export function useMonthsWithData() {
   return useQuery({
-    queryKey: transactionKeys.months,
+    queryKey: transactionKeys.months(),
     queryFn: () => services.transactions.months(),
   })
 }
@@ -84,7 +91,7 @@ function invalidate(client: ReturnType<typeof useQueryClient>, month: string) {
     client.invalidateQueries({ queryKey: transactionKeys.summary(month) }),
     // The first entry in a month has to make that month appear in the picker,
     // and deleting the last one has to take it out again.
-    client.invalidateQueries({ queryKey: transactionKeys.months }),
+    client.invalidateQueries({ queryKey: transactionKeys.months() }),
   ])
 }
 
@@ -133,7 +140,7 @@ export function useResolveCategory() {
 
     const category = await services.categories.findOrCreate(name, kind)
 
-    await client.invalidateQueries({ queryKey: ['categories'] })
+    await client.invalidateQueries({ queryKey: categoryKeys.all() })
 
     return category.id
   }

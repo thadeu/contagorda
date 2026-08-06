@@ -5,6 +5,7 @@ import { Avatar } from '../../../ui/Avatar'
 import { Button } from '../../../ui/Button'
 import { BottomSheet, SheetAction } from '../../../ui/BottomSheet'
 import { SignOutIcon } from '../../../ui/icons'
+import { LedgerSection } from '../../ledgers/components/LedgerSection'
 
 interface ProfileButtonProps {
   name: string
@@ -95,6 +96,10 @@ function ProfileSheet({ name, email, onClose }: ProfileSheetProps) {
           {update.isPending ? 'Salvando…' : 'Salvar nome'}
         </Button>
       </form>
+
+      <hr className="my-2 border-line" />
+
+      <LedgerSection />
 
       <hr className="my-2 border-line" />
 

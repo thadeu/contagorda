@@ -7,11 +7,14 @@ import { ProfileButton } from './components/ProfileButton'
 import { AccountsButton } from './components/AccountsButton'
 import { Card } from '../../ui/Card'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
+import { useActiveLedger } from '../../app/ledger/activeLedgerContext'
 
 export function DashboardPage() {
   const { month, setMonth } = useMonth()
   const { salutation, firstName, avatarUrl, email } = useGreeting()
   const transactions = useTransactions(month)
+
+  const { current, shared } = useActiveLedger()
 
   useDocumentCanvas('sky')
 
@@ -26,6 +29,11 @@ export function DashboardPage() {
     <>
       <header className="flex items-start justify-between gap-4 px-5 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-5">
         <div className="min-w-0">
+          {shared && current && (
+            <p className="truncate pb-0.5 text-xs font-medium tracking-wide text-ink/60 uppercase">
+              {current.name}
+            </p>
+          )}
           <h1 className="text-[1.625rem] leading-[1.15] font-bold tracking-[-0.02em] text-ink">
             {salutation}
           </h1>

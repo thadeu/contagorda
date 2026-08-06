@@ -1,14 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '../../services'
+import { getActiveLedgerId } from '../../services/activeLedger'
 import type { NewAccount } from '../../services/ports'
 
 export const accountKeys = {
-  all: ['accounts'] as const,
-  opening: (month: string) => ['accounts', 'opening', month] as const,
+  all: () => ['accounts', getActiveLedgerId()] as const,
+  opening: (month: string) => ['accounts', getActiveLedgerId(), 'opening', month] as const,
+}
+
+export const categoryKeys = {
+  all: () => ['categories', getActiveLedgerId()] as const,
 }
 
 export function useAccounts() {
-  return useQuery({ queryKey: accountKeys.all, queryFn: () => services.accounts.list() })
+  return useQuery({ queryKey: accountKeys.all(), queryFn: () => services.accounts.list() })
 }
 
 export function useAccount(id: string) {
@@ -39,7 +44,7 @@ export function useSetOpeningBalance(month: string) {
 }
 
 export function useCategories() {
-  return useQuery({ queryKey: ['categories'], queryFn: () => services.categories.list() })
+  return useQuery({ queryKey: categoryKeys.all(), queryFn: () => services.categories.list() })
 }
 
 export function useCreateAccount() {
@@ -47,7 +52,7 @@ export function useCreateAccount() {
 
   return useMutation({
     mutationFn: (input: NewAccount) => services.accounts.create(input),
-    onSuccess: () => client.invalidateQueries({ queryKey: accountKeys.all }),
+    onSuccess: () => client.invalidateQueries({ queryKey: accountKeys.all() }),
   })
 }
 
@@ -57,7 +62,7 @@ export function useUpdateAccount() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<NewAccount> }) =>
       services.accounts.update(id, input),
-    onSuccess: () => client.invalidateQueries({ queryKey: accountKeys.all }),
+    onSuccess: () => client.invalidateQueries({ queryKey: accountKeys.all() }),
   })
 }
 
@@ -71,6 +76,6 @@ export function useArchiveAccount() {
 
   return useMutation({
     mutationFn: (id: string) => services.accounts.archive(id),
-    onSuccess: () => client.invalidateQueries({ queryKey: accountKeys.all }),
+    onSuccess: () => client.invalidateQueries({ queryKey: accountKeys.all() }),
   })
 }

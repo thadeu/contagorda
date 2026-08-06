@@ -44,12 +44,15 @@ export function NavBar({ title, leading, trailing, topInset = false }: NavBarPro
 interface NavButtonProps {
   icon: AppIcon
   label: string
-  onClick: () => void
+  onClick?: () => void
   /** The one action the screen is for. There is at most one per bar. */
   primary?: boolean
   /** Round only where it sits inside a pill and has to match it. */
   circle?: boolean
   disabled?: boolean
+  /** Lets the bar hold a form's submit, wired by id rather than by nesting. */
+  type?: 'button' | 'submit'
+  form?: string
 }
 
 /**
@@ -75,10 +78,13 @@ export function NavButton({
   primary = false,
   circle = false,
   disabled = false,
+  type = 'button',
+  form,
 }: NavButtonProps) {
   return (
     <button
-      type="button"
+      type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       aria-label={label}

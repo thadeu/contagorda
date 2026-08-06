@@ -1,4 +1,5 @@
 import { Button } from './Button'
+import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 
 interface ConfirmSheetProps {
@@ -40,7 +41,8 @@ export function ConfirmSheet({
   const entered = useEnter()
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <Portal>
+      <div className="fixed inset-0 z-50 flex items-end justify-center">
       <button
         type="button"
         aria-label="Fechar"
@@ -76,6 +78,7 @@ export function ConfirmSheet({
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </Portal>
   )
 }

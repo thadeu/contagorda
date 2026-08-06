@@ -1,4 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
+import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 
 interface NoticeProps {
@@ -71,22 +72,24 @@ export function Notice({ role = 'status', onDismiss, children }: NoticeProps) {
   }
 
   return (
-    <div
-      role={role}
-      data-dragging={dragging}
-      style={{ transform: entered ? `translateY(${offset}px)` : 'translateY(-140%)' }}
-      className="sheet-snap pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-    >
+    <Portal>
       <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className={`pointer-events-auto mx-auto max-w-md rounded-[1.375rem] border border-white/8 bg-overlay/85 p-4 shadow-[0_10px_40px_-8px_rgba(0,0,0,0.45)] backdrop-blur-2xl ${
-          onDismiss ? 'touch-none' : ''
-        }`}
+        role={role}
+        data-dragging={dragging}
+        style={{ transform: entered ? `translateY(${offset}px)` : 'translateY(-140%)' }}
+        className="sheet-snap pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
       >
-        {children}
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className={`pointer-events-auto mx-auto max-w-md rounded-[1.375rem] border border-white/8 bg-overlay/85 p-4 shadow-[0_10px_40px_-8px_rgba(0,0,0,0.45)] backdrop-blur-2xl ${
+            onDismiss ? 'touch-none' : ''
+          }`}
+        >
+          {children}
+        </div>
       </div>
-    </div>
+    </Portal>
   )
 }

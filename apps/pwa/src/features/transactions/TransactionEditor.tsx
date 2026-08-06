@@ -1,6 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useMonth } from '../../app/useMonth'
 import { Modal } from '../../ui/Modal'
+import { NavButton } from '../../ui/NavBar'
+import { CheckIcon } from '../../ui/icons'
 import { centsToInput } from './formValues'
 import { TransactionForm } from './components/TransactionForm'
 import {
@@ -15,6 +17,13 @@ import {
 } from './hooks'
 
 type Editing = { mode: 'new' } | { mode: 'edit'; id: string } | null
+
+/**
+ * Only one editor is ever mounted, so one id is enough — and it has to be a
+ * constant rather than generated, because the submit button in the nav bar finds
+ * the form by name across the DOM.
+ */
+const FORM_ID = 'transaction-form'
 
 export function TransactionEditorProvider({ children }: { children: ReactNode }) {
   const [editing, setEditing] = useState<Editing>(null)
@@ -47,10 +56,21 @@ function NewTransactionModal({ onClose }: { onClose: () => void }) {
   const resolveCategory = useResolveCategory()
 
   return (
-    <Modal title="Novo lançamento" onClose={onClose}>
+    <Modal
+      title="Novo lançamento"
+      onClose={onClose}
+      trailing={
+        <NavButton
+          type="submit"
+          form={FORM_ID}
+          icon={CheckIcon}
+          label="Salvar"
+          disabled={create.isPending}
+        />
+      }
+    >
       <TransactionForm
-        submitLabel="Salvar"
-        pending={create.isPending}
+        id={FORM_ID}
         onSubmit={async (input, custom) => {
           const categoryId = custom ? await resolveCategory(custom, input.kind) : input.category_id
 
@@ -72,10 +92,21 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
   }
 
   return (
-    <Modal title="Editar lançamento" onClose={onClose}>
+    <Modal
+      title="Editar lançamento"
+      onClose={onClose}
+      trailing={
+        <NavButton
+          type="submit"
+          form={FORM_ID}
+          icon={CheckIcon}
+          label="Salvar"
+          disabled={update.isPending}
+        />
+      }
+    >
       <TransactionForm
-        submitLabel="Salvar"
-        pending={update.isPending}
+        id={FORM_ID}
         initial={{
           kind: transaction.kind,
           amount: centsToInput(transaction.amount_cents),

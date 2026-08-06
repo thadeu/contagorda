@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { OptionSheet } from '../../../ui/OptionSheet'
+import { ChevronRightIcon } from '../../../ui/icons'
 import type { Category, Direction } from '../../../services/types'
 
 interface CategoryPickerProps {
@@ -12,14 +14,19 @@ interface CategoryPickerProps {
   onCustomNameChange: (name: string) => void
 }
 
+const NONE = ''
 const OTHER = '__other__'
 
 /**
  * A fixed list never fits everyone's spending, and a free-text-only field turns
  * every report into a pile of near-duplicates. So: the list for the common
  * cases, "Outros" for everything else, and the typed name becomes a real
- * category — matched by name so typing the same thing twice reuses it rather
+ * category — matched by name, so typing the same thing twice reuses it rather
  * than splitting a total across two entries that look identical.
+ *
+ * The row shows the answer and opens a sheet. The name of a category is the
+ * point — it is what you will read in a report a year from now — and a row that
+ * displays it means the common case needs no taps at all.
  */
 export function CategoryPicker({
   categories,
@@ -29,8 +36,15 @@ export function CategoryPicker({
   customName,
   onCustomNameChange,
 }: CategoryPickerProps) {
+  const [open, setOpen] = useState(false)
   const [other, setOther] = useState(customName !== '')
   const available = categories.filter((c) => c.kind === kind)
+
+  const options = [
+    { value: NONE, label: 'Sem categoria' },
+    ...available.map((category) => ({ value: category.id, label: category.name })),
+    { value: OTHER, label: 'Outros…' },
+  ]
 
   function handleSelect(next: string) {
     if (next === OTHER) {
@@ -45,42 +59,45 @@ export function CategoryPicker({
     onChange(next)
   }
 
+  const chosen = other
+    ? customName.trim() || 'Outros'
+    : (available.find((c) => c.id === value)?.name ?? 'Sem categoria')
+
   return (
-    <div className="card-shadow block rounded-control bg-surface px-4 py-3">
-      <span className="block pb-0.5 text-xs text-muted">Categoria</span>
-
-      <select
-        value={other ? OTHER : value}
-        onChange={(e) => handleSelect(e.target.value)}
-        aria-label="Categoria"
-        className="w-full bg-transparent text-base text-ink outline-none"
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex min-h-13 w-full items-center gap-3 text-left"
       >
-        <option value="" className="bg-surface">
-          Sem categoria
-        </option>
+        <span className="w-24 shrink-0 text-sm text-muted">Categoria</span>
 
-        {available.map((category) => (
-          <option key={category.id} value={category.id} className="bg-surface">
-            {category.icon ? `${category.icon} ` : ''}
-            {category.name}
-          </option>
-        ))}
-
-        <option value={OTHER} className="bg-surface">
-          Outros…
-        </option>
-      </select>
+        <span className="min-w-0 flex-1 truncate text-right text-base text-ink">{chosen}</span>
+        <ChevronRightIcon className="size-4 shrink-0 text-faint" />
+      </button>
 
       {other && (
-        <input
-          value={customName}
-          onChange={(e) => onCustomNameChange(e.target.value)}
-          placeholder="Nome da categoria"
-          aria-label="Nome da nova categoria"
-          autoFocus
-          className="mt-2 w-full rounded-control bg-sunken px-3 py-2 text-base text-ink outline-none placeholder:text-faint"
+        <label className="flex min-h-13 items-center gap-3">
+          <span className="w-24 shrink-0 text-sm text-muted">Nome</span>
+          <input
+            value={customName}
+            onChange={(event) => onCustomNameChange(event.target.value)}
+            placeholder="Nome da categoria"
+            aria-label="Nome da nova categoria"
+            className="w-full min-w-0 flex-1 bg-transparent text-right text-base text-ink outline-none placeholder:text-faint"
+          />
+        </label>
+      )}
+
+      {open && (
+        <OptionSheet
+          title="Categoria"
+          options={options}
+          value={other ? OTHER : value}
+          onSelect={handleSelect}
+          onClose={() => setOpen(false)}
         />
       )}
-    </div>
+    </>
   )
 }

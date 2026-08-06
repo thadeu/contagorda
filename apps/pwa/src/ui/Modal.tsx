@@ -3,6 +3,7 @@ import { CloseIcon } from './icons'
 import { NavBar, NavButton } from './NavBar'
 import { useBodyScrollLock } from './useBodyScrollLock'
 import { useDragLock } from './useDragLock'
+import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
@@ -75,7 +76,8 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
   }
 
   return (
-    <div ref={overlay} className="fixed inset-0 z-40 flex items-end justify-center">
+    <Portal>
+      <div ref={overlay} className="fixed inset-0 z-40 flex items-end justify-center">
       <button
         type="button"
         aria-label="Fechar"
@@ -116,6 +118,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
 
         <div aria-hidden="true" className="absolute inset-x-0 top-full h-24 bg-surface" />
       </div>
-    </div>
+      </div>
+    </Portal>
   )
 }

@@ -1,15 +1,16 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useAccounts, useCategories } from '../../accounts/hooks'
 import { parseBRLToCents } from '../../../lib/money'
-import { Button } from '../../../ui/Button'
 import { CategoryPicker } from './CategoryPicker'
+import { AccountPicker } from './AccountPicker'
+import { Switch } from '../../../ui/Switch'
 import { emptyValues, type TransactionFormValues } from '../formValues'
 import type { NewTransaction } from '../../../services/types'
 
 interface TransactionFormProps {
+  /** Ties the form to a submit button that lives outside it, in the nav bar. */
+  id: string
   initial?: Partial<TransactionFormValues>
-  submitLabel: string
-  pending: boolean
   /** `customCategory` is set when the user typed one under "Outros". */
   onSubmit: (input: NewTransaction, customCategory: string | null) => void
 }
@@ -21,14 +22,23 @@ interface TransactionFormProps {
  * amount arrives — so it uses the same screen rather than a reduced one that
  * drifts from it.
  *
- * Save is pinned to the bottom, and there is no cancel. In a modal the close
- * button already means cancel, and a second control saying the same thing sits
- * next to the one action that matters, competing with it.
+ * Saving lives in the nav bar, opposite the close button — the shape the
+ * platform uses for a task you either commit or abandon. A full-width button
+ * under a divider is a web page's footer, and it took a strip of the panel from
+ * the fields for an action that is one tap either way.
+ *
+ * There is no cancel: closing already means that, and a second control saying so
+ * would sit beside the one action that matters.
+ *
+ * The amount is the reason the form was opened, so it is the one thing that
+ * looks like it. Everything below it is a grouped list, the shape the rest of
+ * the app uses — six boxes of equal weight meant scanning all six to find the
+ * one field that needed changing, and the two that rarely do took as much room
+ * as the two that always do.
  */
 export function TransactionForm({
+  id,
   initial,
-  submitLabel,
-  pending,
   onSubmit,
 }: TransactionFormProps) {
   const accounts = useAccounts()
@@ -78,8 +88,25 @@ export function TransactionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 px-4 pt-4">
-      <div className="grid grid-cols-2 gap-2" role="group" aria-label="Tipo">
+    <form id={id} onSubmit={handleSubmit} className="grid gap-4 px-4 pt-2 pb-6">
+      <div className="flex items-baseline justify-center gap-2 pt-1">
+        <span className="text-xl font-medium text-faint">R$</span>
+        <input
+          value={values.amount}
+          onChange={(e) => set('amount', e.target.value)}
+          inputMode="decimal"
+          placeholder="0,00"
+          aria-label="Valor"
+          size={7}
+          className="tnum min-w-0 bg-transparent text-center text-[2.5rem] leading-none font-bold tracking-[-0.02em] text-ink outline-none placeholder:text-faint"
+        />
+      </div>
+
+      <div
+        className="grid grid-cols-2 gap-1 rounded-2xl bg-sunken p-1"
+        role="group"
+        aria-label="Tipo"
+      >
         <DirectionButton
           active={values.kind === 'expense'}
           onClick={() => set('kind', 'expense')}
@@ -96,71 +123,54 @@ export function TransactionForm({
         </DirectionButton>
       </div>
 
-      <Field label="Valor">
-        <div className="flex items-baseline gap-2">
-          <span className="text-lg font-medium text-faint">R$</span>
+      <div className="divide-y divide-line rounded-card bg-surface px-4">
+        <Row label="Descrição">
           <input
-            value={values.amount}
-            onChange={(e) => set('amount', e.target.value)}
-            inputMode="decimal"
-            placeholder="0,00"
-            className="tnum w-full bg-transparent text-3xl font-semibold text-ink outline-none placeholder:text-faint"
+            value={values.description}
+            onChange={(e) => set('description', e.target.value)}
+            placeholder="Mercado, aluguel, salário…"
+            className="w-full bg-transparent text-right text-base text-ink outline-none placeholder:text-faint"
+          />
+        </Row>
+
+        <Row label="Data">
+          <input
+            type="date"
+            value={values.date}
+            onChange={(e) => set('date', e.target.value)}
+            className="tnum w-full bg-transparent text-right text-base text-ink outline-none"
+          />
+        </Row>
+
+        <AccountPicker
+          accounts={accounts.data ?? []}
+          value={resolvedAccount}
+          onChange={(id) => set('accountId', id)}
+        />
+      </div>
+
+      <div className="divide-y divide-line rounded-card bg-surface px-4">
+        <CategoryPicker
+          categories={categories.data ?? []}
+          kind={values.kind}
+          value={values.categoryId}
+          onChange={(id) => set('categoryId', id)}
+          customName={values.customCategory}
+          onCustomNameChange={(name) => set('customCategory', name)}
+        />
+
+        <div className="flex min-h-13 items-center justify-between gap-3">
+          <span className="text-sm text-muted">
+            {values.kind === 'expense' ? 'Já paguei' : 'Já recebi'}
+          </span>
+
+          <Switch
+            checked={values.paid}
+            onChange={(next) => set('paid', next)}
+            label={values.kind === 'expense' ? 'Já paguei' : 'Já recebi'}
           />
         </div>
-      </Field>
-
-      <Field label="Descrição">
-        <input
-          value={values.description}
-          onChange={(e) => set('description', e.target.value)}
-          placeholder="Mercado, aluguel, salário…"
-          className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
-        />
-      </Field>
-
-      <Field label="Data">
-        <input
-          type="date"
-          value={values.date}
-          onChange={(e) => set('date', e.target.value)}
-          className="tnum w-full bg-transparent text-base text-ink outline-none"
-        />
-      </Field>
-
-      <Field label="Conta">
-        <select
-          value={resolvedAccount}
-          onChange={(e) => set('accountId', e.target.value)}
-          className="w-full bg-transparent text-base text-ink outline-none"
-        >
-          {(accounts.data ?? []).map((account) => (
-            <option key={account.id} value={account.id} className="bg-surface">
-              {account.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      <CategoryPicker
-        categories={categories.data ?? []}
-        kind={values.kind}
-        value={values.categoryId}
-        onChange={(id) => set('categoryId', id)}
-        customName={values.customCategory}
-        onCustomNameChange={(name) => set('customCategory', name)}
-      />
-
-      <label className="card-shadow flex items-center gap-3 rounded-control bg-surface px-4 py-3.5">
-        <input
-          type="checkbox"
-          checked={values.paid}
-          onChange={(e) => set('paid', e.target.checked)}
-          className="size-5 accent-[var(--color-in)]"
-        />
-        <span className="text-sm text-ink">
-          {values.kind === 'expense' ? 'Já paguei' : 'Já recebi'}
-        </span>
-      </label>
+      </div>
 
       {error && (
         <p role="alert" className="pt-4 text-sm text-out">
@@ -168,20 +178,23 @@ export function TransactionForm({
         </p>
       )}
 
-      <div className="sticky bottom-0 -mx-4 mt-1 border-t border-line bg-overlay px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? 'Salvando…' : submitLabel}
-        </Button>
-      </div>
     </form>
   )
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+/**
+ * A labelled row, the shape the rest of the app already uses for lists.
+ *
+ * The label holds its own column and the value sits against the right edge, so
+ * the four of them line up and the eye runs down one column instead of hunting
+ * through six identical cards. It replaces a stack of separate boxes that gave
+ * every field the same weight — including the two nobody changes.
+ */
+function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="card-shadow block rounded-control bg-surface px-4 py-3">
-      <span className="block pb-0.5 text-xs text-muted">{label}</span>
-      {children}
+    <label className="flex min-h-13 items-center gap-3">
+      <span className="w-24 shrink-0 text-sm text-muted">{label}</span>
+      <span className="min-w-0 flex-1">{children}</span>
     </label>
   )
 }
@@ -197,16 +210,15 @@ function DirectionButton({
   tone: 'in' | 'out'
   children: ReactNode
 }) {
-  const activeClass =
-    tone === 'in' ? 'border-in bg-in text-white' : 'border-ink bg-ink text-white'
+  const activeClass = tone === 'in' ? 'bg-in text-white' : 'bg-out text-white'
 
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-12 rounded-control border text-sm font-medium ${
-        active ? activeClass : 'border-transparent bg-surface text-muted card-shadow'
+      className={`min-h-11 rounded-xl text-sm font-semibold ${
+        active ? activeClass : 'text-muted'
       }`}
     >
       {children}

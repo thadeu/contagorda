@@ -174,6 +174,15 @@
       height 0.34s cubic-bezier(0.32, 0.72, 0, 1) !important;
   }
 
+  /* The switch, which has to move or it is a coloured rectangle changing colour.
+     Both halves travel together: the track's fill and the knob's position say
+     the same thing, and one arriving before the other reads as a glitch. */
+  .switch-motion {
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease !important;
+  }
+
   /* The scrim, which fades rather than slides. A backdrop arriving with the
      panel would be a second thing moving, and the eye should follow one. */
   .fade-in {
@@ -187,7 +196,8 @@
   @media (prefers-reduced-motion: reduce) {
     .slide-away,
     .sheet-snap,
-    .fade-in {
+    .fade-in,
+    .switch-motion {
       transition: none !important;
     }
   }
@@ -353,9 +363,12 @@ html[data-overlay-open='true'] .app-scroll {
  *
  * `touch-action` is what actually stops it; `overflow` covers anything the page
  * could still scroll on its own.
+ *
+ * The scroller only, never the frame. `touch-action` restricts descendants, and
+ * every sheet renders inside the frame — putting it there switches off the
+ * sheet's own scrolling for as long as a finger is on its handle.
  */
-html[data-sheet-dragging='true'] .app-scroll,
-html[data-sheet-dragging='true'] .app-surface {
+html[data-sheet-dragging='true'] .app-scroll {
   overflow: hidden;
   touch-action: none;
 }

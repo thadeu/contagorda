@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { AppIcon } from './icons'
 import { useBodyScrollLock } from './useBodyScrollLock'
 import { useDragLock } from './useDragLock'
+import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
@@ -114,7 +115,8 @@ export function BottomSheet({
   }
 
   return (
-    <div ref={overlay} className="fixed inset-0 z-40 flex items-end justify-center">
+    <Portal>
+      <div ref={overlay} className="fixed inset-0 z-40 flex items-end justify-center">
       <button
         type="button"
         aria-label="Fechar"
@@ -159,7 +161,8 @@ export function BottomSheet({
           {children}
         </div>
       </div>
-    </div>
+      </div>
+    </Portal>
   )
 }
 

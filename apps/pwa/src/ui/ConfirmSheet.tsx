@@ -20,6 +20,14 @@ interface ConfirmSheetProps {
  * tapping away, and in an installed PWA on iOS announces the domain it came from
  * — telling anyone who reads it that this is a web page pretending otherwise.
  *
+ * Touch is off on the panel. There is nothing here to scroll and nothing to
+ * drag — two buttons and a sentence — so any gesture landing on it is one iOS
+ * would otherwise spend on the page behind. Declaring that before the finger
+ * lands is the only version of this that works; cancelling afterwards is too
+ * late, because a drag has to travel a few pixels before it can be told from a
+ * tap and Safari has decided by then. Taps are unaffected: `touch-action`
+ * governs panning and zooming, not clicks.
+ *
  * It deliberately does not lock the page. What is underneath is already a modal
  * or a sheet that locked it, and locking twice means the first to unmount
  * unlocks for both — the confirm closes and the screen behind it starts
@@ -47,7 +55,7 @@ export function ConfirmSheet({
         type="button"
         aria-label="Fechar"
         onClick={onClose}
-        className={`fade-in absolute inset-x-0 -inset-y-24 bg-black/45 ${
+        className={`fade-in absolute inset-x-0 -inset-y-24 touch-none bg-black/45 ${
           entered ? 'opacity-100' : 'opacity-0'
         }`}
       />
@@ -57,7 +65,7 @@ export function ConfirmSheet({
         aria-modal="true"
         aria-label={title}
         style={{ transform: entered ? 'translateY(0)' : 'translateY(100%)' }}
-        className="sheet-snap relative mx-2 mb-2 w-full max-w-md rounded-card bg-overlay p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
+        className="sheet-snap relative mx-2 mb-2 w-full max-w-md touch-none rounded-card bg-overlay p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
       >
         <p className="text-base font-semibold text-ink">{title}</p>
         <p className="pt-1 text-sm leading-relaxed text-muted">{message}</p>

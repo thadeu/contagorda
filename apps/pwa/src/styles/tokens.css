@@ -341,6 +341,31 @@ html[data-overlay-open='true'] .app-scroll {
 }
 
 /*
+ * A sheet's own scroller, and the reason the page behind it holds still.
+ *
+ * Touch is off unless there is somewhere to scroll. A gesture on a panel with
+ * nothing to move is the one iOS answers by scrolling whatever is underneath,
+ * and cancelling it afterwards is too late: a guard has to let the first few
+ * pixels through to tell a tap from a drag, and Safari has claimed the gesture
+ * by then. `touch-action` is stated before the finger lands, which is the only
+ * moment the browser is still asking.
+ *
+ * `pan-y` rather than `auto` when it can scroll: the sheet only ever moves
+ * vertically, and leaving the horizontal axis open lets a diagonal drag reach
+ * the page sideways.
+ *
+ * Taps are unaffected either way — `touch-action` governs panning and zooming,
+ * not clicks.
+ */
+.sheet-scroll {
+  touch-action: none;
+}
+
+.sheet-scroll[data-scrollable='true'] {
+  touch-action: pan-y;
+}
+
+/*
  * A finger is down on a sheet. Held from `touchstart` rather than from the first
  * movement, because the browser decides what a gesture is in the moment it
  * begins — waiting for movement means arguing with a decision already made.

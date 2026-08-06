@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { AppIcon } from './icons'
 import { useBodyScrollLock } from './useBodyScrollLock'
 import { useDragLock } from './useDragLock'
+import { useScrollable } from './useScrollable'
 import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
@@ -75,6 +76,7 @@ export function BottomSheet({
 
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
+  useScrollable(content)
 
   /**
    * The gesture splits in two. Downward moves the whole panel toward being
@@ -136,7 +138,7 @@ export function BottomSheet({
         type="button"
         aria-label="Fechar"
         onClick={onClose}
-        className={`fade-in absolute inset-x-0 -inset-y-24 bg-black/45 ${
+        className={`fade-in absolute inset-x-0 -inset-y-24 touch-none bg-black/45 ${
           entered ? 'opacity-100' : 'opacity-0'
         }`}
       />
@@ -180,7 +182,10 @@ export function BottomSheet({
           {grab}
         </header>
 
-        <div ref={content} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div
+          ref={content}
+          className="sheet-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        >
           {children}
         </div>
       </div>

@@ -12,16 +12,18 @@ import { useEffect } from 'react'
 let open = 0
 
 /**
- * Freezes what is behind an overlay.
+ * Marks the page as covered.
  *
- * The app scrolls inside a container rather than the document, so this only has
- * to mark the page — CSS stops that container from scrolling, holds the document
- * still, and hides anything that floats. Nothing is repositioned, which means
- * there is no scroll offset to save and restore, and closing a sheet cannot jump
- * the list back to the top.
+ * It touches no layout at all — no `overflow`, no `position`. Both were tried
+ * and both bring the band back along the bottom edge in the installed app: the
+ * page reaches that edge by sitting one status-bar height taller than the
+ * viewport, and anything that freezes or re-anchors the document takes that
+ * away. The trade was real and had no good side.
  *
- * The earlier version pinned the body with `position: fixed`, which is what the
- * document-scrolling layout required and where both of those bugs came from.
+ * What actually stops the page moving behind a sheet is `touch-action` on the
+ * sheet itself, declared before the finger lands — see `useScrollable`. This
+ * attribute is only for what CSS still has to say: the page takes the scrim's
+ * colour, the app's own scroller stops, anything floating hides.
  */
 export function useBodyScrollLock(): void {
   useEffect(() => {

@@ -98,3 +98,21 @@ describe('isDrag', () => {
     expect(isDrag(-40)).toBe(true)
   })
 })
+
+describe('nudging off the edge', () => {
+  /**
+   * A scroller sitting exactly at its boundary is what iOS hands to the page
+   * behind. The guard cannot cancel that in time — a drag has to travel a few
+   * pixels before it can be told from a tap — so the boundary is left before the
+   * gesture starts.
+   */
+  it('is what keeps the boundary rules from ever being needed', () => {
+    const top = scroller({ scrollTop: 0 })
+
+    expect(scrollAllowed({ target: inside(top), scroller: top, travelled: 40 })).toBe(false)
+
+    top.scrollTop = 1
+
+    expect(scrollAllowed({ target: inside(top), scroller: top, travelled: 40 })).toBe(true)
+  })
+})

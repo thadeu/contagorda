@@ -3,6 +3,7 @@ import { CloseIcon } from './icons'
 import { NavBar, NavButton } from './NavBar'
 import { useBodyScrollLock } from './useBodyScrollLock'
 import { useDragLock } from './useDragLock'
+import { useScrollable } from './useScrollable'
 import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
@@ -33,6 +34,11 @@ const THRESHOLD = 90
  * backdrop solves this for itself with `-inset-y-24`; the panel needs the same,
  * and cannot use a negative inset without moving the content inside it.
  *
+ * The grab area declares `touch-action: none`, like every other draggable
+ * surface here. Without it the browser reads the same downward pull as a scroll
+ * and moves the page behind while the panel follows the finger — two things
+ * travelling at once, one of them the screen that was supposed to stay put.
+ *
  * It is deliberately not `BottomSheet`. That one is a short list of actions, and
  * its detents exist so a long list can be pulled taller. A form has one height:
  * as much as it needs, up to nearly the screen. Sharing a component between the
@@ -51,6 +57,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
 
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
+  useScrollable(content)
 
   function handleTouchStart(event: React.TouchEvent) {
     startY.current = event.touches[0].clientY
@@ -82,7 +89,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
         type="button"
         aria-label="Fechar"
         onClick={onClose}
-        className={`fade-in absolute inset-x-0 -inset-y-24 bg-black/45 ${
+        className={`fade-in absolute inset-x-0 -inset-y-24 touch-none bg-black/45 ${
           entered ? 'opacity-100' : 'opacity-0'
         }`}
       />
@@ -99,7 +106,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="shrink-0 select-none"
+          className="shrink-0 touch-none select-none"
         >
           <div className="flex justify-center pt-2" aria-hidden="true">
             <span className="h-1 w-10 rounded-full bg-ink/30" />
@@ -112,7 +119,10 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
           />
         </div>
 
-        <div ref={content} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div
+          ref={content}
+          className="sheet-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        >
           {children}
         </div>
 

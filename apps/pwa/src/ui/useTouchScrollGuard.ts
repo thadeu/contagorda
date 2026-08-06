@@ -65,6 +65,32 @@ export function isDrag(travelled: number): boolean {
 }
 
 /**
+ * Moves a scroller one pixel off its own boundary before a gesture begins.
+ *
+ * Sitting exactly at the top or the bottom is what makes iOS hand the gesture to
+ * the page behind, and by the time a guard can cancel it the browser has already
+ * decided — a drag has to travel a few pixels before it can be told from a tap,
+ * and that is enough. A pixel of slack means the scroller always has somewhere
+ * to go, so the gesture is never passed on in the first place.
+ *
+ * Invisible: one pixel, moved before the finger has travelled at all, on an
+ * element that is about to scroll anyway.
+ */
+function nudgeOffTheEdge(node: HTMLElement | null): void {
+  if (!node || node.scrollHeight <= node.clientHeight) return
+
+  if (node.scrollTop <= 0) {
+    node.scrollTop = 1
+
+    return
+  }
+
+  if (node.scrollTop + node.clientHeight >= node.scrollHeight) {
+    node.scrollTop = node.scrollHeight - node.clientHeight - 1
+  }
+}
+
+/**
  * Stops a drag inside an overlay from reaching the page.
  *
  * The listener has to be native and non-passive. React registers `touchmove` on
@@ -85,6 +111,8 @@ export function useTouchScrollGuard(
 
     function start(event: TouchEvent) {
       startY = event.touches[0]?.clientY ?? null
+
+      nudgeOffTheEdge(scroller.current)
     }
 
     function block(event: TouchEvent) {

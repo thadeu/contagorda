@@ -13,13 +13,32 @@ SHELL := /bin/bash
 
 APPS := $(patsubst apps/%/Makefile,%,$(wildcard apps/*/Makefile))
 
-.PHONY: help up up-with-logs down logs setup test test-turbo lint typecheck check
+.PHONY: help up up-with-logs down logs tunnel setup test test-turbo lint typecheck check
 
 help:
 	@echo "apps:  $(APPS)"
-	@echo "dev:   up up-with-logs down logs"
+	@echo "dev:   up up-with-logs down logs tunnel"
 	@echo "all:   setup test test-turbo lint typecheck check"
 	@echo "one:   test-<app>  lint-<app>  typecheck-<app>  setup-<app>"
+
+## ─────────────────────────── device testing ───────────────────────────
+#
+# An https origin for the phone.
+#
+# The web platform gates a long list of features behind a secure context —
+# navigator.share, the clipboard, crypto.randomUUID, service workers — and only
+# https, localhost and 127.0.0.1 qualify. A LAN address does not, so the app
+# opened on a phone as http://192.168.x.x loses all of them at once and does it
+# silently: the calls are simply undefined.
+#
+# The tunnel hands out a real https domain, so the phone gets the same platform
+# the deployed app will have. The URL changes on every run and an installed PWA
+# remembers the origin it came from, so reinstall it after starting a new one.
+
+tunnel:
+	@command -v cloudflared >/dev/null || { echo "cloudflared não encontrado — brew install cloudflared"; exit 1; }
+	@echo "-----> https para o PWA em :5173 (reinstale o app no iPhone com a URL nova)"
+	@cloudflared tunnel --url http://localhost:5173
 
 ## ─────────────────────────── dev stack ───────────────────────────
 #

@@ -18,14 +18,26 @@ const FORM_ID = 'category-form'
  *
  * These are the things money goes on. An open picker offers two thousand options
  * to a question with about a dozen sensible answers, and every one of them is a
- * scroll away from the one that was wanted. Kept to a multiple of six so the
- * grid never ends on a ragged row.
+ * scroll away from the one that was wanted — and these are ordered by how often
+ * money actually goes there, so the common answers are reachable without
+ * scrolling at all.
+ *
+ * Kept to a multiple of six so the grid never ends on a ragged row.
  */
 const ICONS = [
   '🏠', '🍽️', '🛒', '🚗', '⛽', '💊', '🏥', '📚',
   '🎓', '👕', '✈️', '🎬', '🎁', '🐶', '💡', '📱',
   '💳', '🏦', '💰', '🔧', '✂️', '☕',
-  '🧾', '🚌',
+  '🧾', '🚌', '🍕', '🍔', '🍺', '🍷',
+  '🥗', '🍎', '🥖', '🍫', '🚕', '🚇',
+  '🚲', '🛵', '🅿️', '🛣️', '🧰', '🔌',
+  '💧', '🔥', '🌐', '📺', '🎧', '🎮',
+  '🎵', '🎟️', '🏋️', '⚽', '🏖️', '🏨',
+  '🧳', '🗺️', '📷', '🎨', '🐱', '🦴',
+  '🌱', '🪴', '🧹', '🧺', '🧴', '🧼',
+  '👟', '👗', '💄', '⌚', '👶', '🎂',
+  '💐', '⛪', '🎪', '🖨️', '📦', '🪙',
+  '🩺', '🚿',
 ]
 
 /**

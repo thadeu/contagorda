@@ -11,6 +11,8 @@ export interface TransactionFormValues {
   categoryId: string
   /** Free text typed under "Outros". Becomes a category on save. */
   customCategory: string
+  /** The emoji that new category will carry. */
+  customIcon: string
   paid: boolean
 }
 
@@ -23,6 +25,7 @@ export function emptyValues(): TransactionFormValues {
     accountId: '',
     categoryId: '',
     customCategory: '',
+    customIcon: '',
     paid: true,
   }
 }

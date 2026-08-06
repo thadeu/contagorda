@@ -89,9 +89,17 @@ export interface CategoriesPort {
   /**
    * Creating from the transaction form is the main path, so this matches on
    * name first — typing "Farmácia" twice has to reuse the category rather than
-   * quietly build a second one that splits every future report.
+   * quietly build a second one that splits every future report. The match sets
+   * aside case and accents, because in Portuguese the accent is the first thing
+   * to go when someone is typing quickly: `unaccent(lower(name))`, with the
+   * unique index built on the same expression.
+   *
+   * The icon only applies when one is created. A match keeps the icon it already
+   * has: the name is the identity, and a second entry of the same category with
+   * a different emoji is a preference, not a correction to everything filed
+   * under it before.
    */
-  findOrCreate(name: string, kind: Category['kind']): Promise<Category>
+  findOrCreate(name: string, kind: Category['kind'], icon?: string | null): Promise<Category>
 }
 
 export interface LedgersPort {

@@ -72,7 +72,9 @@ function NewTransactionModal({ onClose }: { onClose: () => void }) {
       <TransactionForm
         id={FORM_ID}
         onSubmit={async (input, custom) => {
-          const categoryId = custom ? await resolveCategory(custom, input.kind) : input.category_id
+          const categoryId = custom
+            ? await resolveCategory(custom.name, input.kind, custom.icon)
+            : input.category_id
 
           create.mutate({ ...input, category_id: categoryId }, { onSuccess: onClose })
         }}
@@ -118,7 +120,9 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
           paid: transaction.paid_at !== null,
         }}
         onSubmit={async (input, custom) => {
-          const categoryId = custom ? await resolveCategory(custom, input.kind) : input.category_id
+          const categoryId = custom
+            ? await resolveCategory(custom.name, input.kind, custom.icon)
+            : input.category_id
 
           update.mutate({ id, input: { ...input, category_id: categoryId } }, { onSuccess: onClose })
         }}

@@ -146,10 +146,14 @@ export function useDeleteTransaction(month: string) {
 export function useResolveCategory() {
   const client = useQueryClient()
 
-  return async (name: string | null, kind: Direction): Promise<string | null> => {
+  return async (
+    name: string | null,
+    kind: Direction,
+    icon?: string | null,
+  ): Promise<string | null> => {
     if (!name) return null
 
-    const category = await services.categories.findOrCreate(name, kind)
+    const category = await services.categories.findOrCreate(name, kind, icon)
 
     await client.invalidateQueries({ queryKey: categoryKeys.all() })
 

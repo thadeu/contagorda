@@ -278,15 +278,21 @@ export function createMockServices(): Services {
     categories: {
       list: () => delay(data().categories),
 
-      findOrCreate: (name, kind) => {
+      findOrCreate: (name, kind, icon) => {
         const normalized = name.trim()
         const existing = data().categories.find(
-          (c) => c.kind === kind && c.name.toLowerCase() === normalized.toLowerCase(),
+          (c) => c.kind === kind && fold(c.name) === fold(normalized),
         )
 
         if (existing) return delay(existing)
 
-        const created: Category = { id: uuid(), name: normalized, kind, icon: null, color: null }
+        const created: Category = {
+          id: uuid(),
+          name: normalized,
+          kind,
+          icon: icon ?? null,
+          color: null,
+        }
 
         patch({ categories: [...data().categories, created] })
 
@@ -392,6 +398,26 @@ export function createMockServices(): Services {
       },
     },
   }
+}
+
+/**
+ * Compares names the way a person means them: case and accents set aside.
+ *
+ * Without this, "Farmácia" and "Farmacia" are two categories — and in Portuguese
+ * the accent is the first thing to go when someone is typing quickly, so the
+ * duplicate is the common case rather than the odd one. Splitting a year of
+ * spending across two entries that look identical is the exact failure this call
+ * exists to prevent.
+ *
+ * The real one does the same server-side. Postgres spells it `unaccent(lower(…))`
+ * and the unique index has to be built on that expression, or the database will
+ * happily hold both.
+ */
+function fold(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
 }
 
 function usable(invite: LedgerInvite): boolean {

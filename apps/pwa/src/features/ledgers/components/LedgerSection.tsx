@@ -72,6 +72,12 @@ export function LedgerSection() {
         </p>
       )}
 
+      {create.isError && (
+        <p role="alert" className="px-1 text-xs text-out">
+          Não deu para criar o convite. Tente de novo.
+        </p>
+      )}
+
       {canInvite(current) && live.length === 0 && (
         <Button
           type="button"

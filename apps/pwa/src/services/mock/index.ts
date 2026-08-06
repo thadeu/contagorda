@@ -11,6 +11,7 @@ import type {
 } from '../types'
 import { monthKey, todayIso } from '../../lib/dates'
 import { getActiveLedgerId, setActiveLedgerId } from '../activeLedger'
+import { uuid } from '../../lib/uuid'
 import {
   accounts as seedAccounts,
   categories as seedCategories,
@@ -78,10 +79,6 @@ let profileStore: { display_name: string | null } = { display_name: null }
 
 function delay<T>(value: T): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(value), LATENCY_MS))
-}
-
-function uuid(): string {
-  return crypto.randomUUID()
 }
 
 function emptyLedger(): LedgerData {

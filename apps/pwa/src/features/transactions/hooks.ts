@@ -143,6 +143,29 @@ export function useDeleteTransaction(month: string) {
  * category — otherwise every report would split across entries that look
  * identical on screen.
  */
+export function useUpdateCategory() {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, name, icon }: { id: string; name: string; icon: string | null }) =>
+      services.categories.update(id, { name, icon }),
+    onSuccess: () => client.invalidateQueries({ queryKey: categoryKeys.all() }),
+  })
+}
+
+/** Removing a category leaves its transactions uncategorised, so they reload too. */
+export function useDeleteCategory() {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => services.categories.remove(id),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: categoryKeys.all() })
+      void client.invalidateQueries({ queryKey: ['transactions'] })
+    },
+  })
+}
+
 export function useCreateCategory() {
   const client = useQueryClient()
 

@@ -100,6 +100,17 @@ export interface CategoriesPort {
    * under it before.
    */
   findOrCreate(name: string, kind: Category['kind'], icon?: string | null): Promise<Category>
+  update(id: string, input: { name: string; icon: string | null }): Promise<Category>
+  /**
+   * Deleted, not archived — and the transactions filed under it survive as
+   * uncategorised.
+   *
+   * An account is archived because a transaction has to have happened somewhere:
+   * erase it and the row is a lie. A category is a label, and a row with no
+   * label is still true, just less useful. Keeping dead categories out of every
+   * picker forever is a worse trade than losing a word on some old rows.
+   */
+  remove(id: string): Promise<void>
 }
 
 export interface LedgersPort {

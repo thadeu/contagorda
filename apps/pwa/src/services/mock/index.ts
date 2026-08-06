@@ -299,6 +299,27 @@ export function createMockServices(): Services {
 
         return delay(created)
       },
+
+      update: (id, input) => {
+        patch({
+          categories: data().categories.map((c) =>
+            c.id === id ? { ...c, name: input.name.trim(), icon: input.icon } : c,
+          ),
+        })
+
+        return delay(data().categories.find((c) => c.id === id)!)
+      },
+
+      remove: (id) => {
+        patch({
+          categories: data().categories.filter((c) => c.id !== id),
+          transactions: data().transactions.map((t) =>
+            t.category_id === id ? { ...t, category_id: null } : t,
+          ),
+        })
+
+        return delay(undefined)
+      },
     },
 
     transactions: {

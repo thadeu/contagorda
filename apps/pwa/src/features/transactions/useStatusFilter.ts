@@ -1,9 +1,11 @@
 import { useSearchParams } from 'react-router'
+import { isSort, type Sort } from './sorting'
 import type { Transaction } from '../../services/types'
 
 export type Status = 'pending' | 'paid'
 
 const PARAM = 'status'
+const SORT_PARAM = 'sort'
 
 /**
  * Pending is the default because it is the question the app exists to answer:
@@ -15,14 +17,17 @@ const PARAM = 'status'
  */
 export function useStatusFilter() {
   const [params, setParams] = useSearchParams()
-  const status: Status = params.get(PARAM) === 'paid' ? 'paid' : 'pending'
 
-  function setStatus(next: Status) {
+  const status: Status = params.get(PARAM) === 'paid' ? 'paid' : 'pending'
+  const sortParam = params.get(SORT_PARAM)
+  const sort: Sort = isSort(sortParam) ? sortParam : 'date'
+
+  function write(key: string, value: string) {
     setParams(
       (current) => {
         const updated = new URLSearchParams(current)
 
-        updated.set(PARAM, next)
+        updated.set(key, value)
 
         return updated
       },
@@ -30,7 +35,12 @@ export function useStatusFilter() {
     )
   }
 
-  return { status, setStatus }
+  return {
+    status,
+    sort,
+    setStatus: (next: Status) => write(PARAM, next),
+    setSort: (next: Sort) => write(SORT_PARAM, next),
+  }
 }
 
 export function matchesStatus(transaction: Transaction, status: Status): boolean {

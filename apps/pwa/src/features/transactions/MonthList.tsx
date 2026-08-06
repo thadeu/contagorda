@@ -2,13 +2,15 @@ import { useState } from 'react'
 import { useDeleteTransaction, useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '../accounts/hooks'
 import { groupByDay } from './groupByDay'
+import { groupsByDay, sortRows } from './sorting'
 import { LIST_ORDER, matchesStatus, useStatusFilter } from './useStatusFilter'
 import { DayGroupSection } from './components/DayGroupSection'
-import { StatusTabs } from './components/StatusTabs'
+import { FilterSheet } from './components/FilterSheet'
+import { TransactionRow } from './components/TransactionRow'
 import { TransactionSheet } from './components/TransactionSheet'
 import { EmptyState } from '../../ui/EmptyState'
 import { NavButton } from '../../ui/NavBar'
-import { PlusIcon } from '../../ui/icons'
+import { FilterIcon, PlusIcon } from '../../ui/icons'
 import { Button } from '../../ui/Button'
 import { UndoBar } from '../../ui/UndoBar'
 import { useTransactionEditor } from './transactionEditorContext'
@@ -22,9 +24,14 @@ interface MonthListProps {
  * Filtering happens here rather than in the query so both tabs read one cached
  * month: switching between them is instant and costs no request, which matters
  * when that flick is the main interaction.
+ *
+ * The header is one row: what the month amounts to, then the two things you can
+ * do to the list. The count and the controls used to be two blocks stacked, and
+ * the segmented control held a permanent strip to answer a question asked once a
+ * session — which left nowhere to put sorting without taking another.
  */
 export function MonthList({ month }: MonthListProps) {
-  const { status, setStatus } = useStatusFilter()
+  const { status, sort, setStatus, setSort } = useStatusFilter()
   const transactions = useTransactions(month)
   const categories = useCategories()
   const togglePaid = useTogglePaid(month)
@@ -32,14 +39,18 @@ export function MonthList({ month }: MonthListProps) {
 
   const [sheet, setSheet] = useState<Transaction | null>(null)
   const [undo, setUndo] = useState<Transaction | null>(null)
+  const [filtering, setFiltering] = useState(false)
 
   const editor = useTransactionEditor()
   const all = transactions.data ?? []
-  const pending = all.filter((t) => t.paid_at === null)
+  const paid = all.filter((t) => t.paid_at !== null)
   const visible = all.filter((t) => matchesStatus(t, status))
 
-  const groups = groupByDay(visible, LIST_ORDER)
   const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
+  const byDay = groupsByDay(sort)
+  const groups = byDay ? groupByDay(visible, LIST_ORDER) : []
+  const flat = byDay ? [] : sortRows(visible, sort, categoryMap)
+  const empty = visible.length === 0
 
   function handleToggle(transaction: Transaction) {
     const nextPaid = transaction.paid_at === null
@@ -54,11 +65,15 @@ export function MonthList({ month }: MonthListProps) {
   return (
     <>
       <div className="flex items-center gap-2 px-4 py-3">
-        <div className="min-w-0 flex-1">
-          <StatusTabs status={status} onChange={setStatus} pendingCount={pending.length} />
-        </div>
+        <p className="min-w-0 flex-1 truncate text-sm text-muted">
+          <span className="font-semibold text-ink">
+            {paid.length} de {all.length}
+          </span>{' '}
+          {all.length === 1 ? 'lançamento pago' : 'lançamentos pagos'}
+        </p>
 
         <NavButton primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
+        <NavButton icon={FilterIcon} label="Filtros" onClick={() => setFiltering(true)} />
       </div>
 
       <div className="px-4">
@@ -72,7 +87,7 @@ export function MonthList({ month }: MonthListProps) {
           />
         )}
 
-        {transactions.isSuccess && groups.length === 0 && status === 'pending' && (
+        {transactions.isSuccess && empty && status === 'pending' && (
           <EmptyState
             title="Nada pendente neste mês"
             hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
@@ -80,23 +95,48 @@ export function MonthList({ month }: MonthListProps) {
           />
         )}
 
-        {transactions.isSuccess && groups.length === 0 && status === 'paid' && (
+        {transactions.isSuccess && empty && status === 'paid' && (
           <EmptyState title="Nada pago neste mês" hint="O que você marcar como pago aparece aqui." />
         )}
 
-        {groups.length > 0 && (
+        {!empty && (
           <div className="rounded-card bg-surface px-4 pt-1 pb-4">
-            {groups.map((group) => (
-              <DayGroupSection
-                key={group.date}
-                group={group}
-                categories={categoryMap}
-                onOpen={setSheet}
-              />
-            ))}
+            {byDay ? (
+              groups.map((group) => (
+                <DayGroupSection
+                  key={group.date}
+                  group={group}
+                  categories={categoryMap}
+                  onOpen={setSheet}
+                />
+              ))
+            ) : (
+              <ul className="pt-3">
+                {flat.map((transaction) => (
+                  <TransactionRow
+                    key={transaction.id}
+                    transaction={transaction}
+                    category={
+                      transaction.category_id ? categoryMap.get(transaction.category_id) : undefined
+                    }
+                    onOpen={setSheet}
+                  />
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>
+
+      {filtering && (
+        <FilterSheet
+          status={status}
+          sort={sort}
+          onStatusChange={setStatus}
+          onSortChange={setSort}
+          onClose={() => setFiltering(false)}
+        />
+      )}
 
       {sheet && (
         <TransactionSheet

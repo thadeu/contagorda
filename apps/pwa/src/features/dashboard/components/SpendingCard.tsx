@@ -19,9 +19,9 @@ const SLICES = ['bg-[#f5b544]', 'bg-[#8b5cf6]', 'bg-[#38bdf8]', 'bg-[#f0475f]', 
 /**
  * Where the month went, in one bar, and the way into the history behind it.
  *
- * The chevron is the only thing saying so. A card that opens a screen and looks
- * exactly like the card beside it — which does not — is a control nobody finds,
- * and the whole statistics view was reachable only by guessing.
+ * The chevron and the dashed edge are what say so. A card that opens a screen
+ * and looks exactly like the card beside it — which does not — is a control
+ * nobody finds, and the whole statistics view was reachable only by guessing.
  *
  * The proportions are the point, not the figures — which category took the most
  * is legible in a glance and would take a table to say otherwise. Anything past
@@ -44,7 +44,7 @@ export function SpendingCard({ month }: { month: string }) {
     <button
       type="button"
       onClick={() => navigate({ pathname: '/stats', search })}
-      className="h-full w-full rounded-card bg-surface px-4 py-3.5 text-left"
+      className="h-full w-full rounded-card border border-dashed border-line bg-surface px-4 py-3.5 text-left"
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">

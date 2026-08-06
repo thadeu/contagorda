@@ -13,6 +13,7 @@ import {
   RefreshCw,
   RotateCcw,
   Trash2,
+  ListFilter,
   MoreHorizontal,
   Search,
   Bell,
@@ -60,3 +61,4 @@ export const CloseIcon = tuned(X)
 export const SearchIcon = tuned(Search)
 export const BellIcon = tuned(Bell)
 export const MoreIcon = tuned(MoreHorizontal)
+export const FilterIcon = tuned(ListFilter)

@@ -124,10 +124,20 @@ export function TransactionSheet({
   )
 }
 
+/**
+ * The label is a chip and the value is not.
+ *
+ * They are different kinds of thing — one names a field, the other is the
+ * answer — and setting them in the same weight of text makes the eye read a
+ * sentence. The chip is quiet enough to skip when you already know the shape of
+ * the row and there when you do not.
+ */
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex min-h-10 items-center justify-between gap-3">
-      <dt className="shrink-0 text-sm text-muted">{label}</dt>
+      <dt className="shrink-0 rounded-chip bg-sunken px-2 py-0.5 text-xs font-medium text-muted">
+        {label}
+      </dt>
       <dd className="min-w-0 truncate text-right text-[0.9375rem] text-ink">{value}</dd>
     </div>
   )

@@ -63,15 +63,29 @@ export function CategoryFormSheet({ kind, onCreated, onClose }: CategoryFormShee
       }
     >
       <form id={FORM_ID} onSubmit={handleSubmit} className="grid gap-4 px-3 pb-2">
-        <label className="block rounded-control bg-sunken px-4 py-3">
-          <span className="block pb-0.5 text-xs text-muted">Nome</span>
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Mercado, farmácia, pet…"
-            className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
-          />
-        </label>
+        {/* The chosen icon sits where it will be read: beside the name, at the
+            size a list row shows it. Picking one from a grid of a hundred and
+            eighty tells you what you tapped; only here does it tell you what the
+            category will look like. Empty until then — a placeholder glyph would
+            be a choice nobody made. */}
+        <div className="flex items-stretch gap-2">
+          <span
+            aria-hidden="true"
+            className="flex w-14 shrink-0 items-center justify-center rounded-control bg-sunken"
+          >
+            <span className="block text-xl leading-none">{icon}</span>
+          </span>
+
+          <label className="min-w-0 flex-1 rounded-control bg-sunken px-4 py-3">
+            <span className="block pb-0.5 text-xs text-muted">Nome</span>
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Mercado, farmácia, pet…"
+              className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
+            />
+          </label>
+        </div>
 
         <div>
           <p className="pb-2 text-xs text-muted">Ícone</p>

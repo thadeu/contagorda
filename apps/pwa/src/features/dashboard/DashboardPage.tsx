@@ -6,7 +6,6 @@ import { useTransactions } from '../transactions/hooks'
 import { MonthList } from '../transactions/MonthList'
 import { MonthStack } from './components/MonthStack'
 import { ProfileSheet } from './components/ProfileButton'
-import { Card } from '../../ui/Card'
 import { IdentityRow } from './components/IdentityRow'
 import { SpendingCard } from './components/SpendingCard'
 import { TotalBalance } from './components/TotalBalance'
@@ -70,18 +69,6 @@ export function DashboardPage() {
       <div className="grid grid-cols-2 gap-2 px-4 pt-3">
         <SpendingCard month={month} />
         <TotalBalance month={month} />
-      </div>
-
-      <div className="px-4 pt-3">
-        <Card className="flex items-center gap-2.5 px-4 py-3">
-          <span aria-hidden="true">✨</span>
-          <p className="text-sm text-muted">
-            <span className="font-semibold text-ink">
-              {paid.length} de {expenses.length}
-            </span>{' '}
-            {expenses.length === 1 ? 'lançamento pago' : 'lançamentos pagos'} neste mês
-          </p>
-        </Card>
       </div>
 
       <MonthList month={month} />

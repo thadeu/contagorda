@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { BottomSheet } from '../../../ui/BottomSheet'
 import { NavButton } from '../../../ui/NavBar'
-import { CheckIcon } from '../../../ui/icons'
+import { CheckIcon, SearchIcon } from '../../../ui/icons'
+import { searchIcons } from '../categoryIcons'
 import { useCreateCategory } from '../hooks'
 import type { Direction } from '../../../services/types'
 
@@ -12,33 +13,6 @@ interface CategoryFormSheetProps {
 }
 
 const FORM_ID = 'category-form'
-
-/**
- * A short, opinionated set rather than a full emoji keyboard.
- *
- * These are the things money goes on. An open picker offers two thousand options
- * to a question with about a dozen sensible answers, and every one of them is a
- * scroll away from the one that was wanted — and these are ordered by how often
- * money actually goes there, so the common answers are reachable without
- * scrolling at all.
- *
- * Kept to a multiple of six so the grid never ends on a ragged row.
- */
-const ICONS = [
-  '🏠', '🍽️', '🛒', '🚗', '⛽', '💊', '🏥', '📚',
-  '🎓', '👕', '✈️', '🎬', '🎁', '🐶', '💡', '📱',
-  '💳', '🏦', '💰', '🔧', '✂️', '☕',
-  '🧾', '🚌', '🍕', '🍔', '🍺', '🍷',
-  '🥗', '🍎', '🥖', '🍫', '🚕', '🚇',
-  '🚲', '🛵', '🅿️', '🛣️', '🧰', '🔌',
-  '💧', '🔥', '🌐', '📺', '🎧', '🎮',
-  '🎵', '🎟️', '🏋️', '⚽', '🏖️', '🏨',
-  '🧳', '🗺️', '📷', '🎨', '🐱', '🦴',
-  '🌱', '🪴', '🧹', '🧺', '🧴', '🧼',
-  '👟', '👗', '💄', '⌚', '👶', '🎂',
-  '💐', '⛪', '🎪', '🖨️', '📦', '🪙',
-  '🩺', '🚿',
-]
 
 /**
  * Creating a category, in its own sheet over the list of them.
@@ -57,6 +31,9 @@ export function CategoryFormSheet({ kind, onCreated, onClose }: CategoryFormShee
 
   const [name, setName] = useState('')
   const [icon, setIcon] = useState('')
+  const [query, setQuery] = useState('')
+
+  const found = searchIcons(query)
 
   const trimmed = name.trim()
 
@@ -99,25 +76,41 @@ export function CategoryFormSheet({ kind, onCreated, onClose }: CategoryFormShee
         <div>
           <p className="pb-2 text-xs text-muted">Ícone</p>
 
-          {/* A grid, the shape every picker on the phone uses. A horizontal
-              strip hides most of the set behind a scroll and fights the sheet
-              for the gesture; a grid shows all of it at once and has no axis to
-              argue about. */}
-          <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="Ícone da categoria">
-            {ICONS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setIcon(icon === option ? '' : option)}
-                aria-pressed={icon === option}
-                className={`flex aspect-square items-center justify-center rounded-2xl ${
-                  icon === option ? 'bg-accent' : 'bg-sunken'
-                }`}
-              >
-                <span className="block text-lg leading-none">{option}</span>
-              </button>
-            ))}
-          </div>
+          <label className="mb-2 flex items-center gap-2 rounded-control bg-sunken px-3 py-2">
+            <SearchIcon className="size-4 shrink-0 text-faint" aria-hidden="true" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar por nome"
+              aria-label="Buscar ícone"
+              className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+            />
+          </label>
+
+          {/* A grid, the shape every picker on the phone uses. A horizontal strip
+              hides most of the set behind a scroll and fights the sheet for the
+              gesture; a grid has no axis to argue about, and with search above it
+              the length stops mattering. */}
+          {found.length === 0 ? (
+            <p className="py-4 text-sm text-muted">Nenhum ícone com esse nome.</p>
+          ) : (
+            <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="Ícone da categoria">
+              {found.map((option) => (
+                <button
+                  key={option.emoji}
+                  type="button"
+                  onClick={() => setIcon(icon === option.emoji ? '' : option.emoji)}
+                  aria-pressed={icon === option.emoji}
+                  aria-label={option.terms.split(' ')[0]}
+                  className={`flex aspect-square items-center justify-center rounded-2xl ${
+                    icon === option.emoji ? 'bg-accent' : 'bg-sunken'
+                  }`}
+                >
+                  <span className="block text-lg leading-none">{option.emoji}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {create.isError && (

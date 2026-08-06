@@ -32,7 +32,13 @@ export function LedgerSection() {
   const people = members.data ?? []
 
   async function share(token: string) {
-    setSent(await shareOrCopy(inviteUrl(token), 'Entrar no meu espaço no Conta Gorda'))
+    setSent(
+      await shareOrCopy({
+        url: inviteUrl(token),
+        title: 'Conta Gorda',
+        text: 'Estou te convidando para participar da minha Conta Gorda.',
+      }),
+    )
   }
 
   return (

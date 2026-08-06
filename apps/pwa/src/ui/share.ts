@@ -1,5 +1,16 @@
 export type ShareResult = 'shared' | 'copied' | 'dismissed' | 'failed'
 
+export interface Shareable {
+  url: string
+  /** Names the sheet itself. Most apps never show it. */
+  title: string
+  /**
+   * The message that travels with the link, without repeating it. Every target
+   * places the url itself, so a message carrying one too arrives with it twice.
+   */
+  text: string
+}
+
 /**
  * Hands a link to the system, and falls back to the clipboard.
  *
@@ -15,13 +26,17 @@ export type ShareResult = 'shared' | 'copied' | 'dismissed' | 'failed'
  * Both of the modern calls are secure-context only, so on a plain-http origin
  * neither is defined and the whole thing falls through to `execCommand`.
  *
+ * The clipboard path keeps message and link together, because a bare url pasted
+ * into a chat is a stranger asking to be clicked. The share sheet puts them side
+ * by side already.
+ *
  * Must be called straight from a tap: browsers refuse a share that is not tied
  * to a gesture, and an await before it can be enough to lose that.
  */
-export async function shareOrCopy(url: string, title: string): Promise<ShareResult> {
+export async function shareOrCopy({ url, title, text }: Shareable): Promise<ShareResult> {
   if (typeof navigator.share === 'function') {
     try {
-      await navigator.share({ title, url })
+      await navigator.share({ title, text, url })
 
       return 'shared'
     } catch (error) {
@@ -31,9 +46,11 @@ export async function shareOrCopy(url: string, title: string): Promise<ShareResu
     }
   }
 
+  const written = `${text}\n\n${url}`
+
   if (navigator.clipboard) {
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(written)
 
       return 'copied'
     } catch {
@@ -41,7 +58,7 @@ export async function shareOrCopy(url: string, title: string): Promise<ShareResu
     }
   }
 
-  return legacyCopy(url) ? 'copied' : 'failed'
+  return legacyCopy(written) ? 'copied' : 'failed'
 }
 
 /**

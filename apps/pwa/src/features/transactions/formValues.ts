@@ -9,10 +9,6 @@ export interface TransactionFormValues {
   date: string
   accountId: string
   categoryId: string
-  /** Free text typed under "Outros". Becomes a category on save. */
-  customCategory: string
-  /** The emoji that new category will carry. */
-  customIcon: string
   paid: boolean
 }
 
@@ -24,8 +20,6 @@ export function emptyValues(): TransactionFormValues {
     date: todayIso(),
     accountId: '',
     categoryId: '',
-    customCategory: '',
-    customIcon: '',
     paid: true,
   }
 }

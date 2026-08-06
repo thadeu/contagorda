@@ -143,20 +143,12 @@ export function useDeleteTransaction(month: string) {
  * category — otherwise every report would split across entries that look
  * identical on screen.
  */
-export function useResolveCategory() {
+export function useCreateCategory() {
   const client = useQueryClient()
 
-  return async (
-    name: string | null,
-    kind: Direction,
-    icon?: string | null,
-  ): Promise<string | null> => {
-    if (!name) return null
-
-    const category = await services.categories.findOrCreate(name, kind, icon)
-
-    await client.invalidateQueries({ queryKey: categoryKeys.all() })
-
-    return category.id
-  }
+  return useMutation({
+    mutationFn: ({ name, kind, icon }: { name: string; kind: Direction; icon: string | null }) =>
+      services.categories.findOrCreate(name, kind, icon),
+    onSuccess: () => client.invalidateQueries({ queryKey: categoryKeys.all() }),
+  })
 }

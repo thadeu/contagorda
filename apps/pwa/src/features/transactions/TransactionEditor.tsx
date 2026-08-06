@@ -10,7 +10,6 @@ import {
   type TransactionEditor,
 } from './transactionEditorContext'
 import {
-  useResolveCategory,
   useTransaction,
   useUpdateTransaction,
   useCreateTransaction,
@@ -53,7 +52,6 @@ export function TransactionEditorProvider({ children }: { children: ReactNode })
 function NewTransactionModal({ onClose }: { onClose: () => void }) {
   const { month } = useMonth()
   const create = useCreateTransaction(month)
-  const resolveCategory = useResolveCategory()
 
   return (
     <Modal
@@ -71,13 +69,7 @@ function NewTransactionModal({ onClose }: { onClose: () => void }) {
     >
       <TransactionForm
         id={FORM_ID}
-        onSubmit={async (input, custom) => {
-          const categoryId = custom
-            ? await resolveCategory(custom.name, input.kind, custom.icon)
-            : input.category_id
-
-          create.mutate({ ...input, category_id: categoryId }, { onSuccess: onClose })
-        }}
+        onSubmit={(input) => create.mutate(input, { onSuccess: onClose })}
       />
     </Modal>
   )
@@ -87,7 +79,6 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
   const { month } = useMonth()
   const transaction = useTransaction(month, id)
   const update = useUpdateTransaction(month)
-  const resolveCategory = useResolveCategory()
 
   if (!transaction) {
     return null
@@ -116,16 +107,9 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
           date: transaction.date,
           accountId: transaction.account_id,
           categoryId: transaction.category_id ?? '',
-          customCategory: '',
           paid: transaction.paid_at !== null,
         }}
-        onSubmit={async (input, custom) => {
-          const categoryId = custom
-            ? await resolveCategory(custom.name, input.kind, custom.icon)
-            : input.category_id
-
-          update.mutate({ id, input: { ...input, category_id: categoryId } }, { onSuccess: onClose })
-        }}
+        onSubmit={(input) => update.mutate({ id, input }, { onSuccess: onClose })}
       />
     </Modal>
   )

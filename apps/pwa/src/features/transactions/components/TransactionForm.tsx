@@ -7,18 +7,13 @@ import { Switch } from '../../../ui/Switch'
 import { emptyValues, type TransactionFormValues } from '../formValues'
 import type { NewTransaction } from '../../../services/types'
 
-/** A category the person typed rather than picked, with the icon they gave it. */
-export interface CustomCategory {
-  name: string
-  icon: string | null
-}
 
 interface TransactionFormProps {
   /** Ties the form to a submit button that lives outside it, in the nav bar. */
   id: string
   initial?: Partial<TransactionFormValues>
   /** `customCategory` is set when the user typed one under "Outros". */
-  onSubmit: (input: NewTransaction, custom: CustomCategory | null) => void
+  onSubmit: (input: NewTransaction) => void
 }
 
 /**
@@ -77,20 +72,15 @@ export function TransactionForm({
       return
     }
 
-    const custom = values.customCategory.trim()
-
-    onSubmit(
-      {
-        account_id: resolvedAccount,
-        category_id: values.categoryId || null,
-        kind: values.kind,
-        amount_cents: cents,
-        date: values.date,
-        description: values.description.trim(),
-        paid: values.paid,
-      },
-      custom === '' ? null : { name: custom, icon: values.customIcon || null },
-    )
+    onSubmit({
+      account_id: resolvedAccount,
+      category_id: values.categoryId || null,
+      kind: values.kind,
+      amount_cents: cents,
+      date: values.date,
+      description: values.description.trim(),
+      paid: values.paid,
+    })
   }
 
   return (
@@ -161,10 +151,6 @@ export function TransactionForm({
           kind={values.kind}
           value={values.categoryId}
           onChange={(id) => set('categoryId', id)}
-          customName={values.customCategory}
-          onCustomNameChange={(name) => set('customCategory', name)}
-          customIcon={values.customIcon}
-          onCustomIconChange={(icon) => set('customIcon', icon)}
         />
 
         <div className="flex min-h-13 items-center justify-between gap-3">

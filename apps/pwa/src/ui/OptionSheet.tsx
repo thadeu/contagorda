@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { BottomSheet } from './BottomSheet'
 import { CheckIcon } from './icons'
 
@@ -13,8 +12,6 @@ interface OptionSheetProps {
   value: string
   onSelect: (value: string) => void
   onClose: () => void
-  /** Rendered under the list. For the case the list cannot cover. */
-  footer?: ReactNode
 }
 
 /**
@@ -35,7 +32,6 @@ export function OptionSheet({
   value,
   onSelect,
   onClose,
-  footer,
 }: OptionSheetProps) {
   return (
     <BottomSheet title={title} onClose={onClose} expandable>
@@ -57,8 +53,6 @@ export function OptionSheet({
           </li>
         ))}
       </ul>
-
-      {footer}
     </BottomSheet>
   )
 }

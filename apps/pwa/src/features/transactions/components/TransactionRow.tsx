@@ -10,6 +10,11 @@ interface TransactionRowProps {
 }
 
 /**
+ * The row carries no horizontal padding of its own. Whatever holds it — the
+ * card on the month view, the docked sheet on the statistics screen — is already
+ * inset, and a row that pads itself again lands three indents from the edge of
+ * the screen while the surface it sits on lands at one.
+ *
  * The whole row is one target, and it opens a sheet rather than acting.
  *
  * There is no paid checkbox: the list is already filtered by status, so every
@@ -27,7 +32,7 @@ export function TransactionRow({ transaction, category, onOpen }: TransactionRow
       <button
         type="button"
         onClick={() => onOpen(transaction)}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left"
+        className="flex w-full items-center gap-3 py-3 text-left"
       >
         <span
           className="grid size-10 shrink-0 place-items-center rounded-full bg-sunken text-base"

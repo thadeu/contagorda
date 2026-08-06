@@ -23,7 +23,7 @@ export function DayGroupSection({ group, categories, onOpen }: DayGroupSectionPr
 
   return (
     <section className="pt-4">
-      <header className="flex items-baseline justify-between px-1 pb-2">
+      <header className="flex items-baseline justify-between pb-2">
         <h3 className={`text-xs font-semibold tracking-wide uppercase ${today ? 'text-in' : 'text-faint'}`}>
           {today ? 'Hoje' : dayLabel(group.date)}
         </h3>

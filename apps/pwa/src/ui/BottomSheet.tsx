@@ -92,7 +92,9 @@ export function BottomSheet({
     document.addEventListener('keydown', onKey)
     panel.current?.focus()
 
-    return () => document.removeEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+    }
   }, [onClose])
 
   function handleTouchStart(event: React.TouchEvent) {

@@ -53,14 +53,14 @@ export function IdentityRow({
       <div className="flex shrink-0 items-center gap-1.5">
         <span
           aria-hidden="true"
-          className="grid size-10 place-items-center rounded-full bg-surface text-faint opacity-50"
+          className="grid size-10 place-items-center rounded-2xl bg-surface text-faint opacity-50"
         >
           <SearchIcon className="size-[1.125rem]" />
         </span>
 
         <span
           aria-hidden="true"
-          className="grid size-10 place-items-center rounded-full bg-surface text-faint opacity-50"
+          className="grid size-10 place-items-center rounded-2xl bg-surface text-faint opacity-50"
         >
           <BellIcon className="size-[1.125rem]" />
         </span>
@@ -69,7 +69,7 @@ export function IdentityRow({
           type="button"
           onClick={onOpenAccounts}
           aria-label="Contas"
-          className="grid size-10 place-items-center rounded-full bg-surface text-ink"
+          className="grid size-10 place-items-center rounded-2xl bg-surface text-ink"
         >
           <WalletIcon className="size-[1.125rem]" />
         </button>

@@ -35,7 +35,7 @@ export function TransactionRow({ transaction, category, onOpen }: TransactionRow
         className="flex w-full items-center gap-3 py-3 text-left"
       >
         <span
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-sunken text-base"
+          className="grid size-10 shrink-0 place-items-center rounded-2xl bg-sunken text-base"
           aria-hidden="true"
         >
           {category?.icon ?? '•'}

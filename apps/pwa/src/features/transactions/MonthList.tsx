@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useDeleteTransaction, useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '../accounts/hooks'
 import { groupByDay } from './groupByDay'
-import { matchesStatus, orderFor, useStatusFilter } from './useStatusFilter'
+import { LIST_ORDER, matchesStatus, useStatusFilter } from './useStatusFilter'
 import { DayGroupSection } from './components/DayGroupSection'
 import { StatusTabs } from './components/StatusTabs'
 import { TransactionSheet } from './components/TransactionSheet'
@@ -38,7 +38,7 @@ export function MonthList({ month }: MonthListProps) {
   const pending = all.filter((t) => t.paid_at === null)
   const visible = all.filter((t) => matchesStatus(t, status))
 
-  const groups = groupByDay(visible, orderFor(status))
+  const groups = groupByDay(visible, LIST_ORDER)
   const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
 
   function handleToggle(transaction: Transaction) {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { groupByDay, peakNet } from './groupByDay'
-import { matchesStatus, orderFor } from './useStatusFilter'
+import { LIST_ORDER, matchesStatus } from './useStatusFilter'
 import type { Transaction } from '../../services/types'
 
 function tx(overrides: Partial<Transaction> = {}): Transaction {
@@ -31,11 +31,10 @@ describe('status filter', () => {
     expect(matchesStatus(paid, 'pending')).toBe(false)
   })
 
-  // The two lists answer different questions, so they cannot share a direction:
-  // pending is read soonest-first so overdue leads, paid is read newest-first.
-  it('orders pending soonest first and paid newest first', () => {
-    expect(orderFor('pending')).toBe('asc')
-    expect(orderFor('paid')).toBe('desc')
+  // Both lists open at the end of the month, because what is being checked is
+  // usually what just happened.
+  it('orders every list newest first', () => {
+    expect(LIST_ORDER).toBe('desc')
   })
 })
 

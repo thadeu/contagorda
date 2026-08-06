@@ -98,11 +98,11 @@ export function CategoryFormSheet({ kind, onCreated, onClose }: CategoryFormShee
                 type="button"
                 onClick={() => setIcon(icon === option ? '' : option)}
                 aria-pressed={icon === option}
-                className={`grid aspect-square place-items-center rounded-2xl text-lg leading-none ${
+                className={`flex aspect-square items-center justify-center rounded-2xl ${
                   icon === option ? 'bg-accent' : 'bg-sunken'
                 }`}
               >
-                {option}
+                <span className="block text-lg leading-none">{option}</span>
               </button>
             ))}
           </div>

@@ -55,14 +55,12 @@ export function TransactionSheet({
         title={transaction.description}
         subtitle={formatBRL(transaction.amount_cents)}
         onClose={onClose}
+        actions={<span className="text-sm text-muted">{dayLabel(transaction.date)}</span>}
       >
-        {/* What the row could not fit. The list shows a description and an
-            amount because that is what is scanned; everything that answers "wait,
-            which one was this" lives here, where someone has already stopped to
-            look. */}
-        <dl className="mb-4 divide-y divide-line rounded-card bg-surface px-4">
-          <Detail label="Valor" value={formatBRL(transaction.amount_cents)} />
-          <Detail label="Data" value={dayLabel(transaction.date)} />
+        {/* Two lines, not a panel. The heading already carries what the row is
+            and what it cost; these are the two things it could not fit, and a
+            card around them would announce them as a section of their own. */}
+        <dl className="mb-4 px-3">
           <Detail
             label="Categoria"
             value={
@@ -128,7 +126,7 @@ export function TransactionSheet({
 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-h-12 items-center justify-between gap-3">
+    <div className="flex min-h-10 items-center justify-between gap-3">
       <dt className="shrink-0 text-sm text-muted">{label}</dt>
       <dd className="min-w-0 truncate text-right text-[0.9375rem] text-ink">{value}</dd>
     </div>

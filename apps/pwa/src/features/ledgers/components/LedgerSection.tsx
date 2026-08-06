@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useActiveLedger } from '../../../app/ledger/activeLedgerContext'
 import { inviteUrl, useCreateInvite, useInvites, useMembers, useRevokeInvite } from '../hooks'
 import { Button } from '../../../ui/Button'
+import { shareOrCopy, type ShareResult } from '../../../ui/share'
 import { CheckIcon } from '../../../ui/icons'
 import type { LedgerInvite } from '../../../services/types'
 
@@ -19,14 +20,13 @@ export function LedgerSection() {
   const create = useCreateInvite(ledgerId)
   const revoke = useRevokeInvite(ledgerId)
 
-  const [copied, setCopied] = useState<string | null>(null)
+  const [sent, setSent] = useState<ShareResult | null>(null)
 
   const live = (invites.data ?? []).filter(usable)
   const people = members.data ?? []
 
-  async function copy(token: string) {
-    await navigator.clipboard.writeText(inviteUrl(token))
-    setCopied(token)
+  async function share(token: string) {
+    setSent(await shareOrCopy(inviteUrl(token), 'Entrar no meu espaço no Conta Gorda'))
   }
 
   return (
@@ -87,8 +87,8 @@ export function LedgerSection() {
             <p className="truncate text-xs text-faint">{inviteUrl(invite.token)}</p>
 
             <div className="flex gap-2">
-              <Button type="button" className="flex-1" onClick={() => copy(invite.token)}>
-                {copied === invite.token ? 'Copiado' : 'Copiar link'}
+              <Button type="button" className="flex-1" onClick={() => share(invite.token)}>
+                {label(sent)}
               </Button>
               <Button
                 type="button"
@@ -104,6 +104,18 @@ export function LedgerSection() {
       )}
     </div>
   )
+}
+
+/**
+ * The button says what happened, because the two outcomes look nothing alike.
+ * A native sheet is its own confirmation; a silent clipboard write is not.
+ */
+function label(sent: ShareResult | null): string {
+  if (sent === 'copied') return 'Link copiado'
+
+  if (sent === 'failed') return 'Não deu para compartilhar'
+
+  return 'Compartilhar convite'
 }
 
 function usable(invite: LedgerInvite): boolean {

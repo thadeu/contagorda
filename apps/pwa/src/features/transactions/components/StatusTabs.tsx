@@ -8,14 +8,15 @@ interface StatusTabsProps {
 
 /**
  * A segmented control, the platform's own device for switching between two
- * views of the same thing. The pending tab carries its count, because "how many
+ * views of the same thing. Squircle, like every other control in the app —
+ * a pill beside the squircle it sits next to reads as two systems meeting. The pending tab carries its count, because "how many
  * are left" is the number someone opens the app for and hiding it behind a tap
  * would hide the answer.
  */
 export function StatusTabs({ status, onChange, pendingCount }: StatusTabsProps) {
   return (
     <div
-      className="flex gap-1 rounded-full bg-sunken p-1"
+      className="flex gap-1 rounded-2xl bg-sunken p-1"
       role="tablist"
       aria-label="Situação"
     >
@@ -50,7 +51,7 @@ function Tab({
       role="tab"
       aria-selected={selected}
       onClick={onClick}
-      className={`inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-medium ${
+      className={`inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-xl text-sm font-medium ${
         selected ? 'bg-surface text-ink shadow-sm' : 'text-muted'
       }`}
     >

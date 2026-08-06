@@ -58,9 +58,7 @@ export function MonthList({ month }: MonthListProps) {
           <StatusTabs status={status} onChange={setStatus} pendingCount={pending.length} />
         </div>
 
-        <div className="flex shrink-0 rounded-full bg-sunken p-1">
-          <NavButton circle primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
-        </div>
+        <NavButton primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
       </div>
 
       <div className="px-4">

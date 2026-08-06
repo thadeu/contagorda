@@ -47,8 +47,6 @@ interface NavButtonProps {
   onClick?: () => void
   /** The one action the screen is for. There is at most one per bar. */
   primary?: boolean
-  /** Round only where it sits inside a pill and has to match it. */
-  circle?: boolean
   disabled?: boolean
   /** Lets the bar hold a form's submit, wired by id rather than by nesting. */
   type?: 'button' | 'submit'
@@ -57,8 +55,9 @@ interface NavButtonProps {
 
 /**
  * A squircle the size of a fingertip — the rounded square the platform moved to,
- * which reads as a control rather than as a badge. It stays a circle only where
- * it sits inside a pill and has to match its curve.
+ * which reads as a control rather than as a badge. There is no round variant:
+ * the last pill in the app was the segmented control this button stands beside,
+ * and once that squared off, a circle here had nothing left to match.
  *
  * The primary one carries the accent, which is the one colour that holds its
  * contrast whichever way the theme goes. It used to be the near-black, and that
@@ -76,7 +75,6 @@ export function NavButton({
   label,
   onClick,
   primary = false,
-  circle = false,
   disabled = false,
   type = 'button',
   form,
@@ -88,9 +86,7 @@ export function NavButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`grid shrink-0 place-items-center disabled:opacity-30 ${
-        circle ? 'size-9 rounded-full' : 'size-10 rounded-2xl'
-      } ${
+      className={`grid size-10 shrink-0 place-items-center rounded-2xl disabled:opacity-30 ${
         primary
           ? 'bg-accent text-brand ring-2 ring-accent/35 shadow-[0_3px_14px_-3px_var(--color-accent)]'
           : 'bg-sunken text-ink'

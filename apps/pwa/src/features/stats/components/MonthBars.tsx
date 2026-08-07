@@ -145,14 +145,34 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
 
   const painted = useRef(false)
 
+  /** The last month to pass under the centre, so each one is felt exactly once. */
+  const crossed = useRef(selected)
+
   /**
-   * What the scroll last came to rest on, which is only ever news while it is
-   * on its way to becoming the selection. Kept so the settle handler can tell a
-   * month it already reported from one it has not.
+   * Two speeds, because the two jobs have different costs.
+   *
+   * `live` is which column is lit, and it follows the finger frame by frame. It
+   * costs a class name, and a highlight that lags behind the gesture is the
+   * clearest way to make a chart feel like it is being remote-controlled.
+   *
+   * `landed` is what the scale is drawn against and what the screen below is
+   * showing, and it waits for the scroll to stop. That one costs a reload of the
+   * list, the total and the sentence under the chart, and paying it for every
+   * month a flick passes over rebuilds the screen several times on the way to a
+   * month nobody asked for.
+   *
+   * Nothing is hidden by the wait: the column is already lit, so the chart has
+   * already answered. What is below it is catching up, and it is allowed to.
    */
+  const [live, setLive] = useState(selected)
+  const [landed, setLanded] = useState(selected)
   const [chosenMonth, setChosenMonth] = useState(selected)
 
-  if (selected !== chosenMonth) setChosenMonth(selected)
+  if (selected !== chosenMonth) {
+    setChosenMonth(selected)
+    setLive(selected)
+    setLanded(selected)
+  }
 
   /**
    * The selection is brought to the centre whenever it changes, and instantly on
@@ -175,6 +195,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
     if (!element || !column) return
 
     const off = Math.abs(centreOf(column) - element.scrollLeft - element.clientWidth / 2)
+
 
     if (off > 2) {
       column.scrollIntoView({
@@ -201,18 +222,46 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
     if (!element) return
 
     let timer: ReturnType<typeof setTimeout>
+    let frame = 0
 
     function settled() {
       const middle = centred(element, track.current)
 
-      if (middle && middle !== chosenMonth) {
-        setChosenMonth(middle)
-        onSelect(middle)
-        tick()
+      if (middle) {
+        setLanded(middle)
+
+        if (middle !== chosenMonth) {
+          setChosenMonth(middle)
+          onSelect(middle)
+        }
       }
     }
 
+    /**
+     * Once per frame at most. Scroll fires far more often than the screen is
+     * drawn, and measuring the columns on every one of those is work thrown away
+     * before anybody could see it.
+     */
+    function measure() {
+      frame = 0
+
+      const middle = centred(element, track.current)
+
+      if (!middle) return
+
+      if (crossed.current !== middle) {
+        // Each month crossing the centre gets its own tick, the way a picker
+        // wheel does — the feel belongs to the gesture, not to where it stops.
+        crossed.current = middle
+        tick()
+      }
+
+      setLive(middle)
+    }
+
     function onScroll() {
+      if (!frame) frame = requestAnimationFrame(measure)
+
       clearTimeout(timer)
       timer = setTimeout(settled, SETTLE)
     }
@@ -221,12 +270,13 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
 
     return () => {
       clearTimeout(timer)
+      cancelAnimationFrame(frame)
       element.removeEventListener('scroll', onScroll)
     }
   }, [chosenMonth, onSelect])
 
   const readings = read(totals, monthKey(todayIso()))
-  const tallest = ceiling(readings, selected)
+  const tallest = ceiling(readings, landed)
 
   return (
     <div
@@ -237,17 +287,17 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
         <Edge />
 
         {readings.map((reading) => {
-          const chosen = reading.month === selected
+          const chosen = reading.month === live
           const share = tallest === 0 ? 0 : Math.min(reading.cents / tallest, 1)
 
           return (
             <button
               key={reading.month}
-              ref={chosen ? current : null}
+              ref={reading.month === selected ? current : null}
               data-month={reading.month}
               type="button"
               onClick={() => onSelect(reading.month)}
-              aria-pressed={chosen}
+              aria-pressed={reading.month === selected}
               aria-label={label(reading)}
               className={`flex w-[20vw] max-w-24 shrink-0 snap-center snap-always flex-col items-center gap-1.5 rounded-2xl px-1 pt-2 ${
                 chosen ? 'bg-white/6' : ''

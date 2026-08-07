@@ -4,6 +4,7 @@ import { NavBar, NavButton } from '../../ui/NavBar'
 import { DockedSheet } from '../../ui/DockedSheet'
 import { Money } from '../../ui/Money'
 import { EmptyState } from '../../ui/EmptyState'
+import { Skeleton } from '../../ui/Skeleton'
 import { ChevronLeftIcon, ChevronRightIcon, MoreIcon, TargetIcon } from '../../ui/icons'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 import { monthKey, monthLabel, shiftMonth, todayIso } from '../../lib/dates'
@@ -18,7 +19,7 @@ import {
 import { groupByDay } from '../transactions/groupByDay'
 import { DayGroupSection } from '../transactions/components/DayGroupSection'
 import { TransactionSheet } from '../transactions/components/TransactionSheet'
-import { MonthBars } from './components/MonthBars'
+import { MonthBars, MonthBarsSkeleton } from './components/MonthBars'
 import { MonthDifference } from './components/MonthDifference'
 import { difference, read } from './trend'
 import { ALL, CategoryFilter, UNCATEGORISED } from './components/CategoryFilter'
@@ -150,13 +151,26 @@ export function StatsPage() {
             </div>
           </div>
 
-          <Money cents={totalCents} className="block px-4 pb-4 text-[2rem] font-bold text-ink" />
+          {/* A figure nobody has yet is not zero. R$ 0,00 is a real answer — a
+              month with nothing spent in it — and for as long as it is on screen
+              the app is stating it with a straight face. */}
+          {transactions.isPending ? (
+            <div className="px-4 pb-4">
+              <Skeleton className="h-8 w-44" />
+            </div>
+          ) : (
+            <Money cents={totalCents} className="block px-4 pb-4 text-[2rem] font-bold text-ink" />
+          )}
         </div>
 
         {/* The one horizontal gesture on the screen, and the only place a finger
             moves anything other than the sheet. */}
         <div className="pb-3">
-          <MonthBars totals={bars} selected={month} onSelect={setMonth} />
+          {totals.isPending ? (
+            <MonthBarsSkeleton />
+          ) : (
+            <MonthBars totals={bars} selected={month} onSelect={setMonth} />
+          )}
         </div>
 
         {gap && (

@@ -187,13 +187,15 @@
   /* A bar finding its new height when the scale changes under it. Unlayered,
      like the motion above, so a utility class cannot win it by accident.
 
-     Slower than a tap and faster than a sheet: the change is a consequence of a
-     gesture aimed elsewhere, and arriving instantly reads as a glitch while
-     arriving slowly reads as the app thinking. Each bar runs its own — they
+     Slow, and slower than anything else that moves here. Every other transition
+     in the app answers a touch, where late is wrong; this one answers a scroll
+     that has already stopped, so nobody is waiting on it — and a scale settling
+     unhurriedly reads as measurement while the same change in half the time
+     reads as a flicker. Each bar runs its own — they
      start together and finish together, and the ones that barely moved say so by
      barely moving. */
   .bar-grow {
-    transition: height 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: height 0.62s cubic-bezier(0.22, 0.68, 0, 1);
   }
 
   @media (prefers-reduced-motion: reduce) {

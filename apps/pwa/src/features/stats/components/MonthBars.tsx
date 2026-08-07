@@ -3,6 +3,7 @@ import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/da
 import { compactBRL, formatBRL } from '../../../lib/money'
 import { tick } from '../../../lib/haptics'
 import { ceiling, read, type Reading, type Trend } from '../trend'
+import { Skeleton } from '../../../ui/Skeleton'
 import type { MonthTotal } from '../../../services/types'
 
 interface MonthBarsProps {
@@ -376,4 +377,39 @@ function centred(element: HTMLElement | null, track: HTMLElement | null): string
   }, null)
 
   return nearest?.getAttribute('data-month') ?? null
+}
+
+/** Heights that read as a chart without reading as an answer. */
+const RESTING = [52, 74, 44, 88, 61]
+
+/**
+ * The chart before there is a chart.
+ *
+ * Same five columns, same axis, same heights of nothing in particular. The point
+ * is that the layout is already final: when the data lands, the numbers appear
+ * and the bars move, and nothing jumps or reflows around them.
+ *
+ * The bars are deliberately uneven. Five identical ones read as a real answer —
+ * five months that cost the same — and the whole reason this exists is that a
+ * placeholder must not be mistakeable for data. Uneven and unlabelled is
+ * obviously scaffolding.
+ */
+export function MonthBarsSkeleton() {
+  return (
+    <div className="overflow-hidden" role="status" aria-label="Carregando o histórico">
+      <div className="flex items-end justify-center">
+        {RESTING.map((height, index) => (
+          <span key={index} className="flex w-[20vw] max-w-24 shrink-0 flex-col items-center gap-1.5 px-1 pt-2">
+            <Skeleton className="h-2.5 w-12" />
+
+            <span className="flex h-28 w-full items-end justify-center border-b border-line">
+              <Skeleton className="w-2.5 rounded-t-full" style={{ height: `${height}%` }} />
+            </span>
+
+            <Skeleton className="mt-1 mb-2 h-2 w-7" />
+          </span>
+        ))}
+      </div>
+    </div>
+  )
 }

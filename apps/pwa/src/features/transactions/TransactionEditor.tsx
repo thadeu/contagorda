@@ -3,8 +3,8 @@ import { useMonth } from '@/app/useMonth'
 import type { Scope } from '@/services/ports'
 import type { Recurrence } from './recurrence'
 import { Modal } from '@/ui/Modal'
-import { NavButton } from '@/ui/NavBar'
-import { CheckIcon } from '@/ui/icons'
+import type { Direction } from '@/services/types'
+import { NavAction } from '@/ui/NavBar'
 import { centsToInput } from './formValues'
 import { TransactionForm } from './components/TransactionForm'
 import {
@@ -59,24 +59,26 @@ function NewTransactionModal({ onClose }: { onClose: () => void }) {
   const create = useCreateTransaction(month)
   const [recurrence, setRecurrence] = useState<Recurrence | null>(null)
 
+  /**
+   * Expense, always, until the switch says otherwise. Nearly every entry is one,
+   * and a form that opened on whatever was entered last would make the most
+   * common case depend on history nobody remembers.
+   */
+  const [kind, setKind] = useState<Direction>('expense')
+
   return (
     <Modal
-      title="Novo lançamento"
+      title={`Nova ${noun(kind)}`}
       onClose={onClose}
       trailing={
-        <NavButton
-          type="submit"
-          form={FORM_ID}
-          icon={CheckIcon}
-          label="Salvar"
-          disabled={create.isPending}
-        />
+        <NavAction type="submit" form={FORM_ID} label="Salvar" disabled={create.isPending} />
       }
     >
       <TransactionForm
         id={FORM_ID}
         recurrence={recurrence}
         onRecurrenceChange={setRecurrence}
+        onKindChange={setKind}
         onSubmit={(input) => create.mutate({ input, recurrence }, { onSuccess: onClose })}
       />
     </Modal>
@@ -97,6 +99,7 @@ function EditTransactionModal({
   const update = useUpdateTransaction(month)
   const repeat = useRepeatTransaction(month)
   const [recurrence, setRecurrence] = useState<Recurrence | null>(null)
+  const [kind, setKind] = useState<Direction | null>(null)
 
   if (!transaction) {
     return null
@@ -104,21 +107,16 @@ function EditTransactionModal({
 
   return (
     <Modal
-      title="Editar lançamento"
+      title={`Editar ${noun(kind ?? transaction.kind)}`}
       onClose={onClose}
       trailing={
-        <NavButton
-          type="submit"
-          form={FORM_ID}
-          icon={CheckIcon}
-          label="Salvar"
-          disabled={update.isPending}
-        />
+        <NavAction type="submit" form={FORM_ID} label="Salvar" disabled={update.isPending} />
       }
     >
       <TransactionForm
         id={FORM_ID}
         authorId={transaction.created_by_id}
+        onKindChange={setKind}
         initial={{
           kind: transaction.kind,
           amount: centsToInput(transaction.amount_cents),
@@ -157,4 +155,17 @@ function EditTransactionModal({
       />
     </Modal>
   )
+}
+
+/**
+ * What the panel calls what is being entered.
+ *
+ * The heading follows the switch rather than staying "lançamento", because the
+ * direction is the one field somebody can set wrongly and never notice — the
+ * amount, the date and the description all read the same either way, and a
+ * receipt filed as income is only found when a month refuses to add up. A title
+ * that changes under the finger is the cheapest possible confirmation.
+ */
+function noun(kind: Direction): string {
+  return kind === 'expense' ? 'Despesa' : 'Receita'
 }

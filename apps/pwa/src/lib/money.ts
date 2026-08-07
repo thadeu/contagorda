@@ -80,6 +80,30 @@ export function compactBRL(cents: Cents): string {
   return `${negative ? '-' : ''}R$ ${BRL_COMPACT.format(absolute / 100)}`
 }
 
+/** As many digits as R$ 999.999.999,99 needs, and not one more. */
+const MAX_DIGITS = 11
+
+/**
+ * Fills an amount from the right, the way a till does.
+ *
+ * `5` is five cents, `50` is fifty, `507` is five reais and seven, `50760` is
+ * five hundred and seven sixty. Nobody types a separator and nobody places a
+ * caret: the only two things that can happen are another digit and a backspace.
+ *
+ * This is how every banking app on the phone takes an amount, and the reason is
+ * not fashion. A free text field asks for a decimal on a keyboard where the
+ * comma and the full stop are both there and only one is right, then asks
+ * whether the caret is before or after it — and "1.234,5" is a plausible thing
+ * to be left holding when a thumb lands slightly wrong.
+ */
+export function digitsToInput(input: string): string {
+  const digits = input.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, MAX_DIGITS)
+
+  if (digits === '') return ''
+
+  return BRL.format(Number(digits) / 100)
+}
+
 export function parseBRLToCents(input: string): Cents | null {
   const cleaned = input.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')
 

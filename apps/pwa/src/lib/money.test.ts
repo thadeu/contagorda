@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compactBRL, formatBRL, roundBRL } from './money'
+import { compactBRL, digitsToInput, formatBRL, roundBRL } from './money'
 
 describe('roundBRL', () => {
   it('drops the cents without touching the thousands separator', () => {
@@ -59,5 +59,43 @@ describe('compactBRL', () => {
 
   it('leaves the full form alone for everywhere else', () => {
     expect(formatBRL(403_712)).toBe('R$ 4.037,12')
+  })
+})
+
+describe('digitsToInput', () => {
+  /**
+   * The whole point: an amount is built from the right, so the first digit is
+   * cents and there is never a separator to type or a caret to place.
+   */
+  it('fills from the right', () => {
+    expect(digitsToInput('5')).toBe('0,05')
+    expect(digitsToInput('50')).toBe('0,50')
+    expect(digitsToInput('507')).toBe('5,07')
+    expect(digitsToInput('50760')).toBe('507,60')
+  })
+
+  it('groups the thousands as they arrive', () => {
+    expect(digitsToInput('123456')).toBe('1.234,56')
+  })
+
+  /** A numeric keypad still offers a separator on some phones, and it means nothing here. */
+  it('ignores anything that is not a digit', () => {
+    expect(digitsToInput('1.234,56')).toBe('1.234,56')
+    expect(digitsToInput('R$ 12')).toBe('0,12')
+  })
+
+  it('empties back to nothing, so the placeholder returns', () => {
+    expect(digitsToInput('')).toBe('')
+    expect(digitsToInput('abc')).toBe('')
+  })
+
+  /** Leading zeros are what a backspace leaves behind; they must not accumulate. */
+  it('drops leading zeros', () => {
+    expect(digitsToInput('0005')).toBe('0,05')
+    expect(digitsToInput('000')).toBe('0,00')
+  })
+
+  it('stops at what the field can hold', () => {
+    expect(digitsToInput('99999999999999')).toBe('999.999.999,99')
   })
 })

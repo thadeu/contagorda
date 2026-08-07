@@ -3,11 +3,14 @@ import { useAccounts, useCategories } from '@/features/accounts/hooks'
 import { parseBRLToCents } from '@/lib/money'
 import { CategoryPicker } from './CategoryPicker'
 import { AccountPicker } from './AccountPicker'
+import { AmountField } from './AmountField'
 import { Switch } from '@/ui/Switch'
+import { OutflowIcon, PiggyIcon } from '@/ui/icons'
 import { useMemberName } from '@/features/ledgers/useMemberName'
 import { RecurrencePicker } from './RecurrencePicker'
 import type { Recurrence } from '@/features/transactions/recurrence'
 import { emptyValues, type TransactionFormValues } from '@/features/transactions/formValues'
+import type { Direction } from '@/services/types'
 import type { NewTransaction } from '@/services/types'
 
 
@@ -25,6 +28,12 @@ interface TransactionFormProps {
   recurrence?: Recurrence | null
   onRecurrenceChange?: (recurrence: Recurrence | null) => void
   initial?: Partial<TransactionFormValues>
+  /**
+   * Reported upward so the panel's own title can say which of the two this is.
+   * The direction is the first thing decided and the last thing anyone would
+   * think to check twice, and the heading is where a screen says what it is.
+   */
+  onKindChange?: (kind: Direction) => void
   /** `customCategory` is set when the user typed one under "Outros". */
   onSubmit: (input: NewTransaction) => void
 }
@@ -56,6 +65,7 @@ export function TransactionForm({
   recurrence,
   onRecurrenceChange,
   initial,
+  onKindChange,
   onSubmit,
 }: TransactionFormProps) {
   const accounts = useAccounts()
@@ -103,41 +113,24 @@ export function TransactionForm({
 
   return (
     <form id={id} onSubmit={handleSubmit} className="grid gap-4 px-4 pt-2 pb-6">
-      <div className="flex items-baseline justify-center gap-2 pt-1">
-        <span className="text-xl font-medium text-faint">R$</span>
-        <input
-          value={values.amount}
-          onChange={(e) => set('amount', e.target.value)}
-          inputMode="decimal"
-          placeholder="0,00"
-          aria-label="Valor"
-          size={7}
-          className="tnum min-w-0 bg-transparent text-center text-[2.5rem] leading-none font-bold tracking-[-0.02em] text-ink outline-none placeholder:text-faint"
-        />
-      </div>
-
-      <div
-        className="grid grid-cols-2 gap-1 rounded-2xl bg-sunken p-1"
-        role="group"
-        aria-label="Tipo"
-      >
-        <DirectionButton
-          active={values.kind === 'expense'}
-          onClick={() => set('kind', 'expense')}
-          tone="out"
-        >
-          Despesa
-        </DirectionButton>
-        <DirectionButton
-          active={values.kind === 'income'}
-          onClick={() => set('kind', 'income')}
-          tone="in"
-        >
-          Receita
-        </DirectionButton>
-      </div>
+      <AmountField value={values.amount} onChange={(amount) => set('amount', amount)} />
 
       <div className="divide-y divide-line rounded-card bg-surface px-4">
+        {/* It moved into the block with the rest of what is being entered. Two
+            full-width buttons above the card made the direction look like a mode
+            the form was in — a screen for expenses and another for income — when
+            it is one field among six. As a row it is the same size as the
+            account and the date, which is the size it is. */}
+        <Row label="Tipo">
+          <DirectionSwitch
+            kind={values.kind}
+            onChange={(kind) => {
+              set('kind', kind)
+              onKindChange?.(kind)
+            }}
+          />
+        </Row>
+
         <Row label="Descrição">
           <input
             value={values.description}
@@ -229,29 +222,84 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function DirectionButton({
+/**
+ * Two icons, one lit.
+ *
+ * Words became pictures because the words were the widest thing in the row and
+ * said the least: somebody entering a bill knows which of the two they are
+ * doing, and needs to see it confirmed rather than read it. The pig is savings
+ * arriving and the note with an arrow is money leaving, which are the two
+ * pictures anyone already has for this.
+ *
+ * The colour is the confirmation. Only the chosen side carries `in` or `out`,
+ * and both would be a form shouting in two directions at once — so the other one
+ * goes quiet and the choice is the only thing coloured.
+ *
+ * It is `w-fit` and pushed right. The row hands its value slot the whole
+ * remaining width, which is what every other row wants — a value right-aligned
+ * against the edge. A control dropped into that slot stretches instead, and a
+ * two-icon switch as wide as the card is a segmented control with a hole in the
+ * middle of it.
+ *
+ * Expense sits first because nearly every entry is one. Order in a control this
+ * small is not a detail: the left segment is the thumb's default and the first
+ * thing read.
+ */
+function DirectionSwitch({
+  kind,
+  onChange,
+}: {
+  kind: Direction
+  onChange: (kind: Direction) => void
+}) {
+  return (
+    <div
+      className="ml-auto flex w-fit gap-1 rounded-2xl bg-sunken p-1"
+      role="group"
+      aria-label="Tipo"
+    >
+      <Side
+        active={kind === 'expense'}
+        onClick={() => onChange('expense')}
+        icon={<OutflowIcon className="size-4" />}
+        label="Despesa"
+        activeClass="bg-out text-white"
+      />
+
+      <Side
+        active={kind === 'income'}
+        onClick={() => onChange('income')}
+        icon={<PiggyIcon className="size-4" />}
+        label="Receita"
+        activeClass="bg-in text-white"
+      />
+    </div>
+  )
+}
+
+function Side({
   active,
   onClick,
-  tone,
-  children,
+  icon,
+  label,
+  activeClass,
 }: {
   active: boolean
   onClick: () => void
-  tone: 'in' | 'out'
-  children: ReactNode
+  icon: ReactNode
+  label: string
+  activeClass: string
 }) {
-  const activeClass = tone === 'in' ? 'bg-in text-white' : 'bg-out text-white'
-
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-11 rounded-xl text-sm font-semibold ${
-        active ? activeClass : 'text-muted'
-      }`}
+      aria-label={label}
+      title={label}
+      className={`grid size-9 place-items-center rounded-xl ${active ? activeClass : 'text-faint'}`}
     >
-      {children}
+      {icon}
     </button>
   )
 }

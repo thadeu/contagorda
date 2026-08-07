@@ -139,3 +139,58 @@ describe('deleting', () => {
     expect(after.map((row) => row.date)).toEqual(['2026-08-10', '2026-10-10'])
   })
 })
+
+describe('making an existing row repeat', () => {
+  async function single() {
+    return services.transactions.create({
+      account_id: 'a',
+      category_id: null,
+      kind: 'expense',
+      amount_cents: 42_000,
+      date: '2026-08-10',
+      description: 'Internet',
+      paid: false,
+    })
+  }
+
+  it('writes what comes after it and leaves the row where it was', async () => {
+    const row = await single()
+
+    await services.transactions.repeat(row.id, { frequency: 'monthly', interval: 1, repeats: 2 })
+
+    const after = await services.transactions.listByMonth('2026-08')
+    const first = after.find((t) => t.id === row.id)
+
+    expect(first?.recurring_series_id).not.toBeNull()
+    expect(first?.date).toBe('2026-08-10')
+
+    const rows = await rowsOf(first?.recurring_series_id ?? null)
+
+    expect(rows.map((r) => r.date)).toEqual(['2026-08-10', '2026-09-10', '2026-10-10'])
+  })
+
+  /**
+   * The row keeps whatever it was; what follows has not happened yet. Same rule
+   * as a series created from scratch, where only the first can be settled.
+   */
+  it('leaves the new ones unpaid', async () => {
+    const row = await single()
+
+    await services.transactions.repeat(row.id, { frequency: 'monthly', interval: 1, repeats: 2 })
+
+    const rows = await rowsOf((await services.transactions.listByMonth('2026-08')).find((t) => t.id === row.id)?.recurring_series_id ?? null)
+
+    expect(rows.slice(1).every((r) => r.paid_at === null)).toBe(true)
+  })
+
+  it('refuses a row that already belongs to a series', async () => {
+    const first = await series(3)
+    const before = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.repeat(first.id, { frequency: 'monthly', interval: 1, repeats: 5 })
+
+    const after = await rowsOf(first.recurring_series_id)
+
+    expect(after).toHaveLength(before.length)
+  })
+})

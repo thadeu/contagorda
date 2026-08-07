@@ -15,6 +15,7 @@ import {
   useTransaction,
   useUpdateTransaction,
   useCreateTransaction,
+  useRepeatTransaction,
 } from './hooks'
 
 type Editing = { mode: 'new' } | { mode: 'edit'; id: string; scope: Scope } | null
@@ -94,6 +95,8 @@ function EditTransactionModal({
   const { month } = useMonth()
   const transaction = useTransaction(month, id)
   const update = useUpdateTransaction(month)
+  const repeat = useRepeatTransaction(month)
+  const [recurrence, setRecurrence] = useState<Recurrence | null>(null)
 
   if (!transaction) {
     return null
@@ -125,7 +128,32 @@ function EditTransactionModal({
           categoryId: transaction.category_id ?? '',
           paid: transaction.paid_at !== null,
         }}
-        onSubmit={(input) => update.mutate({ id, input, scope }, { onSuccess: onClose })}
+        /*
+         * A row that belongs to no series can become the first of one. A row
+         * already in a series cannot have its rule rewritten here — the
+         * occurrences around it would have to move, and the scope choice is how
+         * those are reached.
+         */
+        recurrence={transaction.recurring_series_id === null ? recurrence : undefined}
+        onRecurrenceChange={
+          transaction.recurring_series_id === null ? setRecurrence : undefined
+        }
+        onSubmit={(input) =>
+          update.mutate(
+            { id, input, scope },
+            {
+              onSuccess: () => {
+                if (recurrence) {
+                  repeat.mutate({ id, recurrence }, { onSuccess: onClose })
+
+                  return
+                }
+
+                onClose()
+              },
+            },
+          )
+        }
       />
     </Modal>
   )

@@ -73,6 +73,18 @@ export interface TransactionsPort {
    */
   update(id: string, input: Partial<NewTransaction>, scope?: Scope): Promise<Transaction>
   remove(id: string, scope?: Scope): Promise<void>
+  /**
+   * Turns a row that stands alone into the first of a series.
+   *
+   * Only for one that belongs to none. A row already in a series has occurrences
+   * around it that a new rule would have to rewrite — some of them possibly paid
+   * — and the honest way to reach those is the scope choice on an edit.
+   *
+   * The row itself is untouched, including whether it was settled. What follows
+   * it is new and unpaid, for the same reason a series created from scratch only
+   * settles its first: the rest have not happened.
+   */
+  repeat(id: string, recurrence: Recurrence): Promise<void>
   setPaid(id: string, paid: boolean): Promise<Transaction>
 }
 

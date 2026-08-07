@@ -137,6 +137,17 @@ export function useUpdateTransaction(month: string) {
   })
 }
 
+/** Makes an existing row the first of a series. */
+export function useRepeatTransaction(month: string) {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, recurrence }: { id: string; recurrence: Recurrence }) =>
+      services.transactions.repeat(id, recurrence),
+    onSuccess: () => invalidate(client, month),
+  })
+}
+
 export function useDeleteTransaction(month: string) {
   const client = useQueryClient()
 

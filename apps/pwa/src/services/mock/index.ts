@@ -425,6 +425,37 @@ export function createMockServices(): Services {
         return delay(find(id))
       },
 
+      repeat: (id, recurrence) => {
+        const target = find(id)
+
+        if (target.recurring_series_id) return delay(undefined)
+
+        const series = uuid()
+        // The first date is the row that already exists; only what comes after
+        // it is written.
+        const dates = occurrences(target.date, recurrence).slice(1)
+
+        const rows: Transaction[] = dates.map((date) => ({
+          ...target,
+          id: uuid(),
+          date,
+          paid_at: null,
+          recurring_series_id: series,
+          detached: false,
+        }))
+
+        patch({
+          transactions: [
+            ...data().transactions.map((row) =>
+              row.id === id ? { ...row, recurring_series_id: series } : row,
+            ),
+            ...rows,
+          ],
+        })
+
+        return delay(undefined)
+      },
+
       remove: (id, scope = 'one') => {
         const target = find(id)
 

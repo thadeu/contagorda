@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { read } from './trend'
+import { ceiling, difference, read } from './trend'
 
 function months(...amounts: number[]) {
   return amounts.map((expense_cents, index) => ({
@@ -75,5 +75,52 @@ describe('peak and floor', () => {
     const readings = read(months(0, 0), 'none')
 
     expect(readings.some((r) => r.peak || r.floor)).toBe(false)
+  })
+})
+
+describe('ceiling', () => {
+  const history = months(10_000, 10_000, 10_000, 900_000, 10_000, 12_000, 14_000, 16_000)
+
+  /**
+   * The whole reason it is a window. Measured against everything, a single month
+   * with a car in it is the yardstick forever and every later month is a sliver.
+   */
+  it('forgets an outlier once it is out of range', () => {
+    expect(ceiling(read(history, 'none'), '2026-08')).toBe(16_000)
+  })
+
+  it('still answers to it while it is in range', () => {
+    expect(ceiling(read(history, 'none'), '2026-05')).toBe(900_000)
+  })
+
+  it('reaches three months either side', () => {
+    expect(ceiling(read(history, 'none'), '2026-07')).toBe(900_000)
+  })
+
+  it('does not fall off the start of the history', () => {
+    expect(ceiling(read(history, 'none'), '2026-01')).toBe(900_000)
+  })
+})
+
+describe('difference', () => {
+  it('says how much more, and against which month', () => {
+    const gap = difference(read(months(50_000, 62_000), 'none'), '2026-02')
+
+    expect(gap).toEqual({ cents: 12_000, direction: 'more', previous: '2026-01' })
+  })
+
+  it('reports a drop as a positive amount going the other way', () => {
+    const gap = difference(read(months(62_000, 50_000), 'none'), '2026-02')
+
+    expect(gap).toEqual({ cents: 12_000, direction: 'less', previous: '2026-01' })
+  })
+
+  /** A line that says "the same" is charging rent to say nothing. */
+  it('says nothing when the months are level', () => {
+    expect(difference(read(months(50_000, 50_000), 'none'), '2026-02')).toBeNull()
+  })
+
+  it('says nothing about the first month, which has nothing behind it', () => {
+    expect(difference(read(months(50_000, 60_000), 'none'), '2026-01')).toBeNull()
   })
 })

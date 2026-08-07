@@ -19,6 +19,8 @@ import { groupByDay } from '../transactions/groupByDay'
 import { DayGroupSection } from '../transactions/components/DayGroupSection'
 import { TransactionSheet } from '../transactions/components/TransactionSheet'
 import { MonthBars } from './components/MonthBars'
+import { MonthDifference } from './components/MonthDifference'
+import { difference, read } from './trend'
 import { ALL, CategoryFilter, UNCATEGORISED } from './components/CategoryFilter'
 import type { Transaction } from '../../services/types'
 
@@ -92,6 +94,7 @@ export function StatsPage() {
    * says "this is the edge", which is the answer someone is looking for.
    */
   const bars = totals.data ?? []
+  const gap = difference(read(bars, monthKey(todayIso())), month)
   const oldest = bars[0]?.month ?? month
   const newest = bars[bars.length - 1]?.month ?? monthKey(todayIso())
 
@@ -152,9 +155,15 @@ export function StatsPage() {
 
         {/* The one horizontal gesture on the screen, and the only place a finger
             moves anything other than the sheet. */}
-        <div className="pb-4">
+        <div className="pb-3">
           <MonthBars totals={bars} selected={month} onSelect={setMonth} />
         </div>
+
+        {gap && (
+          <div className="touch-none pb-4">
+            <MonthDifference gap={gap} />
+          </div>
+        )}
 
         <div aria-hidden="true" className="flex-1 touch-none" />
       </div>

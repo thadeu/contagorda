@@ -67,3 +67,73 @@ export function read(totals: MonthTotal[], current: string): Reading[] {
     }
   })
 }
+
+/** Three months either side of the one being read. */
+const SPAN = 3
+
+/**
+ * The tallest month near the one being read, which is what the bars are drawn
+ * against.
+ *
+ * Scaling to the whole history sounds fairer and is unusable. One month with a
+ * car deposit in it becomes the yardstick for every month that ever follows, so
+ * two years later a household is still reading its groceries as a sliver — the
+ * chart has a permanent memory of a single Tuesday and nothing else can be
+ * compared. Against its neighbours, a month is read against the months anyone
+ * would actually compare it with, and the shape returns as the outlier scrolls
+ * out of range.
+ *
+ * The cost, stated plainly: the same month is not always the same height. That
+ * is the trade — a chart that is legible about the recent past against one that
+ * is stable and flat. It stays legible because the window follows the selection,
+ * which is deliberate and infrequent, and never the scroll position, which is
+ * neither. A bar that changed height under a moving finger would be the version
+ * of this that is actually broken.
+ *
+ * Bars outside the window can be taller than the window's tallest, and they are
+ * simply full. Beyond the neighbourhood the exact ratio is not a claim the chart
+ * is making, and the figure above the bar is right whatever the height does.
+ */
+export function ceiling(readings: Reading[], selected: string): number {
+  const at = readings.findIndex((reading) => reading.month === selected)
+  const from = at < 0 ? 0 : Math.max(at - SPAN, 0)
+  const window = at < 0 ? readings : readings.slice(from, at + SPAN + 1)
+
+  return window.reduce((most, reading) => Math.max(most, reading.cents), 0)
+}
+
+export interface Difference {
+  /** Always positive. The direction is the direction, not the sign. */
+  cents: number
+  direction: 'more' | 'less'
+  /** The month it is being compared with, for naming it rather than pointing. */
+  previous: string
+}
+
+/**
+ * How this month compares with the one before it, in money.
+ *
+ * The colour already says which way it went; this says by how much, which is the
+ * difference between a warning and something to act on. Two hundred reais over
+ * last month is a heavier week, and two thousand is a decision someone made and
+ * may not remember making.
+ *
+ * Nothing is returned when the months are level or when there is no month before
+ * — a sentence saying "the same" is a line of text charging rent to say nothing,
+ * and the first month of a history has nothing to compare against.
+ */
+export function difference(readings: Reading[], selected: string): Difference | null {
+  const at = readings.findIndex((reading) => reading.month === selected)
+
+  if (at < 1) return null
+
+  const gap = readings[at].cents - readings[at - 1].cents
+
+  if (gap === 0) return null
+
+  return {
+    cents: Math.abs(gap),
+    direction: gap > 0 ? 'more' : 'less',
+    previous: readings[at - 1].month,
+  }
+}

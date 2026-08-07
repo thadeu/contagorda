@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/dates'
 import { compactBRL, formatBRL } from '../../../lib/money'
-import { read, type Reading, type Trend } from '../trend'
+import { ceiling, read, type Reading, type Trend } from '../trend'
 import type { MonthTotal } from '../../../services/types'
 
 interface MonthBarsProps {
@@ -18,10 +18,14 @@ interface MonthBarsProps {
  * have to invent a rule for which ones — while a scroller lets the finger decide
  * and needs no control to say so.
  *
- * Heights are relative to the biggest month on record, so the tallest bar is
- * always full and the rest are read against it. Scaling to whatever is on screen
- * would make the same month change height as you scroll, which is the one thing
- * a chart must not do.
+ * Heights are relative to the tallest month near the one being read, not to the
+ * tallest on record. See `ceiling` for why: one month with a car deposit in it
+ * would otherwise be the yardstick for every month that ever follows.
+ *
+ * Near the one being *read*, never near the one on screen. The window follows
+ * the selection, which is deliberate and infrequent; following the scroll would
+ * change a bar's height under a moving finger, which is the one thing a chart
+ * must not do.
  *
  * Every column carries its figure. Bars answer "which months were heavy" at a
  * glance and "how heavy" not at all — the height is a ratio to a peak that is
@@ -133,7 +137,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   }, [selected])
 
   const readings = read(totals, monthKey(todayIso()))
-  const ceiling = readings.reduce((most, reading) => Math.max(most, reading.cents), 0)
+  const tallest = ceiling(readings, selected)
 
   return (
     <div ref={scroller} className="touch-pan-x overflow-x-auto overscroll-x-contain px-4">
@@ -144,7 +148,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
       >
         {readings.map((reading) => {
           const chosen = reading.month === selected
-          const share = ceiling === 0 ? 0 : reading.cents / ceiling
+          const share = tallest === 0 ? 0 : Math.min(reading.cents / tallest, 1)
 
           return (
             <button

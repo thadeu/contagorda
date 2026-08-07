@@ -95,6 +95,13 @@ interface MonthBarsProps {
  * its own transition, which is what makes the ones that barely moved legible as
  * barely having moved.
  *
+ * The top of a bar is eased, not domed. A full round on something this narrow
+ * turns the last few pixels into a semicircle, and a semicircle is a shape
+ * rather than a measurement — two months that differ by a hair read as
+ * identical because the difference is all inside the curve. Four pixels is the
+ * app's habit of nothing being square, applied at the size of a bar rather than
+ * at the size of a card.
+ *
  * A month with nothing spent draws no bar at all. It used to draw a sliver, so
  * that something was there; with an axis under it, that sliver claims a small
  * amount was spent, and the line already says the month exists.
@@ -321,7 +328,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
                 {reading.cents > 0 && (
                   <span
                     style={{ height: `${Math.max(share * 100, 4)}%` }}
-                    className={`bar-grow w-3 rounded-t-full ${FILL[reading.trend]}`}
+                    className={`bar-grow w-3.5 rounded-t-[0.25rem] ${FILL[reading.trend]}`}
                   />
                 )}
               </span>

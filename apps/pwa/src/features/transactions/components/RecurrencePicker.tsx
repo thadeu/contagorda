@@ -58,35 +58,38 @@ function RecurrenceSheet({
     value ?? { frequency: 'monthly', interval: 1, repeats: 11 },
   )
 
-  /**
-   * The field keeps its own text.
-   *
-   * Every keystroke travels to the form behind the sheet and comes back as a
-   * number, and rewriting a focused input from that round trip is what made the
-   * keyboard close and reopen on iOS. It also makes an empty field impossible:
-   * clearing the box would immediately fill it with a zero, and there is no way
-   * to type "12" over "1" without passing through nothing at all.
-   */
   const [typed, setTyped] = useState(String(draft.repeats))
+  const [on, setOn] = useState(value !== null)
 
-  const on = value !== null
+  /**
+   * Nothing leaves this sheet until it closes.
+   *
+   * Applying each keystroke to the form behind it re-rendered the whole tree on
+   * every character, and on iOS that closed and reopened the keyboard between
+   * one digit and the next. The rule is edited here, in one place, and the form
+   * hears about it once — on the way out, by whichever route: the backdrop, a
+   * drag, or Escape all pass through here.
+   */
+  function commitAndClose() {
+    onChange(on ? draft : null)
+    onClose()
+  }
 
   return (
     <BottomSheet
       title="Repetir"
-      onClose={onClose}
+      onClose={commitAndClose}
       actions={
-        <Switch
-          checked={on}
-          onChange={(next) => onChange(next ? draft : null)}
-          label="Repetir este lançamento"
-        />
+        <Switch checked={on} onChange={setOn} label="Repetir este lançamento" />
       }
     >
       {/* The form is always here, and dimmed when the switch is off. Showing it
           only when it applies makes the sheet jump on the first tap and hides
           what the switch is even for; disabled, it is the answer to "what will
-          this do", visible before anything is committed to. */}
+          this do", visible before anything is committed to.
+
+          It is also why nothing needs a confirming button: the sheet is the
+          question, and closing it is the answer. */}
       <div
         aria-disabled={!on}
         className={`grid gap-4 px-3 pb-2 ${on ? '' : 'pointer-events-none opacity-40'}`}
@@ -140,10 +143,7 @@ function RecurrenceSheet({
   )
 
   function update(patch: Partial<Recurrence>) {
-    const next = { ...draft, ...patch }
-
-    setDraft(next)
-    onChange(next)
+    setDraft({ ...draft, ...patch })
   }
 }
 

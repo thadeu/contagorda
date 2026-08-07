@@ -121,6 +121,15 @@ export function BottomSheet({
   function handleTouchStart(event: React.TouchEvent) {
     if (!draggableFrom(event.target)) return
 
+    /*
+     * The innermost sheet takes the gesture and nobody else hears about it.
+     * React dispatches through the component tree, where a sheet opened from
+     * inside another one is its descendant however the portals arranged the DOM
+     * — so without this, dragging the category sheet drags the transaction modal
+     * underneath it, and every panel in the stack moves at once.
+     */
+    event.stopPropagation()
+
     startY.current = event.touches[0].clientY
     setDragging(true)
     lock.start()
@@ -129,13 +138,17 @@ export function BottomSheet({
   function handleTouchMove(event: React.TouchEvent) {
     if (startY.current === null) return
 
+    event.stopPropagation()
+
     const delta = event.touches[0].clientY - startY.current
 
     // A fixed sheet does not answer an upward pull, so it does not invite one.
     setOffset(delta > 0 || expandable ? delta : 0)
   }
 
-  function handleTouchEnd() {
+  function handleTouchEnd(event: React.TouchEvent) {
+    event.stopPropagation()
+
     if (offset > THRESHOLD) {
       if (expandable && expanded) {
         setExpanded(false)

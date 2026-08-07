@@ -73,6 +73,10 @@ underneath otherwise.
 - The content scroller is measured, and touch is off when it has nowhere to go.
   See `useScrollable`.
 - Do not lock the document to stop the page behind. See ADR 0003, decision 3.
+- **Drags stop where they are handled.** A sheet opened from inside another is
+  its descendant in the React tree whatever the portals did to the DOM, so
+  without `stopPropagation` on `touchstart` every panel in the stack moves at
+  once. See ADR 0003, decision 6.
 
 ## Related
 

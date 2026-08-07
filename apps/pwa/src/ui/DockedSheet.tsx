@@ -75,6 +75,8 @@ export function DockedSheet({ expanded, onExpandedChange, toolbar, children }: D
   const entered = useEnter()
 
   function handleTouchStart(event: React.TouchEvent) {
+    event.stopPropagation()
+
     startY.current = event.touches[0].clientY
     startX.current = event.touches[0].clientX
     axis.current = 'none'
@@ -91,6 +93,8 @@ export function DockedSheet({ expanded, onExpandedChange, toolbar, children }: D
   function handleTouchMove(event: React.TouchEvent) {
     if (startY.current === null) return
 
+    event.stopPropagation()
+
     const travelledY = startY.current - event.touches[0].clientY
     const travelledX = event.touches[0].clientX - startX.current
 
@@ -103,7 +107,9 @@ export function DockedSheet({ expanded, onExpandedChange, toolbar, children }: D
     setOffset(travelledY)
   }
 
-  function handleTouchEnd() {
+  function handleTouchEnd(event: React.TouchEvent) {
+    event.stopPropagation()
+
     axis.current = 'none'
 
     if (offset > THRESHOLD) onExpandedChange(true)

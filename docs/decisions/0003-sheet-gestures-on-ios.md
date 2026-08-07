@@ -114,9 +114,16 @@ Every form that can be reached from inside another calls `stopPropagation` as
 well as `preventDefault`. The DOM says they are siblings under `#root`; React
 disagrees, and React is the one dispatching.
 
-This is not specific to forms. Any handler on an ancestor component will see
-events from a portalled descendant, which is usually what makes portals pleasant
-to use and occasionally exactly wrong.
+This is not specific to forms, and the gestures were caught by it next: dragging
+the category sheet dragged the transaction modal underneath, because the touch
+handlers on the outer panel heard the inner one's events. Every panel now claims
+the gesture on `touchstart` and the stack stays still.
+
+Any handler on an ancestor component sees events from a portalled descendant.
+That is usually what makes portals pleasant to use — context, providers and
+callbacks all keep working — and occasionally exactly wrong. The rule for
+anything stateful reached from inside another of its kind: stop the event where
+it is handled.
 
 ### 7. The lock is counted, not flagged
 

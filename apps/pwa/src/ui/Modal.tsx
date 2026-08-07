@@ -80,6 +80,15 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
   function handleTouchStart(event: React.TouchEvent) {
     if (!draggableFrom(event.target)) return
 
+    /*
+     * The innermost sheet takes the gesture and nobody else hears about it.
+     * React dispatches through the component tree, where a sheet opened from
+     * inside another one is its descendant however the portals arranged the DOM
+     * — so without this, dragging the category sheet drags the transaction modal
+     * underneath it, and every panel in the stack moves at once.
+     */
+    event.stopPropagation()
+
     startY.current = event.touches[0].clientY
     setDragging(true)
     lock.start()
@@ -88,10 +97,14 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
   function handleTouchMove(event: React.TouchEvent) {
     if (startY.current === null) return
 
+    event.stopPropagation()
+
     setOffset(Math.max(event.touches[0].clientY - startY.current, 0))
   }
 
-  function handleTouchEnd() {
+  function handleTouchEnd(event: React.TouchEvent) {
+    event.stopPropagation()
+
     if (offset > THRESHOLD) {
       requestClose()
     }

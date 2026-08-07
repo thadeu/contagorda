@@ -64,7 +64,7 @@ export function MonthList({ month }: MonthListProps) {
 
   return (
     <>
-      <div className="flex items-center gap-2 px-4 py-3">
+      <div className="flex items-center gap-2 px-3.5 py-3">
         <p className="min-w-0 flex-1 truncate text-sm text-muted">
           <span className="font-semibold text-ink">
             {paid.length} de {all.length}
@@ -76,31 +76,41 @@ export function MonthList({ month }: MonthListProps) {
         <NavButton icon={FilterIcon} label="Filtros" onClick={() => setFiltering(true)} />
       </div>
 
-      <div className="px-4">
-        {transactions.isPending && <p className="px-1 py-10 text-sm text-muted">Carregando…</p>}
+      <div>
+        {/* Everything that is not the list keeps the page's margins. Only the
+            card of rows is allowed to reach the edges, because it is the only
+            one that becomes the screen. */}
+        <div className="px-3.5">
+          {transactions.isPending && (
+            <p className="px-1 py-10 text-sm text-muted">Carregando…</p>
+          )}
 
-        {transactions.isError && (
-          <EmptyState
-            title="Não deu para carregar o mês"
-            hint="Verifique a conexão e tente de novo."
-            action={<Button onClick={() => transactions.refetch()}>Tentar de novo</Button>}
-          />
-        )}
+          {transactions.isError && (
+            <EmptyState
+              title="Não deu para carregar o mês"
+              hint="Verifique a conexão e tente de novo."
+              action={<Button onClick={() => transactions.refetch()}>Tentar de novo</Button>}
+            />
+          )}
 
-        {transactions.isSuccess && empty && status === 'pending' && (
-          <EmptyState
-            title="Nada pendente neste mês"
-            hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
-            action={<Button onClick={editor.openNew}>Adicionar lançamento</Button>}
-          />
-        )}
+          {transactions.isSuccess && empty && status === 'pending' && (
+            <EmptyState
+              title="Nada pendente neste mês"
+              hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
+              action={<Button onClick={editor.openNew}>Adicionar lançamento</Button>}
+            />
+          )}
 
-        {transactions.isSuccess && empty && status === 'paid' && (
-          <EmptyState title="Nada pago neste mês" hint="O que você marcar como pago aparece aqui." />
-        )}
+          {transactions.isSuccess && empty && status === 'paid' && (
+            <EmptyState
+              title="Nada pago neste mês"
+              hint="O que você marcar como pago aparece aqui."
+            />
+          )}
+        </div>
 
         {!empty && (
-          <div className="rounded-card bg-surface px-4 pt-1 pb-4">
+          <div className="list-widening bg-surface px-4 pt-1 pb-4">
             {byDay ? (
               groups.map((group) => (
                 <DayGroupSection

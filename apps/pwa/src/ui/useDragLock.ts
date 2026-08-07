@@ -15,8 +15,17 @@ const FLAG = 'sheetDragging'
  * The release is the part that matters. A sheet can close mid-drag, and then no
  * `touchend` ever arrives on an element that no longer exists: the flag would
  * stay, and the app would be left unscrollable with nothing on screen to explain
- * it. Unmounting clears it, so the worst case is a lock that outlives the
- * gesture by one render rather than one that outlives the session.
+ * it.
+ *
+ * So the flag is cleared by the document as well. A finger that has left the
+ * glass cannot still be dragging anything, whatever happened to the element it
+ * started on — the document always hears that, and it hears it at the moment it
+ * is true rather than one exit animation later. Unmounting still clears it too,
+ * for the case where nothing was touching the screen to begin with.
+ *
+ * This was not theoretical: pulling a sheet down closed it mid-gesture and left
+ * the page frozen for as long as the sheet took to leave, which reads as the app
+ * having hung.
  */
 export function useDragLock(): { start: () => void; end: () => void } {
   const held = useRef(false)
@@ -31,7 +40,16 @@ export function useDragLock(): { start: () => void; end: () => void } {
     document.documentElement.dataset[FLAG] = 'true'
   }, [])
 
-  useEffect(() => end, [end])
+  useEffect(() => {
+    document.addEventListener('touchend', end)
+    document.addEventListener('touchcancel', end)
+
+    return () => {
+      document.removeEventListener('touchend', end)
+      document.removeEventListener('touchcancel', end)
+      end()
+    }
+  }, [end])
 
   return { start, end }
 }

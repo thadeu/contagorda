@@ -34,7 +34,7 @@ export function IdentityRow({
   onOpenAccounts,
 }: IdentityRowProps) {
   return (
-    <header className="flex items-center justify-between gap-3 px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-4">
+    <header className="flex items-center justify-between gap-3 px-3.5 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-4">
       <button
         type="button"
         onClick={onOpenProfile}

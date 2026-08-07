@@ -10,6 +10,7 @@ import { IdentityRow } from './components/IdentityRow'
 import { SpendingCard } from './components/SpendingCard'
 import { TotalBalance } from './components/TotalBalance'
 import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
+import { useFadingCanvas } from '@/ui/useFadingCanvas'
 import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
 import { AccountsSheet } from '@/features/accounts/AccountsSheet'
 
@@ -23,6 +24,7 @@ export function DashboardPage() {
   const { current, shared } = useActiveLedger()
 
   useDocumentCanvas('sky')
+  useFadingCanvas()
 
   const rows = transactions.data ?? []
   const expenses = rows.filter((t) => t.kind === 'expense')
@@ -32,7 +34,7 @@ export function DashboardPage() {
   const paidCents = sum(paid)
 
   return (
-    <div className="pb-10">
+    <div className="pb-0.5">
       <IdentityRow
         name={firstName}
         avatarUrl={avatarUrl}
@@ -51,12 +53,12 @@ export function DashboardPage() {
       {accountsOpen && <AccountsSheet onClose={() => setAccountsOpen(false)} />}
 
       {shared && current && (
-        <p className="truncate px-5 pb-2 text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
+        <p className="truncate px-3.5 pb-2 text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
           {current.name}
         </p>
       )}
 
-      <div className="px-4">
+      <div className="px-3.5">
         <MonthStack
           month={month}
           onMonthChange={setMonth}
@@ -66,7 +68,7 @@ export function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2 px-4 pt-3">
+      <div className="grid grid-cols-2 gap-2 px-3.5 pt-3">
         <SpendingCard month={month} />
         <TotalBalance month={month} />
       </div>

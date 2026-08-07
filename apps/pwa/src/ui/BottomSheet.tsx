@@ -75,6 +75,7 @@ export function BottomSheet({
   const lock = useDragLock()
   const entered = useEnter()
   const { leaving, requestClose } = useExit(onClose)
+  const [flung, setFlung] = useState(false)
 
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
@@ -153,6 +154,7 @@ export function BottomSheet({
       if (expandable && expanded) {
         setExpanded(false)
       } else {
+        setFlung(true)
         requestClose()
       }
     } else if (expandable && offset < -THRESHOLD) {
@@ -187,6 +189,7 @@ export function BottomSheet({
         aria-label={title}
         tabIndex={-1}
         data-dragging={dragging}
+        data-leaving={leaving && !flung}
         style={{
           transform:
             entered && !leaving ? `translateY(${Math.max(offset, 0)}px)` : 'translateY(100%)',

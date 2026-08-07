@@ -66,6 +66,7 @@ export function ConfirmSheet({
         role="alertdialog"
         aria-modal="true"
         aria-label={title}
+        data-leaving={leaving}
         style={{ transform: entered && !leaving ? 'translateY(0)' : 'translateY(100%)' }}
         className="sheet-snap relative mx-2 mb-2 w-full max-w-md touch-none rounded-card bg-overlay p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
       >

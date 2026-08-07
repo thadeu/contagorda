@@ -56,6 +56,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
   const lock = useDragLock()
   const entered = useEnter()
   const { leaving, requestClose } = useExit(onClose)
+  const [flung, setFlung] = useState(false)
 
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
@@ -106,6 +107,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
     event.stopPropagation()
 
     if (offset > THRESHOLD) {
+      setFlung(true)
       requestClose()
     }
 
@@ -135,6 +137,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
         aria-modal="true"
         aria-label={title}
         data-dragging={dragging}
+        data-leaving={leaving && !flung}
         style={{
           transform:
             entered && !leaving ? `translateY(${offset}px)` : 'translateY(100%)',

@@ -200,6 +200,18 @@
     transition: none !important;
   }
 
+  /* Leaving is the arrival curve mirrored in both axes: the same shape run
+     backwards, so the panel accelerates away instead of braking into a place it
+     is not staying.
+
+     It is not used when the panel was flung. A mirrored ease-out begins at a
+     standstill, and a sheet released mid-drag already carries the finger's
+     speed — starting again from nothing there reads as a stall, so that one
+     path keeps the arrival curve and the movement stays continuous. */
+  .sheet-snap[data-leaving='true'] {
+    transition-timing-function: cubic-bezier(1, 0, 0.68, 0.28) !important;
+  }
+
 
   @media (prefers-reduced-motion: reduce) {
     .slide-away,

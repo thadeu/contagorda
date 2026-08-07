@@ -138,15 +138,18 @@ happens at once: the gesture reads as ignored and the jump at the end reads as a
 bug. Height or offset is driven live, `clamp` holds it between detents so
 overshooting simply stops, and only the release travels.
 
-One curve, both directions. Two alternatives were tried and both are worse:
-linear loses the character the entrance established, and the mirrored curve —
-which accelerates away rather than braking — starts slow, so a panel released
-from a drag descends, stalls, and descends again. After a gesture the panel
-already carries the finger's speed, and any easing that begins gently reads as a
-stall.
+Leaving is the arrival curve mirrored in both axes — the same shape run
+backwards, so the panel accelerates away instead of braking into a place it is
+not staying. `cubic-bezier(0.32, 0.72, 0, 1)` becomes `(1, 0, 0.68, 0.28)`.
 
-The deceleration at the end of the exit costs nothing, because by then the panel
-is off-screen and there is nothing left to watch.
+With one exception, and it is the whole reason this took three attempts: a
+mirrored ease-out begins at a standstill, and a sheet released mid-drag already
+carries the finger's speed. Starting again from nothing there reads as a stall —
+the panel descends, pauses, and descends again. That path keeps the arrival
+curve, so the motion stays continuous from the finger to the edge of the screen.
+
+Which is the general rule underneath: easing describes how something starts and
+stops, and a gesture has already decided how it started.
 
 Closing is also deferred: the parent unmounts the sheet the moment it hears, so
 it does not hear until the movement has finished. Without that, the panel is

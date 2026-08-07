@@ -82,6 +82,11 @@ export interface Transaction {
    * added this" is whatever the app felt like claiming.
    */
   created_by_id: string | null
+  /**
+   * Set when this row was edited on its own. A later change to the series skips
+   * it, because the edit was made knowing it differed.
+   */
+  detached: boolean
 }
 
 /**

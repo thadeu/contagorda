@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { Transaction } from '../../../services/types'
+import type { Scope } from '../../../services/ports'
+import { ScopeSheet } from './ScopeSheet'
 import { formatBRL } from '../../../lib/money'
 import { BottomSheet, SheetActionCard } from '../../../ui/BottomSheet'
 import { ConfirmSheet } from '../../../ui/ConfirmSheet'
@@ -14,7 +16,7 @@ interface TransactionSheetProps {
   transaction: Transaction
   onClose: () => void
   onTogglePaid: (transaction: Transaction) => void
-  onDelete: (transaction: Transaction) => void
+  onDelete: (transaction: Transaction, scope?: Scope) => void
 }
 
 /**
@@ -39,6 +41,9 @@ export function TransactionSheet({
 }: TransactionSheetProps) {
   const editor = useTransactionEditor()
   const [deleting, setDeleting] = useState(false)
+  const [scoping, setScoping] = useState<'edit' | 'delete' | null>(null)
+
+  const recurring = transaction.recurring_series_id !== null
 
   const categories = useCategories()
   const author = useMemberName(transaction.created_by_id)
@@ -89,6 +94,12 @@ export function TransactionSheet({
             label="Editar"
             icon={EditIcon}
             onClick={() => {
+              if (recurring) {
+                setScoping('edit')
+
+                return
+              }
+
               editor.openEdit(transaction.id)
               onClose()
             }}
@@ -105,12 +116,32 @@ export function TransactionSheet({
             type="button"
             variant="danger"
             className="mt-3 w-full"
-            onClick={() => setDeleting(true)}
+            onClick={() => (recurring ? setScoping('delete') : setDeleting(true))}
           >
             Excluir lançamento
           </Button>
         </div>
       </BottomSheet>
+
+      {scoping && (
+        <ScopeSheet
+          action={scoping}
+          onClose={() => setScoping(null)}
+          onChoose={(scope) => {
+            setScoping(null)
+
+            if (scoping === 'edit') {
+              editor.openEdit(transaction.id, scope)
+              onClose()
+
+              return
+            }
+
+            onDelete(transaction, scope)
+            onClose()
+          }}
+        />
+      )}
 
       {deleting && (
         <ConfirmSheet

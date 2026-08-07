@@ -13,6 +13,7 @@ import type {
 import { monthKey, todayIso } from '../../lib/dates'
 import { getActiveLedgerId, setActiveLedgerId } from '../activeLedger'
 import { uuid } from '../../lib/uuid'
+import { occurrences } from '../../features/transactions/recurrence'
 import { fold } from '../../lib/text'
 import {
   accounts as seedAccounts,
@@ -375,37 +376,65 @@ export function createMockServices(): Services {
         })
       },
 
-      create: (input: NewTransaction) => {
-        const created: Transaction = {
+      create: (input: NewTransaction, recurrence) => {
+        const series = recurrence ? uuid() : null
+        const dates = recurrence ? occurrences(input.date, recurrence) : [input.date]
+
+        const rows: Transaction[] = dates.map((date, index) => ({
           id: uuid(),
           account_id: input.account_id,
           category_id: input.category_id,
           kind: input.kind,
           amount_cents: input.amount_cents,
-          date: input.date,
+          date,
+          // Only the first one can already be settled. The rest have not
+          // happened yet, and a future row marked paid is a claim about a month
+          // nobody has lived through.
+          paid_at: index === 0 && input.paid ? new Date().toISOString() : null,
           description: input.description,
-          paid_at: input.paid ? new Date().toISOString() : null,
-          recurring_series_id: null,
+          recurring_series_id: series,
           created_by_id: you.id,
-        }
+          detached: false,
+        }))
 
-        patch({ transactions: [...data().transactions, created] })
+        patch({ transactions: [...data().transactions, ...rows] })
 
-        return delay(created)
+        return delay(rows[0])
       },
 
-      update: (id, input) => {
+      update: (id, input, scope = 'one') => {
+        const target = find(id)
+        const changes = stripPaid(input)
+
         patch({
-          transactions: data().transactions.map((t) =>
-            t.id === id ? { ...t, ...stripPaid(input) } : t,
-          ),
+          transactions: data().transactions.map((row) => {
+            if (row.id === id) {
+              // Editing one on its own detaches it, so a later change to the
+              // series leaves the correction alone.
+              return { ...row, ...changes, detached: scope === 'one' ? true : row.detached }
+            }
+
+            if (scope !== 'future' || !affects(row, target)) return row
+
+            // The date belongs to the occurrence, never to the series edit: a
+            // rule change must not drag October's row onto September's day.
+            return { ...row, ...withoutDate(changes) }
+          }),
         })
 
         return delay(find(id))
       },
 
-      remove: (id) => {
-        patch({ transactions: data().transactions.filter((t) => t.id !== id) })
+      remove: (id, scope = 'one') => {
+        const target = find(id)
+
+        patch({
+          transactions: data().transactions.filter((row) => {
+            if (row.id === id) return false
+
+            return scope !== 'future' || !affects(row, target)
+          }),
+        })
 
         return delay(undefined)
       },
@@ -421,6 +450,32 @@ export function createMockServices(): Services {
       },
     },
   }
+}
+
+/**
+ * Whether a change to `target` reaches `row`.
+ *
+ * Same series, later date, and not detached. The past is excluded by the date
+ * comparison rather than by a rule about today: what matters is the occurrence
+ * being edited, so editing September's row leaves August alone even if both are
+ * behind us.
+ */
+function withoutDate(changes: Partial<Transaction>): Partial<Transaction> {
+  const rest = { ...changes }
+
+  delete rest.date
+
+  return rest
+}
+
+function affects(row: Transaction, target: Transaction): boolean {
+  if (!target.recurring_series_id) return false
+
+  if (row.recurring_series_id !== target.recurring_series_id) return false
+
+  if (row.detached) return false
+
+  return row.date > target.date
 }
 
 function usable(invite: LedgerInvite): boolean {

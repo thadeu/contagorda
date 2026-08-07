@@ -1,8 +1,10 @@
 import { createContext, use } from 'react'
+import type { Scope } from '../../services/ports'
 
 export interface TransactionEditor {
   openNew: () => void
-  openEdit: (id: string) => void
+  /** `scope` comes from the sheet that asked how far the edit should reach. */
+  openEdit: (id: string, scope?: Scope) => void
 }
 
 export const TransactionEditorContext = createContext<TransactionEditor | null>(null)

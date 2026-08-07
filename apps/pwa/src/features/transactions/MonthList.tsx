@@ -143,7 +143,7 @@ export function MonthList({ month }: MonthListProps) {
           transaction={sheet}
           onClose={() => setSheet(null)}
           onTogglePaid={handleToggle}
-          onDelete={(transaction) => remove.mutate(transaction.id)}
+          onDelete={(transaction, scope) => remove.mutate({ id: transaction.id, scope })}
         />
       )}
 

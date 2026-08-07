@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '../../services'
+import type { Scope } from '../../services/ports'
+import type { Recurrence } from './recurrence'
 import { getActiveLedgerId } from '../../services/activeLedger'
 import { categoryKeys } from '../accounts/hooks'
 import type { Direction, NewTransaction, Transaction } from '../../services/types'
@@ -55,7 +57,8 @@ export function useCreateTransaction(month: string) {
   const client = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: NewTransaction) => services.transactions.create(input),
+    mutationFn: ({ input, recurrence }: { input: NewTransaction; recurrence: Recurrence | null }) =>
+      services.transactions.create(input, recurrence),
     onSuccess: () => invalidate(client, month),
   })
 }
@@ -121,8 +124,15 @@ export function useUpdateTransaction(month: string) {
   const client = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<NewTransaction> }) =>
-      services.transactions.update(id, input),
+    mutationFn: ({
+      id,
+      input,
+      scope,
+    }: {
+      id: string
+      input: Partial<NewTransaction>
+      scope?: Scope
+    }) => services.transactions.update(id, input, scope),
     onSuccess: () => invalidate(client, month),
   })
 }
@@ -131,7 +141,8 @@ export function useDeleteTransaction(month: string) {
   const client = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => services.transactions.remove(id),
+    mutationFn: ({ id, scope }: { id: string; scope?: Scope }) =>
+      services.transactions.remove(id, scope),
     onSuccess: () => invalidate(client, month),
   })
 }

@@ -5,6 +5,8 @@ import { CategoryPicker } from './CategoryPicker'
 import { AccountPicker } from './AccountPicker'
 import { Switch } from '../../../ui/Switch'
 import { useMemberName } from '../../ledgers/useMemberName'
+import { RecurrencePicker } from './RecurrencePicker'
+import type { Recurrence } from '../recurrence'
 import { emptyValues, type TransactionFormValues } from '../formValues'
 import type { NewTransaction } from '../../../services/types'
 
@@ -14,6 +16,14 @@ interface TransactionFormProps {
   id: string
   /** Who entered it, when editing one that exists. Shown, never edited. */
   authorId?: string | null
+  /**
+   * Absent when editing. A series is decided once, at the moment it is created:
+   * changing the rule afterwards would mean rewriting rows that already exist,
+   * some of them already paid, and the scope choice on save is the honest way to
+   * reach those.
+   */
+  recurrence?: Recurrence | null
+  onRecurrenceChange?: (recurrence: Recurrence | null) => void
   initial?: Partial<TransactionFormValues>
   /** `customCategory` is set when the user typed one under "Outros". */
   onSubmit: (input: NewTransaction) => void
@@ -43,6 +53,8 @@ interface TransactionFormProps {
 export function TransactionForm({
   id,
   authorId = null,
+  recurrence,
+  onRecurrenceChange,
   initial,
   onSubmit,
 }: TransactionFormProps) {
@@ -149,6 +161,14 @@ export function TransactionForm({
           value={resolvedAccount}
           onChange={(id) => set('accountId', id)}
         />
+
+        {onRecurrenceChange && (
+          <RecurrencePicker
+            date={values.date}
+            value={recurrence ?? null}
+            onChange={onRecurrenceChange}
+          />
+        )}
       </div>
 
       <div className="divide-y divide-line rounded-card bg-surface px-4">

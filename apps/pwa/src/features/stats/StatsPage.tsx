@@ -158,7 +158,7 @@ export function StatsPage() {
           transaction={open}
           onClose={() => setOpen(null)}
           onTogglePaid={(t) => togglePaid.mutate({ id: t.id, paid: t.paid_at === null })}
-          onDelete={(t) => remove.mutate(t.id)}
+          onDelete={(t, scope) => remove.mutate({ id: t.id, scope })}
         />
       )}
     </div>

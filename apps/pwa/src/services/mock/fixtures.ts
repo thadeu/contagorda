@@ -82,6 +82,7 @@ function tx(
     paid_at: paid ? `${date}T12:00:00Z` : null,
     recurring_series_id: options.series ?? null,
     created_by_id: SEED_MEMBER,
+    detached: false,
   }
 }
 

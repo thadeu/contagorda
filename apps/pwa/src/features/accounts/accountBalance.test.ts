@@ -14,6 +14,7 @@ function row(partial: Partial<Transaction>): Transaction {
     paid_at: '2026-08-10T12:00:00Z',
     recurring_series_id: null,
     created_by_id: null,
+    detached: false,
     ...partial,
   }
 }

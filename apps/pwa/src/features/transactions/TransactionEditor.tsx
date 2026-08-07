@@ -1,5 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useMonth } from '../../app/useMonth'
+import type { Scope } from '../../services/ports'
+import type { Recurrence } from './recurrence'
 import { Modal } from '../../ui/Modal'
 import { NavButton } from '../../ui/NavBar'
 import { CheckIcon } from '../../ui/icons'
@@ -15,7 +17,7 @@ import {
   useCreateTransaction,
 } from './hooks'
 
-type Editing = { mode: 'new' } | { mode: 'edit'; id: string } | null
+type Editing = { mode: 'new' } | { mode: 'edit'; id: string; scope: Scope } | null
 
 /**
  * Only one editor is ever mounted, so one id is enough — and it has to be a
@@ -30,7 +32,7 @@ export function TransactionEditorProvider({ children }: { children: ReactNode })
   const editor = useMemo<TransactionEditor>(
     () => ({
       openNew: () => setEditing({ mode: 'new' }),
-      openEdit: (id) => setEditing({ mode: 'edit', id }),
+      openEdit: (id, scope = 'one') => setEditing({ mode: 'edit', id, scope }),
     }),
     [],
   )
@@ -44,7 +46,9 @@ export function TransactionEditorProvider({ children }: { children: ReactNode })
       {children}
 
       {editing?.mode === 'new' && <NewTransactionModal onClose={close} />}
-      {editing?.mode === 'edit' && <EditTransactionModal id={editing.id} onClose={close} />}
+      {editing?.mode === 'edit' && (
+        <EditTransactionModal id={editing.id} scope={editing.scope} onClose={close} />
+      )}
     </TransactionEditorContext>
   )
 }
@@ -52,6 +56,7 @@ export function TransactionEditorProvider({ children }: { children: ReactNode })
 function NewTransactionModal({ onClose }: { onClose: () => void }) {
   const { month } = useMonth()
   const create = useCreateTransaction(month)
+  const [recurrence, setRecurrence] = useState<Recurrence | null>(null)
 
   return (
     <Modal
@@ -69,13 +74,23 @@ function NewTransactionModal({ onClose }: { onClose: () => void }) {
     >
       <TransactionForm
         id={FORM_ID}
-        onSubmit={(input) => create.mutate(input, { onSuccess: onClose })}
+        recurrence={recurrence}
+        onRecurrenceChange={setRecurrence}
+        onSubmit={(input) => create.mutate({ input, recurrence }, { onSuccess: onClose })}
       />
     </Modal>
   )
 }
 
-function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void }) {
+function EditTransactionModal({
+  id,
+  scope,
+  onClose,
+}: {
+  id: string
+  scope: Scope
+  onClose: () => void
+}) {
   const { month } = useMonth()
   const transaction = useTransaction(month, id)
   const update = useUpdateTransaction(month)
@@ -110,7 +125,7 @@ function EditTransactionModal({ id, onClose }: { id: string; onClose: () => void
           categoryId: transaction.category_id ?? '',
           paid: transaction.paid_at !== null,
         }}
-        onSubmit={(input) => update.mutate({ id, input }, { onSuccess: onClose })}
+        onSubmit={(input) => update.mutate({ id, input, scope }, { onSuccess: onClose })}
       />
     </Modal>
   )

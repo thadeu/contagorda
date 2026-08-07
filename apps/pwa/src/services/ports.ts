@@ -1,4 +1,5 @@
 import type { Cents } from '../lib/money'
+import type { Recurrence } from '../features/transactions/recurrence'
 import type {
   Account,
   Category,
@@ -53,11 +54,30 @@ export interface TransactionsPort {
    * property this call has.
    */
   monthlyTotals(categoryId?: string | null): Promise<MonthTotal[]>
-  create(input: NewTransaction): Promise<Transaction>
-  update(id: string, input: Partial<NewTransaction>): Promise<Transaction>
-  remove(id: string): Promise<void>
+  /**
+   * A recurrence materialises the whole series at once. The client sends the
+   * rule and the server writes the rows, because the dates are derived and a
+   * client that computes them can disagree with the next one that does.
+   */
+  create(input: NewTransaction, recurrence?: Recurrence | null): Promise<Transaction>
+  /**
+   * `scope` decides how far an edit or a delete reaches.
+   *
+   * Two values, not three. The past is never touched — a month that has been
+   * reconciled does not change because a rule did — so "all occurrences" is not
+   * offered. `future` means this one and the ones after it.
+   *
+   * An occurrence edited on its own is detached and keeps its edit: someone who
+   * corrected March's amount did so knowing it differed, and a later change to
+   * the series must not quietly undo that.
+   */
+  update(id: string, input: Partial<NewTransaction>, scope?: Scope): Promise<Transaction>
+  remove(id: string, scope?: Scope): Promise<void>
   setPaid(id: string, paid: boolean): Promise<Transaction>
 }
+
+/** How far a change to a recurring row reaches. */
+export type Scope = 'one' | 'future'
 
 export interface NewAccount {
   name: string

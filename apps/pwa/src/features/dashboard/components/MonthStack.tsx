@@ -1,5 +1,5 @@
 import { splitBRL } from '../../../lib/money'
-import { monthKey, parts, shiftMonth, todayIso } from '../../../lib/dates'
+import { shiftMonth } from '../../../lib/dates'
 import type { AppIcon } from '../../../ui/icons'
 import { Money } from '../../../ui/Money'
 import { ChevronLeftIcon, ChevronRightIcon } from '../../../ui/icons'
@@ -32,31 +32,13 @@ export function MonthStack({
   totalCents,
 }: MonthStackProps) {
   const { head, tail } = splitBRL(remainingCents)
-  const today = todayIso()
   const progress = totalCents === 0 ? 0 : Math.min(paidCents / totalCents, 1)
   const clear = totalCents > 0 && remainingCents === 0
 
   return (
     <section>
       <div className="flex items-center justify-between rounded-card bg-inverse px-4 pt-3.5 pb-12">
-        <div className="flex min-w-0 items-center gap-2">
-          <MonthPicker month={month} onChange={onMonthChange} />
-
-          {/* Today's date, and the way back to it. Every other control here moves
-              relative to where you are, so wandering six months out costs six
-              taps to undo — this one is the fixed point. It shows the day
-              because the number has to say which day it returns to, and because
-              a screen about a month is the one place the date is missing. */}
-          <button
-            type="button"
-            onClick={() => onMonthChange(monthKey(today))}
-            disabled={month === monthKey(today)}
-            aria-label={`Ir para hoje, dia ${parts(today).day}`}
-            className="tnum grid size-9 shrink-0 place-items-center rounded-2xl bg-white/12 text-[0.9375rem] font-semibold text-white disabled:opacity-30"
-          >
-            {parts(today).day}
-          </button>
-        </div>
+        <MonthPicker month={month} onChange={onMonthChange} />
 
         {/* One month either way, which is nearly every move. The picker is
             still there in the label for the rare jump to a month far off, and

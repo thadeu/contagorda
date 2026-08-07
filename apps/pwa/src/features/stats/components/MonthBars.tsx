@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/dates'
 import { compactBRL, formatBRL } from '../../../lib/money'
 import { ceiling, read, type Reading, type Trend } from '../trend'
@@ -22,10 +22,21 @@ interface MonthBarsProps {
  * tallest on record. See `ceiling` for why: one month with a car deposit in it
  * would otherwise be the yardstick for every month that ever follows.
  *
- * Near the one being *read*, never near the one on screen. The window follows
- * the selection, which is deliberate and infrequent; following the scroll would
- * change a bar's height under a moving finger, which is the one thing a chart
- * must not do.
+ * The window follows both the selection and the scroll, and it is the *and* that
+ * makes it work. Scrolling two years back to a stretch of months the outlier
+ * dwarfs would otherwise show a row of slivers until one of them was tapped —
+ * the chart holding a scale for a part of the history nobody is looking at.
+ *
+ * But it only moves once the finger stops. Rescaling live would change a bar's
+ * height under the very gesture reading it, which is the one thing a chart must
+ * not do; rescaling on settle lands the new proportions where the scroll landed,
+ * so they read as arriving rather than as shifting. `SETTLE` is the pause that
+ * means stopped — long enough not to fire between flicks of the same gesture,
+ * short enough that nobody is waiting for it.
+ *
+ * The anchor is the middle column, because that is where the eye is: what
+ * someone scrolled to is what they centred, not what happened to touch the left
+ * edge of the frame.
  *
  * Every column carries its figure. Bars answer "which months were heavy" at a
  * glance and "how heavy" not at all — the height is a ratio to a peak that is
@@ -120,11 +131,68 @@ function label(reading: Reading): string {
   return parts.join(', ')
 }
 
+/** How long a scroller has to be still before it counts as stopped. */
+const SETTLE = 140
+
 export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   const scroller = useRef<HTMLDivElement>(null)
+  const track = useRef<HTMLDivElement>(null)
   const current = useRef<HTMLButtonElement>(null)
 
   const painted = useRef(false)
+
+  /**
+   * The month the scale is drawn around: whatever was chosen, until a scroll
+   * comes to rest somewhere else. Choosing a month clears where the scroll had
+   * settled, because picking one is a stronger statement about what someone is
+   * reading than having scrolled past it.
+   *
+   * Adjusted during the render that sees the new prop rather than in an effect
+   * afterwards. An effect would paint one frame at the old scale, and that frame
+   * is exactly the one where a tap is waiting to see its result.
+   */
+  const [scrolled, setScrolled] = useState<string | null>(null)
+  const [chosenMonth, setChosenMonth] = useState(selected)
+
+  if (selected !== chosenMonth) {
+    setChosenMonth(selected)
+    setScrolled(null)
+  }
+
+  const anchor = scrolled ?? selected
+
+  useEffect(() => {
+    const element = scroller.current
+
+    if (!element) return
+
+    let timer: ReturnType<typeof setTimeout>
+
+    function settled() {
+      const columns = track.current?.children
+
+      if (!element || !columns?.length) return
+
+      const first = columns[0] as HTMLElement
+      const middle = element.scrollLeft + element.clientWidth / 2
+      const at = Math.floor((middle - first.offsetLeft) / first.offsetWidth)
+      const column = columns[Math.min(Math.max(at, 0), columns.length - 1)]
+
+      setScrolled(column.getAttribute('data-month'))
+    }
+
+    function onScroll() {
+      clearTimeout(timer)
+      timer = setTimeout(settled, SETTLE)
+    }
+
+    element.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => {
+      clearTimeout(timer)
+      element.removeEventListener('scroll', onScroll)
+    }
+  }, [])
 
   useEffect(() => {
     current.current?.scrollIntoView({
@@ -137,11 +205,12 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   }, [selected])
 
   const readings = read(totals, monthKey(todayIso()))
-  const tallest = ceiling(readings, selected)
+  const tallest = ceiling(readings, anchor)
 
   return (
     <div ref={scroller} className="touch-pan-x overflow-x-auto overscroll-x-contain px-4">
       <div
+        ref={track}
         className="ms-auto flex w-max snap-x items-end"
         role="group"
         aria-label="Despesas por mês"
@@ -154,6 +223,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
             <button
               key={reading.month}
               ref={chosen ? current : null}
+              data-month={reading.month}
               type="button"
               onClick={() => onSelect(reading.month)}
               aria-pressed={chosen}

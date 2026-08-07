@@ -3,7 +3,7 @@ import { createMockServices } from './index'
 
 const services = createMockServices()
 
-async function series(count: number) {
+async function series(rows: number) {
   const first = await services.transactions.create(
     {
       account_id: 'a',
@@ -14,7 +14,7 @@ async function series(count: number) {
       description: 'Aluguel',
       paid: true,
     },
-    { frequency: 'monthly', interval: 1, count },
+    { frequency: 'monthly', interval: 1, repeats: rows - 1 },
   )
 
   return first

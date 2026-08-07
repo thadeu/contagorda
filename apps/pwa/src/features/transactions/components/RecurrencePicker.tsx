@@ -11,9 +11,6 @@ interface RecurrencePickerProps {
   onChange: (recurrence: Recurrence | null) => void
 }
 
-/** Enough for a year of months, or a decade of years. */
-const COUNTS = [2, 3, 4, 6, 12, 24, 36]
-
 /**
  * A row, not a block.
  *
@@ -34,7 +31,7 @@ export function RecurrencePicker({ date, value, onChange }: RecurrencePickerProp
         <span className="w-24 shrink-0 text-sm text-muted">Repetir</span>
 
         <span className="min-w-0 flex-1 truncate text-right text-base text-ink">
-          {value ? `${value.count}× ${unit(value)}` : 'Não se repete'}
+          {value ? `${value.repeats + 1}× ${unit(value)}` : 'Não se repete'}
         </span>
         <ChevronRightIcon className="size-4 shrink-0 text-faint" />
       </button>
@@ -58,7 +55,7 @@ function RecurrenceSheet({
   onClose,
 }: RecurrencePickerProps & { onClose: () => void }) {
   const [draft, setDraft] = useState<Recurrence>(
-    value ?? { frequency: 'monthly', interval: 1, count: 12 },
+    value ?? { frequency: 'monthly', interval: 1, repeats: 11 },
   )
 
   const repeats = value !== null
@@ -102,13 +99,32 @@ function RecurrenceSheet({
               ))}
             </Field>
 
-            <Field label="Vezes">
-              {COUNTS.map((count) => (
-                <Chip key={count} active={draft.count === count} onClick={() => update({ count })}>
-                  {String(count)}
-                </Chip>
-              ))}
-            </Field>
+            {/* Typed, not chosen from a set. Any list of counts is somebody's
+                guess at how long a thing lasts, and the one number missing from
+                it is always the one being entered — including 1, which is
+                "and again next month" and the shortest series there is. */}
+            <label className="flex min-h-13 items-center gap-3">
+              <span className="min-w-0 flex-1 text-sm text-muted">Se repete por</span>
+
+              <input
+                value={draft.repeats}
+                onChange={(event) => update({ repeats: clean(event.target.value) })}
+                inputMode="numeric"
+                aria-label="Quantas vezes se repete"
+                size={3}
+                className="tnum w-14 bg-transparent text-right text-base text-ink outline-none"
+              />
+
+              <span className="shrink-0 text-sm text-muted">
+                {draft.frequency === 'yearly'
+                  ? draft.repeats === 1
+                    ? 'ano'
+                    : 'anos'
+                  : draft.repeats === 1
+                    ? 'mês'
+                    : 'meses'}
+              </span>
+            </label>
 
             {/* The controls state a rule; this states its consequence, which is
                 the part anyone actually agrees to. It is also where a clamped
@@ -188,8 +204,19 @@ function Segment({
   )
 }
 
-function unit({ frequency, count }: Recurrence): string {
-  if (frequency === 'yearly') return count === 1 ? 'ano' : 'anos'
+function unit({ frequency, repeats }: Recurrence): string {
+  if (frequency === 'yearly') return repeats === 0 ? 'ano' : 'anos'
 
-  return count === 1 ? 'mês' : 'meses'
+  return repeats === 0 ? 'mês' : 'meses'
+}
+
+/**
+ * An empty field is zero, not a crash, and nothing below one repetition is a
+ * series. Typing is a state someone passes through — clearing the box to write
+ * a different number must not throw away the rest of the rule.
+ */
+function clean(value: string): number {
+  const digits = Number(value.replace(/\D/g, ''))
+
+  return Number.isFinite(digits) ? Math.max(digits, 0) : 0
 }

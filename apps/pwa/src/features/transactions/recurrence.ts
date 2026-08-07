@@ -1,4 +1,4 @@
-import { monthLabel, monthKey, toIso, parts, type IsoDate } from '../../lib/dates'
+import { monthLabel, monthKey, toIso, parts, type IsoDate } from '@/lib/dates'
 
 export type Frequency = 'monthly' | 'yearly'
 
@@ -6,8 +6,16 @@ export interface Recurrence {
   frequency: Frequency
   /** Every how many months or years. One for "every month". */
   interval: number
-  /** How many rows exist in total, this one included. */
-  count: number
+  /**
+   * How many times it repeats after this one. One means "and again next month",
+   * which is two rows in total.
+   *
+   * Named the way the form asks it — "se repete por" — rather than as a total,
+   * because the two differ by one and the difference is invisible in a field
+   * showing a number. A domain that counts occurrences and a label that counts
+   * repetitions is an off-by-one waiting for someone.
+   */
+  repeats: number
 }
 
 export const FREQUENCIES: { value: Frequency; label: string }[] = [
@@ -25,13 +33,13 @@ export const FREQUENCIES: { value: Frequency; label: string }[] = [
  * That drift is invisible until someone reconciles a statement.
  *
  * Counted rather than bounded by a date, because "every two months for six
- * months" has two defensible answers and "six times" has one.
+ * months" has two defensible answers and "six more times" has one.
  */
-export function occurrences(start: IsoDate, { frequency, interval, count }: Recurrence): IsoDate[] {
+export function occurrences(start: IsoDate, { frequency, interval, repeats }: Recurrence): IsoDate[] {
   const { year, month, day } = parts(start)
   const step = frequency === 'yearly' ? interval * 12 : interval
 
-  return Array.from({ length: count }, (_, index) => {
+  return Array.from({ length: repeats + 1 }, (_, index) => {
     const target = month - 1 + index * step
     const targetYear = year + Math.floor(target / 12)
     const targetMonth = (target % 12) + 1

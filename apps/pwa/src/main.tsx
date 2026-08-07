@@ -7,8 +7,10 @@ import './styles/tokens.css'
 import { router } from './app/router'
 import { queryClient } from './app/queryClient'
 import { PUBLISHABLE_KEY, configureClowk } from './clowk'
+import { forgetMonthOnColdStart } from './app/coldStart'
 
 configureClowk()
+forgetMonthOnColdStart()
 
 // afterSignOutPath is empty on purpose: with a path set, the SDK navigates away
 // on sign-out while the auth guard is already redirecting to Clowk, and the two

@@ -18,8 +18,8 @@ interface MonthBarsProps {
  * have to invent a rule for which ones — while a scroller lets the finger decide
  * and needs no control to say so.
  *
- * Heights are relative to the tallest month near the one being read, not to the
- * tallest on record. See `ceiling` for why: one month with a car deposit in it
+ * Heights are relative to the tallest of three — the month being read and its
+ * two neighbours — not to the tallest on record. See `ceiling` for why: one month with a car deposit in it
  * would otherwise be the yardstick for every month that ever follows.
  *
  * The window follows both the selection and the scroll, and it is the *and* that

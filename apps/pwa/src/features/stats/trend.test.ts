@@ -89,16 +89,18 @@ describe('ceiling', () => {
     expect(ceiling(read(history, 'none'), '2026-08')).toBe(16_000)
   })
 
-  it('still answers to it while it is in range', () => {
+  it('still answers to it while it is alongside', () => {
     expect(ceiling(read(history, 'none'), '2026-05')).toBe(900_000)
   })
 
-  it('reaches three months either side', () => {
-    expect(ceiling(read(history, 'none'), '2026-07')).toBe(900_000)
+  it('reaches one month either side, and no further', () => {
+    expect(ceiling(read(history, 'none'), '2026-03')).toBe(900_000)
+    expect(ceiling(read(history, 'none'), '2026-02')).toBe(10_000)
   })
 
-  it('does not fall off the start of the history', () => {
-    expect(ceiling(read(history, 'none'), '2026-01')).toBe(900_000)
+  it('does not fall off either end of the history', () => {
+    expect(ceiling(read(history, 'none'), '2026-01')).toBe(10_000)
+    expect(ceiling(read(history, 'none'), '2026-08')).toBe(16_000)
   })
 })
 

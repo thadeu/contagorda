@@ -68,8 +68,8 @@ export function read(totals: MonthTotal[], current: string): Reading[] {
   })
 }
 
-/** Three months either side of the one being read. */
-const SPAN = 3
+/** One month either side, so the window is three: this month and its neighbours. */
+const SPAN = 1
 
 /**
  * The tallest month near the one being read, which is what the bars are drawn
@@ -82,6 +82,12 @@ const SPAN = 3
  * compared. Against its neighbours, a month is read against the months anyone
  * would actually compare it with, and the shape returns as the outlier scrolls
  * out of range.
+ *
+ * Three months, not seven. A wider window is steadier and says less: stretch it
+ * far enough and it is the whole history again, with the outlier back to
+ * flattening months that have nothing to do with it. Three is the smallest
+ * window that still compares — a month, the one before it and the one after —
+ * and it is the same span the sentence under the chart talks about.
  *
  * The cost, stated plainly: the same month is not always the same height. That
  * is the trade — a chart that is legible about the recent past against one that

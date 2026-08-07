@@ -1,6 +1,6 @@
-import { BottomSheet, SheetActionCard } from '../../../ui/BottomSheet'
-import { DeleteIcon, EditIcon, RepeatIcon } from '../../../ui/icons'
-import type { Scope } from '../../../services/ports'
+import { BottomSheet, SheetActionCard } from '@/ui/BottomSheet'
+import { DeleteIcon, EditIcon, RepeatIcon } from '@/ui/icons'
+import type { Scope } from '@/services/ports'
 
 interface ScopeSheetProps {
   action: 'edit' | 'delete'

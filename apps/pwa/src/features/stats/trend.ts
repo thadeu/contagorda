@@ -1,4 +1,4 @@
-import type { MonthTotal } from '../../services/types'
+import type { MonthTotal } from '@/services/types'
 
 /**
  * What a bar is saying, beyond how tall it is.

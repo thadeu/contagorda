@@ -1,29 +1,29 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { NavBar, NavButton } from '../../ui/NavBar'
-import { DockedSheet } from '../../ui/DockedSheet'
-import { Money } from '../../ui/Money'
-import { EmptyState } from '../../ui/EmptyState'
-import { Spinner } from '../../ui/Spinner'
-import { ChevronLeftIcon, ChevronRightIcon, MoreIcon, TargetIcon } from '../../ui/icons'
-import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
-import { monthKey, monthLabel, shiftMonth, todayIso } from '../../lib/dates'
-import { useMonth } from '../../app/useMonth'
-import { useCategories } from '../accounts/hooks'
+import { NavBar, NavButton } from '@/ui/NavBar'
+import { DockedSheet } from '@/ui/DockedSheet'
+import { Money } from '@/ui/Money'
+import { EmptyState } from '@/ui/EmptyState'
+import { Spinner } from '@/ui/Spinner'
+import { ChevronLeftIcon, ChevronRightIcon, MoreIcon, TargetIcon } from '@/ui/icons'
+import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
+import { monthKey, monthLabel, shiftMonth, todayIso } from '@/lib/dates'
+import { useMonth } from '@/app/useMonth'
+import { useCategories } from '@/features/accounts/hooks'
 import {
   useDeleteTransaction,
   useMonthlyTotals,
   useTogglePaid,
   useTransactions,
-} from '../transactions/hooks'
-import { groupByDay } from '../transactions/groupByDay'
-import { DayGroupSection } from '../transactions/components/DayGroupSection'
-import { TransactionSheet } from '../transactions/components/TransactionSheet'
+} from '@/features/transactions/hooks'
+import { groupByDay } from '@/features/transactions/groupByDay'
+import { DayGroupSection } from '@/features/transactions/components/DayGroupSection'
+import { TransactionSheet } from '@/features/transactions/components/TransactionSheet'
 import { MonthBars } from './components/MonthBars'
 import { MonthDifference } from './components/MonthDifference'
 import { difference, read } from './trend'
 import { ALL, CategoryFilter, UNCATEGORISED } from './components/CategoryFilter'
-import type { Transaction } from '../../services/types'
+import type { Transaction } from '@/services/types'
 
 /**
  * The history behind the month.

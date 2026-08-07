@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useAcceptInvite } from './hooks'
-import { Button } from '../../ui/Button'
-import { EmptyState } from '../../ui/EmptyState'
+import { Button } from '@/ui/Button'
+import { EmptyState } from '@/ui/EmptyState'
 
 /**
  * Where an invite link lands.

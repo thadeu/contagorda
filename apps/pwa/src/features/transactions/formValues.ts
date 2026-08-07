@@ -1,6 +1,6 @@
-import { formatBRL } from '../../lib/money'
-import { todayIso } from '../../lib/dates'
-import type { Direction } from '../../services/types'
+import { formatBRL } from '@/lib/money'
+import { todayIso } from '@/lib/dates'
+import type { Direction } from '@/services/types'
 
 export interface TransactionFormValues {
   kind: Direction

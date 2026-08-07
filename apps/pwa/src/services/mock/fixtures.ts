@@ -1,5 +1,5 @@
-import type { Account, Category, Transaction } from '../types'
-import { monthKey, shiftMonth, todayIso } from '../../lib/dates'
+import type { Account, Category, Transaction } from '@/services/types'
+import { monthKey, shiftMonth, todayIso } from '@/lib/dates'
 
 /**
  * Two years of it: January of this year through December of next.

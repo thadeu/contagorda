@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useAuth } from '@clowk/react'
-import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
+import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
 import { WelcomeScreen } from './WelcomeScreen'
 
 /**

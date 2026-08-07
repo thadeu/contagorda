@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { balanceFor } from './accountBalance'
-import type { Transaction } from '../../services/types'
+import type { Transaction } from '@/services/types'
 
 function row(partial: Partial<Transaction>): Transaction {
   return {

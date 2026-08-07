@@ -1,10 +1,10 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { services } from '../../services'
-import type { Scope } from '../../services/ports'
+import { services } from '@/services'
+import type { Scope } from '@/services/ports'
 import type { Recurrence } from './recurrence'
-import { getActiveLedgerId } from '../../services/activeLedger'
-import { categoryKeys } from '../accounts/hooks'
-import type { Direction, NewTransaction, Transaction } from '../../services/types'
+import { getActiveLedgerId } from '@/services/activeLedger'
+import { categoryKeys } from '@/features/accounts/hooks'
+import type { Direction, NewTransaction, Transaction } from '@/services/types'
 
 /**
  * Query keys are built here rather than inline so an invalidation cannot miss a

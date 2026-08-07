@@ -1,4 +1,4 @@
-import type { Ledger } from '../../services/types'
+import type { Ledger } from '@/services/types'
 
 /**
  * Only an owner may let someone else in.

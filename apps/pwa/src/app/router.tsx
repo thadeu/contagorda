@@ -1,9 +1,9 @@
 import { createBrowserRouter } from 'react-router'
 import { AppShell } from './layout/AppShell'
 import { RequireAuth } from './auth/RequireAuth'
-import { DashboardPage } from '../features/dashboard/DashboardPage'
-import { InvitePage } from '../features/ledgers/InvitePage'
-import { StatsPage } from '../features/stats/StatsPage'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
+import { InvitePage } from '@/features/ledgers/InvitePage'
+import { StatsPage } from '@/features/stats/StatsPage'
 
 export const router = createBrowserRouter([
   {

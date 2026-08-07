@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createMockServices } from './index'
-import { getActiveLedgerId, setActiveLedgerId } from '../activeLedger'
+import { getActiveLedgerId, setActiveLedgerId } from '@/services/activeLedger'
 
 /**
  * The invite flow through the seam, with no React in the way. When a button

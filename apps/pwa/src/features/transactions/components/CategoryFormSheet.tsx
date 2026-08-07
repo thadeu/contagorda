@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react'
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { ConfirmSheet } from '../../../ui/ConfirmSheet'
-import { Button } from '../../../ui/Button'
-import { NavButton } from '../../../ui/NavBar'
-import { CheckIcon, SearchIcon } from '../../../ui/icons'
-import { searchIcons } from '../categoryIcons'
-import { useCreateCategory, useDeleteCategory, useUpdateCategory } from '../hooks'
-import type { Category, Direction } from '../../../services/types'
+import { BottomSheet } from '@/ui/BottomSheet'
+import { ConfirmSheet } from '@/ui/ConfirmSheet'
+import { Button } from '@/ui/Button'
+import { NavButton } from '@/ui/NavBar'
+import { CheckIcon, SearchIcon } from '@/ui/icons'
+import { searchIcons } from '@/features/transactions/categoryIcons'
+import { useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/features/transactions/hooks'
+import type { Category, Direction } from '@/services/types'
 
 interface CategoryFormSheetProps {
   kind: Direction

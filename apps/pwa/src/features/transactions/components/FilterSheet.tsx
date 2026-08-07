@@ -1,8 +1,8 @@
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { NavButton } from '../../../ui/NavBar'
-import { CheckIcon, ClearIcon } from '../../../ui/icons'
-import { SORTS, type Sort } from '../sorting'
-import type { Status } from '../useStatusFilter'
+import { BottomSheet } from '@/ui/BottomSheet'
+import { NavButton } from '@/ui/NavBar'
+import { CheckIcon, ClearIcon } from '@/ui/icons'
+import { SORTS, type Sort } from '@/features/transactions/sorting'
+import type { Status } from '@/features/transactions/useStatusFilter'
 
 interface FilterSheetProps {
   status: Status

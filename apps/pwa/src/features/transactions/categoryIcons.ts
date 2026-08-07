@@ -1,4 +1,4 @@
-import { fold } from '../../lib/text'
+import { fold } from '@/lib/text'
 
 export interface CategoryIcon {
   emoji: string

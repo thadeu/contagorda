@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router'
 import { isSort, type Sort } from './sorting'
-import type { Transaction } from '../../services/types'
+import type { Transaction } from '@/services/types'
 
 export type Status = 'pending' | 'paid'
 

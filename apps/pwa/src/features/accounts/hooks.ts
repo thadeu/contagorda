@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { services } from '../../services'
-import { getActiveLedgerId } from '../../services/activeLedger'
-import type { NewAccount } from '../../services/ports'
+import { services } from '@/services'
+import { getActiveLedgerId } from '@/services/activeLedger'
+import type { NewAccount } from '@/services/ports'
 
 export const accountKeys = {
   all: () => ['accounts', getActiveLedgerId()] as const,

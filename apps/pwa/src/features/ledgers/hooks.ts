@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { services } from '../../services'
-import { ledgerKeys } from '../../app/ledger/activeLedgerContext'
+import { services } from '@/services'
+import { ledgerKeys } from '@/app/ledger/activeLedgerContext'
 
 export function useMembers(ledgerId: string | null) {
   return useQuery({

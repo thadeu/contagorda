@@ -1,5 +1,5 @@
-import { Avatar } from '../../../ui/Avatar'
-import { ChevronRightIcon, SearchIcon, BellIcon, WalletIcon } from '../../../ui/icons'
+import { Avatar } from '@/ui/Avatar'
+import { ChevronRightIcon, SearchIcon, BellIcon, WalletIcon } from '@/ui/icons'
 
 interface IdentityRowProps {
   name: string

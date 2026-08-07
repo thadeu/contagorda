@@ -2,8 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { LedgerSection } from './LedgerSection'
-import { ActiveLedgerProvider } from '../../../app/ledger/ActiveLedgerProvider'
-import { ActiveLedgerContext } from '../../../app/ledger/activeLedgerContext'
+import { ActiveLedgerProvider } from '@/app/ledger/ActiveLedgerProvider'
+import { ActiveLedgerContext } from '@/app/ledger/activeLedgerContext'
 
 function renderSection() {
   const client = new QueryClient({

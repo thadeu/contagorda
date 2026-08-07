@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { Switch } from '../../../ui/Switch'
+import { BottomSheet } from '@/ui/BottomSheet'
+import { Switch } from '@/ui/Switch'
 import { RepeatsSheet } from './RepeatsSheet'
-import { ChevronRightIcon } from '../../../ui/icons'
-import { clamped, describe, FREQUENCIES, type Recurrence } from '../recurrence'
-import type { IsoDate } from '../../../lib/dates'
+import { ChevronRightIcon } from '@/ui/icons'
+import { clamped, describe, FREQUENCIES, type Recurrence } from '@/features/transactions/recurrence'
+import type { IsoDate } from '@/lib/dates'
 
 interface RecurrencePickerProps {
   date: IsoDate

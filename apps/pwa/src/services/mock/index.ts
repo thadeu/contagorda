@@ -1,4 +1,4 @@
-import type { Services } from '../ports'
+import type { Services } from '@/services/ports'
 import type {
   Account,
   Category,
@@ -9,12 +9,12 @@ import type {
   MonthTotal,
   NewTransaction,
   Transaction,
-} from '../types'
-import { monthKey, todayIso } from '../../lib/dates'
-import { getActiveLedgerId, setActiveLedgerId } from '../activeLedger'
-import { uuid } from '../../lib/uuid'
-import { occurrences } from '../../features/transactions/recurrence'
-import { fold } from '../../lib/text'
+} from '@/services/types'
+import { monthKey, todayIso } from '@/lib/dates'
+import { getActiveLedgerId, setActiveLedgerId } from '@/services/activeLedger'
+import { uuid } from '@/lib/uuid'
+import { occurrences } from '@/features/transactions/recurrence'
+import { fold } from '@/lib/text'
 import {
   accounts as seedAccounts,
   categories as seedCategories,

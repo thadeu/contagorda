@@ -1,5 +1,5 @@
-import type { Cents } from '../../lib/money'
-import type { Transaction } from '../../services/types'
+import type { Cents } from '@/lib/money'
+import type { Transaction } from '@/services/types'
 
 /**
  * Where an account stands part-way through a month.

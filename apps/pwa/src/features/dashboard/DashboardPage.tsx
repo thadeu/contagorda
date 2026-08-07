@@ -1,17 +1,17 @@
 
 import { useState } from 'react'
-import { useMonth } from '../../app/useMonth'
-import { useGreeting } from '../../app/useGreeting'
-import { useTransactions } from '../transactions/hooks'
-import { MonthList } from '../transactions/MonthList'
+import { useMonth } from '@/app/useMonth'
+import { useGreeting } from '@/app/useGreeting'
+import { useTransactions } from '@/features/transactions/hooks'
+import { MonthList } from '@/features/transactions/MonthList'
 import { MonthStack } from './components/MonthStack'
 import { ProfileSheet } from './components/ProfileButton'
 import { IdentityRow } from './components/IdentityRow'
 import { SpendingCard } from './components/SpendingCard'
 import { TotalBalance } from './components/TotalBalance'
-import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
-import { useActiveLedger } from '../../app/ledger/activeLedgerContext'
-import { AccountsSheet } from '../accounts/AccountsSheet'
+import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
+import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
+import { AccountsSheet } from '@/features/accounts/AccountsSheet'
 
 export function DashboardPage() {
   const [profileOpen, setProfileOpen] = useState(false)

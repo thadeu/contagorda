@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router'
-import { monthKey, todayIso } from '../lib/dates'
+import { monthKey, todayIso } from '@/lib/dates'
 
 /**
  * The selected month lives in the URL, not in component state.

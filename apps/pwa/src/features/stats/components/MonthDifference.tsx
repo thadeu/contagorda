@@ -1,6 +1,6 @@
-import { monthLabel } from '../../../lib/dates'
-import { compactBRL } from '../../../lib/money'
-import type { Difference } from '../trend'
+import { monthLabel } from '@/lib/dates'
+import { compactBRL } from '@/lib/money'
+import type { Difference } from '@/features/stats/trend'
 
 /**
  * What the chart just showed, said out loud.

@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from 'react-router'
-import { ChevronRightIcon } from '../../../ui/icons'
-import { Money } from '../../../ui/Money'
-import { monthLabel } from '../../../lib/dates'
-import { useCategories } from '../../accounts/hooks'
-import { useTransactions } from '../../transactions/hooks'
-import type { Transaction } from '../../../services/types'
+import { ChevronRightIcon } from '@/ui/icons'
+import { Money } from '@/ui/Money'
+import { monthLabel } from '@/lib/dates'
+import { useCategories } from '@/features/accounts/hooks'
+import { useTransactions } from '@/features/transactions/hooks'
+import type { Transaction } from '@/services/types'
 
 /**
  * A palette for the bar, not for the categories.

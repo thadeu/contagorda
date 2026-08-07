@@ -1,5 +1,5 @@
-import type { Transaction } from '../../services/types'
-import type { IsoDate } from '../../lib/dates'
+import type { Transaction } from '@/services/types'
+import type { IsoDate } from '@/lib/dates'
 
 export interface DayGroup {
   date: IsoDate

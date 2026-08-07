@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { NavButton } from '../../../ui/NavBar'
-import { CheckIcon, EditIcon, PlusIcon } from '../../../ui/icons'
+import { BottomSheet } from '@/ui/BottomSheet'
+import { NavButton } from '@/ui/NavBar'
+import { CheckIcon, EditIcon, PlusIcon } from '@/ui/icons'
 import { CategoryFormSheet } from './CategoryFormSheet'
-import type { Category, Direction } from '../../../services/types'
+import type { Category, Direction } from '@/services/types'
 
 interface CategorySheetProps {
   categories: Category[]

@@ -1,5 +1,5 @@
 import { Component, Fragment, type ErrorInfo, type ReactNode } from 'react'
-import { TopAlert } from '../ui/TopAlert'
+import { TopAlert } from '@/ui/TopAlert'
 
 interface Props {
   children: ReactNode

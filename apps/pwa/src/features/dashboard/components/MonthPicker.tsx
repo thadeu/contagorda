@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { monthKey, monthLabel, todayIso } from '../../../lib/dates'
-import { useMonthsWithData } from '../../transactions/hooks'
-import { buildMonthOptions } from '../monthOptions'
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { ChevronDownIcon } from '../../../ui/icons'
+import { monthKey, monthLabel, todayIso } from '@/lib/dates'
+import { useMonthsWithData } from '@/features/transactions/hooks'
+import { buildMonthOptions } from '@/features/dashboard/monthOptions'
+import { BottomSheet } from '@/ui/BottomSheet'
+import { ChevronDownIcon } from '@/ui/icons'
 
 interface MonthPickerProps {
   month: string

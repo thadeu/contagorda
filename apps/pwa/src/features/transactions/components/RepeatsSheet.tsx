@@ -1,7 +1,7 @@
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { CheckIcon } from '../../../ui/icons'
-import { monthKey, monthLabel, type IsoDate } from '../../../lib/dates'
-import { occurrences, type Frequency } from '../recurrence'
+import { BottomSheet } from '@/ui/BottomSheet'
+import { CheckIcon } from '@/ui/icons'
+import { monthKey, monthLabel, type IsoDate } from '@/lib/dates'
+import { occurrences, type Frequency } from '@/features/transactions/recurrence'
 
 interface RepeatsSheetProps {
   date: IsoDate

@@ -1,11 +1,11 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useAuth } from '@clowk/react'
-import { useGreeting, useUpdateProfile } from '../../../app/useGreeting'
-import { Avatar } from '../../../ui/Avatar'
-import { Button } from '../../../ui/Button'
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { ChevronRightIcon, SignOutIcon } from '../../../ui/icons'
-import { LedgerSection } from '../../ledgers/components/LedgerSection'
+import { useGreeting, useUpdateProfile } from '@/app/useGreeting'
+import { Avatar } from '@/ui/Avatar'
+import { Button } from '@/ui/Button'
+import { BottomSheet } from '@/ui/BottomSheet'
+import { ChevronRightIcon, SignOutIcon } from '@/ui/icons'
+import { LedgerSection } from '@/features/ledgers/components/LedgerSection'
 
 interface ProfileButtonProps {
   name: string

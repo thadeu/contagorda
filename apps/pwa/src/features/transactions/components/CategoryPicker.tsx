@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { ChevronRightIcon } from '../../../ui/icons'
+import { ChevronRightIcon } from '@/ui/icons'
 import { CategorySheet } from './CategorySheet'
-import type { Category, Direction } from '../../../services/types'
+import type { Category, Direction } from '@/services/types'
 
 interface CategoryPickerProps {
   categories: Category[]

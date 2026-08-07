@@ -1,5 +1,5 @@
-import type { Cents } from '../lib/money'
-import type { Recurrence } from '../features/transactions/recurrence'
+import type { Cents } from '@/lib/money'
+import type { Recurrence } from '@/features/transactions/recurrence'
 import type {
   Account,
   Category,

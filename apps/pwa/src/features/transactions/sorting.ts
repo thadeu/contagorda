@@ -1,4 +1,4 @@
-import type { Category, Transaction } from '../../services/types'
+import type { Category, Transaction } from '@/services/types'
 
 export type Sort = 'date' | 'description' | 'amount' | 'category'
 

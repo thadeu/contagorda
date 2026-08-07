@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router'
-import { WalletIcon } from '../../../ui/icons'
+import { WalletIcon } from '@/ui/icons'
 
 /**
  * The way to accounts, next to the avatar.

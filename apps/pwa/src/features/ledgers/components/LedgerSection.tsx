@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useActiveLedger } from '../../../app/ledger/activeLedgerContext'
-import { canInvite } from '../canInvite'
+import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
+import { canInvite } from '@/features/ledgers/canInvite'
 import {
   inviteUrl,
   useCreateInvite,
@@ -8,11 +8,11 @@ import {
   useMembers,
   useRemoveMember,
   useRevokeInvite,
-} from '../hooks'
-import { ConfirmSheet } from '../../../ui/ConfirmSheet'
-import { shareOrCopy, type ShareResult } from '../../../ui/share'
-import { CheckIcon, PlusIcon } from '../../../ui/icons'
-import type { LedgerInvite, LedgerMember } from '../../../services/types'
+} from '@/features/ledgers/hooks'
+import { ConfirmSheet } from '@/ui/ConfirmSheet'
+import { shareOrCopy, type ShareResult } from '@/ui/share'
+import { CheckIcon, PlusIcon } from '@/ui/icons'
+import type { LedgerInvite, LedgerMember } from '@/services/types'
 
 /**
  * Who is in this space, and how someone else gets in.

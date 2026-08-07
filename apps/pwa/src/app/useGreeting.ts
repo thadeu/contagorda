@@ -1,6 +1,6 @@
 import { useAuth } from '@clowk/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { services } from '../services'
+import { services } from '@/services'
 
 export const profileKey = ['profile'] as const
 

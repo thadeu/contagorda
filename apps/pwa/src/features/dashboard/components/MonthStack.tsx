@@ -1,8 +1,8 @@
-import { splitBRL } from '../../../lib/money'
-import { monthKey, shiftMonth, todayIso } from '../../../lib/dates'
-import type { AppIcon } from '../../../ui/icons'
-import { Money } from '../../../ui/Money'
-import { ChevronLeftIcon, ChevronRightIcon, TargetIcon } from '../../../ui/icons'
+import { splitBRL } from '@/lib/money'
+import { monthKey, shiftMonth, todayIso } from '@/lib/dates'
+import type { AppIcon } from '@/ui/icons'
+import { Money } from '@/ui/Money'
+import { ChevronLeftIcon, ChevronRightIcon, TargetIcon } from '@/ui/icons'
 import { MonthPicker } from './MonthPicker'
 
 interface MonthStackProps {

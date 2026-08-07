@@ -1,5 +1,5 @@
-import type { Cents } from '../lib/money'
-import type { IsoDate } from '../lib/dates'
+import type { Cents } from '@/lib/money'
+import type { IsoDate } from '@/lib/dates'
 
 /**
  * The shapes the UI consumes. They deliberately match what the API will send —

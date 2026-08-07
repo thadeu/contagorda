@@ -1,5 +1,5 @@
 import { createContext, use } from 'react'
-import type { Scope } from '../../services/ports'
+import type { Scope } from '@/services/ports'
 
 export interface TransactionEditor {
   openNew: () => void

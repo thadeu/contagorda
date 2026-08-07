@@ -1,7 +1,7 @@
-import type { Category, Transaction } from '../../../services/types'
-import { Money } from '../../../ui/Money'
-import { RepeatIcon } from '../../../ui/icons'
-import { isFuture } from '../../../lib/dates'
+import type { Category, Transaction } from '@/services/types'
+import { Money } from '@/ui/Money'
+import { RepeatIcon } from '@/ui/icons'
+import { isFuture } from '@/lib/dates'
 
 interface TransactionRowProps {
   transaction: Transaction

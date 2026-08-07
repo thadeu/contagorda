@@ -1,7 +1,7 @@
-import { Money } from '../../../ui/Money'
-import { useAccounts, useOpeningBalances } from '../../accounts/hooks'
-import { useTransactions } from '../../transactions/hooks'
-import { balanceFor } from '../../accounts/accountBalance'
+import { Money } from '@/ui/Money'
+import { useAccounts, useOpeningBalances } from '@/features/accounts/hooks'
+import { useTransactions } from '@/features/transactions/hooks'
+import { balanceFor } from '@/features/accounts/accountBalance'
 
 /**
  * Three, never more.

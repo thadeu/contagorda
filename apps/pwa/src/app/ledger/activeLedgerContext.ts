@@ -1,5 +1,5 @@
 import { createContext, use } from 'react'
-import type { Ledger } from '../../services/types'
+import type { Ledger } from '@/services/types'
 
 export const ledgerKeys = {
   list: ['ledgers'] as const,

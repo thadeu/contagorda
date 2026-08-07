@@ -1,14 +1,14 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { useAccounts, useCategories } from '../../accounts/hooks'
-import { parseBRLToCents } from '../../../lib/money'
+import { useAccounts, useCategories } from '@/features/accounts/hooks'
+import { parseBRLToCents } from '@/lib/money'
 import { CategoryPicker } from './CategoryPicker'
 import { AccountPicker } from './AccountPicker'
-import { Switch } from '../../../ui/Switch'
-import { useMemberName } from '../../ledgers/useMemberName'
+import { Switch } from '@/ui/Switch'
+import { useMemberName } from '@/features/ledgers/useMemberName'
 import { RecurrencePicker } from './RecurrencePicker'
-import type { Recurrence } from '../recurrence'
-import { emptyValues, type TransactionFormValues } from '../formValues'
-import type { NewTransaction } from '../../../services/types'
+import type { Recurrence } from '@/features/transactions/recurrence'
+import { emptyValues, type TransactionFormValues } from '@/features/transactions/formValues'
+import type { NewTransaction } from '@/services/types'
 
 
 interface TransactionFormProps {

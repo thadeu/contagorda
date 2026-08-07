@@ -1,9 +1,9 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { ACCOUNT_KINDS } from '../accountKinds'
-import { parseBRLToCents } from '../../../lib/money'
-import { Button } from '../../../ui/Button'
-import type { AccountKind } from '../../../services/types'
-import type { NewAccount } from '../../../services/ports'
+import { ACCOUNT_KINDS } from '@/features/accounts/accountKinds'
+import { parseBRLToCents } from '@/lib/money'
+import { Button } from '@/ui/Button'
+import type { AccountKind } from '@/services/types'
+import type { NewAccount } from '@/services/ports'
 
 // The balance asked for is what the account holds at the start of the selected
 // month, not its current total: the rest of the month is derived from the

@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { services } from '../../services'
-import { getActiveLedgerId, setActiveLedgerId } from '../../services/activeLedger'
+import { services } from '@/services'
+import { getActiveLedgerId, setActiveLedgerId } from '@/services/activeLedger'
 import { ActiveLedgerContext, ledgerKeys, type ActiveLedger } from './activeLedgerContext'
 
 /**

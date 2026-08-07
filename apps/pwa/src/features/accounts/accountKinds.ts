@@ -1,4 +1,4 @@
-import type { AccountKind } from '../../services/types'
+import type { AccountKind } from '@/services/types'
 
 export const ACCOUNT_KINDS: { value: AccountKind; label: string }[] = [
   { value: 'checking', label: 'Conta corrente' },

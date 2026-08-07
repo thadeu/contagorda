@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ProfileButton } from './ProfileButton'
-import { ActiveLedgerProvider } from '../../../app/ledger/ActiveLedgerProvider'
+import { ActiveLedgerProvider } from '@/app/ledger/ActiveLedgerProvider'
 
 vi.mock('@clowk/react', () => ({
   useAuth: () => ({

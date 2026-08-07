@@ -1,7 +1,7 @@
-import type { Category, Transaction } from '../../../services/types'
-import type { DayGroup } from '../groupByDay'
-import { dayLabel, isToday } from '../../../lib/dates'
-import { Money } from '../../../ui/Money'
+import type { Category, Transaction } from '@/services/types'
+import type { DayGroup } from '@/features/transactions/groupByDay'
+import { dayLabel, isToday } from '@/lib/dates'
+import { Money } from '@/ui/Money'
 import { TransactionRow } from './TransactionRow'
 
 interface DayGroupSectionProps {

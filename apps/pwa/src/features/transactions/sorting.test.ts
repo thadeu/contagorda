@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { groupsByDay, sortRows } from './sorting'
-import type { Category, Transaction } from '../../services/types'
+import type { Category, Transaction } from '@/services/types'
 
 function row(partial: Partial<Transaction>): Transaction {
   return {

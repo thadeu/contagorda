@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
+import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
 import { redirectToSignIn, redirectToSignUp } from './signIn'
 
 /**

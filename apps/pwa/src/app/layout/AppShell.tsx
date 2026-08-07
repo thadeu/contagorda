@@ -1,8 +1,8 @@
 import { Outlet } from 'react-router'
-import { ActiveLedgerProvider } from '../ledger/ActiveLedgerProvider'
-import { ErrorBoundary } from '../ErrorBoundary'
-import { AccountEditorProvider } from '../../features/accounts/AccountEditor'
-import { TransactionEditorProvider } from '../../features/transactions/TransactionEditor'
+import { ActiveLedgerProvider } from '@/app/ledger/ActiveLedgerProvider'
+import { ErrorBoundary } from '@/app/ErrorBoundary'
+import { AccountEditorProvider } from '@/features/accounts/AccountEditor'
+import { TransactionEditorProvider } from '@/features/transactions/TransactionEditor'
 
 /**
  * The frame is in normal flow, filling `#root`, and nothing here is `fixed`.

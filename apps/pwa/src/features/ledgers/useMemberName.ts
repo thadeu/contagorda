@@ -1,4 +1,4 @@
-import { useActiveLedger } from '../../app/ledger/activeLedgerContext'
+import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
 import { useMembers } from './hooks'
 
 /**

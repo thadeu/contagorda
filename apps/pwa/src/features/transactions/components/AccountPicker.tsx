@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { OptionSheet } from '../../../ui/OptionSheet'
-import { ChevronRightIcon } from '../../../ui/icons'
-import type { Account } from '../../../services/types'
+import { OptionSheet } from '@/ui/OptionSheet'
+import { ChevronRightIcon } from '@/ui/icons'
+import type { Account } from '@/services/types'
 
 interface AccountPickerProps {
   accounts: Account[]

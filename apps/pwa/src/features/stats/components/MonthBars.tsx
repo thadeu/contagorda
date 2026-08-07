@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/dates'
-import { compactBRL, formatBRL } from '../../../lib/money'
-import { tick } from '../../../lib/haptics'
-import { ceiling, read, type Reading, type Trend } from '../trend'
-import type { MonthTotal } from '../../../services/types'
+import { monthLabel, monthShortLabel, monthKey, todayIso } from '@/lib/dates'
+import { compactBRL, formatBRL } from '@/lib/money'
+import { tick } from '@/lib/haptics'
+import { ceiling, read, type Reading, type Trend } from '@/features/stats/trend'
+import type { MonthTotal } from '@/services/types'
 
 interface MonthBarsProps {
   totals: MonthTotal[]

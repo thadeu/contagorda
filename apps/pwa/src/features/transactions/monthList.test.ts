@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { groupByDay, peakNet } from './groupByDay'
 import { LIST_ORDER, matchesStatus } from './useStatusFilter'
-import type { Transaction } from '../../services/types'
+import type { Transaction } from '@/services/types'
 
 function tx(overrides: Partial<Transaction> = {}): Transaction {
   return {

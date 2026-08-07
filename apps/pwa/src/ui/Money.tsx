@@ -1,4 +1,4 @@
-import { formatBRL, splitBRL, type Cents } from '../lib/money'
+import { formatBRL, splitBRL, type Cents } from '@/lib/money'
 
 type Tone = 'default' | 'in' | 'out' | 'muted'
 

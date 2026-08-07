@@ -28,6 +28,9 @@ one of them does not stop a finger anyway.
 Keep scrollers a pixel off their own boundaries, or the browser hands the
 gesture to whatever is behind them.
 
+A portal moves the node, not the events: React dispatches through the component
+tree, so a form opened from inside another form submits both unless it stops.
+
 What is drawn is a hint; the target is whatever a thumb can reach.
 
 ## If this becomes a library

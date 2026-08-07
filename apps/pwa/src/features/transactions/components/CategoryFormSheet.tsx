@@ -54,6 +54,15 @@ export function CategoryFormSheet({
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
 
+    /*
+     * React events travel the component tree, not the DOM one, and a portal does
+     * not break that — this sheet is written inside the transaction form, so its
+     * submit reaches that form's handler and saves it too. Every form rendered
+     * inside another one's tree has to stop here, whatever the DOM says about
+     * where it actually is.
+     */
+    event.stopPropagation()
+
     if (trimmed === '') return
 
     if (category) {

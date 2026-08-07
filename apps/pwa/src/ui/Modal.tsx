@@ -6,6 +6,7 @@ import { useDragLock } from './useDragLock'
 import { useScrollable } from './useScrollable'
 import { Portal } from './Portal'
 import { useEnter } from './useEnter'
+import { useExit } from './useExit'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
 interface ModalProps {
@@ -54,12 +55,31 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
 
   const lock = useDragLock()
   const entered = useEnter()
+  const { leaving, requestClose } = useExit(onClose)
 
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
   useScrollable(content)
 
+  /**
+   * A drag starts anywhere on the panel except inside a list that can actually
+   * scroll. A form usually can, so in practice this is the heading — but a short
+   * one is draggable everywhere, which is what a native sheet does and what
+   * makes it feel like an object rather than a window with a handle.
+   */
+  function draggableFrom(target: EventTarget | null): boolean {
+    const node = content.current
+
+    if (!node || !(target instanceof Node)) return true
+
+    if (!node.contains(target)) return true
+
+    return node.scrollHeight <= node.clientHeight
+  }
+
   function handleTouchStart(event: React.TouchEvent) {
+    if (!draggableFrom(event.target)) return
+
     startY.current = event.touches[0].clientY
     setDragging(true)
     lock.start()
@@ -73,7 +93,7 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
 
   function handleTouchEnd() {
     if (offset > THRESHOLD) {
-      onClose()
+      requestClose()
     }
 
     setOffset(0)
@@ -88,33 +108,35 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
       <button
         type="button"
         aria-label="Fechar"
-        onClick={onClose}
+        onClick={requestClose}
         className={`fade-in absolute inset-x-0 -inset-y-24 touch-none bg-black/45 ${
-          entered ? 'opacity-100' : 'opacity-0'
+          entered && !leaving ? 'opacity-100' : 'opacity-0'
         }`}
       />
 
       <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         data-dragging={dragging}
-        style={{ transform: entered ? `translateY(${offset}px)` : 'translateY(100%)' }}
+        data-leaving={leaving}
+        style={{
+          transform:
+            entered && !leaving ? `translateY(${offset}px)` : 'translateY(100%)',
+        }}
         className="sheet-snap relative flex h-[calc(100%-env(safe-area-inset-top)-2.5rem)] w-full max-w-lg flex-col rounded-t-card bg-overlay"
       >
-        <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="shrink-0 touch-none select-none"
-        >
+        <div className="shrink-0 touch-none select-none">
           <div className="flex justify-center pt-2" aria-hidden="true">
             <span className="h-1 w-10 rounded-full bg-ink/30" />
           </div>
 
           <NavBar
             title={title}
-            leading={<NavButton icon={CloseIcon} label="Fechar" onClick={onClose} />}
+            leading={<NavButton icon={CloseIcon} label="Fechar" onClick={requestClose} />}
             trailing={trailing}
           />
         </div>

@@ -5,6 +5,7 @@ import { useDragLock } from './useDragLock'
 import { useScrollable } from './useScrollable'
 import { Portal } from './Portal'
 import { useEnter } from './useEnter'
+import { useExit } from './useExit'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
 
 interface BottomSheetProps {
@@ -73,6 +74,7 @@ export function BottomSheet({
 
   const lock = useDragLock()
   const entered = useEnter()
+  const { leaving, requestClose } = useExit(onClose)
 
   useBodyScrollLock()
   useTouchScrollGuard(overlay, content)
@@ -88,7 +90,7 @@ export function BottomSheet({
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') requestClose()
     }
 
     document.addEventListener('keydown', onKey)
@@ -97,9 +99,28 @@ export function BottomSheet({
     return () => {
       document.removeEventListener('keydown', onKey)
     }
-  }, [onClose])
+  }, [requestClose])
+
+  /**
+   * A drag starts anywhere on the panel except inside a list that can actually
+   * scroll — which is what a native sheet does, and why one feels like an object
+   * you can push rather than a window with a small handle on it. A scroller with
+   * nothing to move is not an exception: the finger has to do something, and
+   * moving the sheet is the only honest answer.
+   */
+  function draggableFrom(target: EventTarget | null): boolean {
+    const node = content.current
+
+    if (!node || !(target instanceof Node)) return true
+
+    if (!node.contains(target)) return true
+
+    return node.scrollHeight <= node.clientHeight
+  }
 
   function handleTouchStart(event: React.TouchEvent) {
+    if (!draggableFrom(event.target)) return
+
     startY.current = event.touches[0].clientY
     setDragging(true)
     lock.start()
@@ -119,7 +140,7 @@ export function BottomSheet({
       if (expandable && expanded) {
         setExpanded(false)
       } else {
-        onClose()
+        requestClose()
       }
     } else if (expandable && offset < -THRESHOLD) {
       setExpanded(true)
@@ -137,21 +158,26 @@ export function BottomSheet({
       <button
         type="button"
         aria-label="Fechar"
-        onClick={onClose}
+        onClick={requestClose}
         className={`fade-in absolute inset-x-0 -inset-y-24 touch-none bg-black/45 ${
-          entered ? 'opacity-100' : 'opacity-0'
+          entered && !leaving ? 'opacity-100' : 'opacity-0'
         }`}
       />
 
       <div
         ref={panel}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
         data-dragging={dragging}
+        data-leaving={leaving}
         style={{
-          transform: entered ? `translateY(${Math.max(offset, 0)}px)` : 'translateY(100%)',
+          transform:
+            entered && !leaving ? `translateY(${Math.max(offset, 0)}px)` : 'translateY(100%)',
           height: expandable
             ? `clamp(${COMPACT}dvh, calc(${expanded ? EXPANDED : COMPACT}dvh + ${pulledUp}px), ${EXPANDED}dvh)`
             : undefined,
@@ -160,12 +186,7 @@ export function BottomSheet({
           expandable ? '' : 'max-h-[75dvh]'
         }`}
       >
-        <header
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="shrink-0 touch-none px-3 pt-2 pb-3 select-none"
-        >
+        <header className="shrink-0 touch-none px-3 pt-2 pb-3 select-none">
           <div className="flex justify-center pb-3" aria-hidden="true">
             <span className="h-1 w-10 rounded-full bg-ink/30" />
           </div>

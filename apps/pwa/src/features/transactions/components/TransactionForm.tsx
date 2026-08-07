@@ -62,6 +62,7 @@ export function TransactionForm({
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    event.stopPropagation()
 
     const cents = parseBRLToCents(values.amount)
 

@@ -103,25 +103,50 @@ They are portalled to `#root`: out of the scroller, still inside the element the
 spacer compensates. Portalling to the body is one step too far and brings back
 the band, for the reason in decision 4.
 
-### 6. The lock is counted, not flagged
+### 6. A portal does not stop an event
+
+React events travel the component tree, not the DOM one, and a portal changes
+only the second. A form written inside another form's tree — a category sheet
+opened from the transaction form, three portals deep — submits both: the inner
+one saves, and its submit event reaches the outer handler on the way past.
+
+Every form that can be reached from inside another calls `stopPropagation` as
+well as `preventDefault`. The DOM says they are siblings under `#root`; React
+disagrees, and React is the one dispatching.
+
+This is not specific to forms. Any handler on an ancestor component will see
+events from a portalled descendant, which is usually what makes portals pleasant
+to use and occasionally exactly wrong.
+
+### 7. The lock is counted, not flagged
 
 Sheets nest three deep — accounts, then a form, then a confirmation. With a
 boolean, the innermost closing unmarks the page while two are still covering it.
 The mark belongs to the last one standing.
 
-### 7. Panels follow the finger
+### 8. Panels follow the finger
 
 Deciding only on release is a drag where nothing happens and then everything
 happens at once: the gesture reads as ignored and the jump at the end reads as a
 bug. Height or offset is driven live, `clamp` holds it between detents so
 overshooting simply stops, and only the release travels.
 
+Leaving is linear, arriving is not. The arrival curve decelerates because the
+panel is settling into a place it will stay; on the way out there is nothing to
+settle into, and the same easing makes it hesitate just before it is gone, which
+reads as lag rather than as grace.
+
+Closing is also deferred: the parent unmounts the sheet the moment it hears, so
+it does not hear until the movement has finished. Without that, the panel is
+taken away mid-slide and a dismissal that could have been a drag looks like a
+switch being thrown.
+
 Entrances are scheduled with two animation frames — one can still land inside the
 same paint on iOS, and the animation is skipped exactly as if nothing had been
 scheduled — and animated by the compositor, so a slide costs nothing while a list
 renders behind it.
 
-### 8. The grab area is what the finger can reach
+### 9. The grab area is what the finger can reach
 
 The handle is four pixels of drawn line. Anything at the top of a sheet that is
 read rather than tapped belongs in the grab area with it: headings, detail rows,

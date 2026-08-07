@@ -35,6 +35,9 @@ export function AccountForm({
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    // React events travel the component tree, so a form inside another form's
+    // tree — which a portal does not change — submits both. See CategoryFormSheet.
+    event.stopPropagation()
 
     if (!name.trim()) {
       setError('Dê um nome para reconhecer a conta na lista.')

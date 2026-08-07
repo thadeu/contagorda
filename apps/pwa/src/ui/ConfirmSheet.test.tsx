@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ConfirmSheet } from './ConfirmSheet'
 
@@ -29,21 +29,27 @@ describe('ConfirmSheet', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1)
   })
 
-  it('backing out does not act', () => {
+  /**
+   * Closing is announced only once the panel has finished leaving, so the parent
+   * does not unmount it mid-slide.
+   */
+  it('backing out does not act', async () => {
     const { onConfirm, onClose } = renderSheet()
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
 
-    expect(onClose).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+
     expect(onConfirm).not.toHaveBeenCalled()
   })
 
-  it('tapping away is backing out, not confirming', () => {
+  it('tapping away is backing out, not confirming', async () => {
     const { onConfirm, onClose } = renderSheet()
 
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }))
 
-    expect(onClose).toHaveBeenCalled()
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+
     expect(onConfirm).not.toHaveBeenCalled()
   })
 

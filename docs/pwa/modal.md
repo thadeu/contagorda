@@ -69,6 +69,12 @@ still covering it.
   before a gesture starts. See ADR 0003, decision 2.
 - Portalled to `#root`, not the body. See ADR 0003, decision 5.
 
+**Forms inside forms.** A modal's form is often opened from another form's
+component tree — the category sheet lives inside the transaction form. React
+dispatches through that tree regardless of where the portal put the node, so the
+inner submit reaches the outer handler and saves both. Every form here calls
+`stopPropagation`. See ADR 0003, decision 6.
+
 ## Related
 
 `NavBar`, `ConfirmSheet`, `useTouchScrollGuard`, `useScrollable`, `Portal`.

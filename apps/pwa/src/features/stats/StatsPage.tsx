@@ -4,7 +4,7 @@ import { NavBar, NavButton } from '../../ui/NavBar'
 import { DockedSheet } from '../../ui/DockedSheet'
 import { Money } from '../../ui/Money'
 import { EmptyState } from '../../ui/EmptyState'
-import { SkeletonText } from '../../ui/Skeleton'
+import { Spinner } from '../../ui/Spinner'
 import { ChevronLeftIcon, ChevronRightIcon, MoreIcon, TargetIcon } from '../../ui/icons'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 import { monthKey, monthLabel, shiftMonth, todayIso } from '../../lib/dates'
@@ -19,7 +19,7 @@ import {
 import { groupByDay } from '../transactions/groupByDay'
 import { DayGroupSection } from '../transactions/components/DayGroupSection'
 import { TransactionSheet } from '../transactions/components/TransactionSheet'
-import { MonthBars, MonthBarsSkeleton } from './components/MonthBars'
+import { MonthBars } from './components/MonthBars'
 import { MonthDifference } from './components/MonthDifference'
 import { difference, read } from './trend'
 import { ALL, CategoryFilter, UNCATEGORISED } from './components/CategoryFilter'
@@ -95,6 +95,12 @@ export function StatsPage() {
    * says "this is the edge", which is the answer someone is looking for.
    */
   const bars = totals.data ?? []
+  /**
+   * Anything on screen that is not the month it claims to be. The two queries
+   * are asked separately and land separately, and a spinner that came back for
+   * the second one after leaving for the first would read as a stutter.
+   */
+  const busy = transactions.isFetching || totals.isFetching
   const gap = difference(read(bars, monthKey(todayIso())), month)
   const oldest = bars[0]?.month ?? month
   const newest = bars[bars.length - 1]?.month ?? monthKey(todayIso())
@@ -151,26 +157,22 @@ export function StatsPage() {
             </div>
           </div>
 
-          {/* A figure nobody has yet is not zero. R$ 0,00 is a real answer — a
-              month with nothing spent in it — and for as long as it is on screen
-              the app is stating it with a straight face. */}
-          {transactions.isPending ? (
-            <div className="px-4 pb-4">
-              <SkeletonText sample="R$ 00.000,00" className="text-[2rem] font-bold" />
-            </div>
-          ) : (
-            <Money cents={totalCents} className="block px-4 pb-4 text-[2rem] font-bold text-ink" />
-          )}
+          {/* The figure keeps the month it had until the new one arrives, and
+              the spinner is what stops that from being a lie. A blank here, or a
+              zero, would both be worse: R$ 0,00 is a real answer — a month with
+              nothing spent — and the app would be stating it with a straight
+              face on the way to something else. */}
+          <p className="flex items-center gap-2.5 px-4 pb-4 text-[2rem] leading-tight font-bold text-ink">
+            {transactions.data ? <Money cents={totalCents} /> : <span className="opacity-0">—</span>}
+
+            {busy && <Spinner />}
+          </p>
         </div>
 
         {/* The one horizontal gesture on the screen, and the only place a finger
             moves anything other than the sheet. */}
         <div className="pb-3">
-          {totals.isPending ? (
-            <MonthBarsSkeleton />
-          ) : (
-            <MonthBars totals={bars} selected={month} onSelect={setMonth} />
-          )}
+          <MonthBars totals={bars} selected={month} onSelect={setMonth} />
         </div>
 
         {gap && (

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '../../services'
 import type { Scope } from '../../services/ports'
 import type { Recurrence } from './recurrence'
@@ -23,11 +23,25 @@ export const transactionKeys = {
     ['monthly-totals', getActiveLedgerId(), categoryId] as const,
 }
 
+/**
+ * The last answer stays until the next one lands.
+ *
+ * `keepPreviousData` is what makes moving through months feel like moving rather
+ * than like loading. Without it every step empties the screen for as long as the
+ * request takes: the chart loses its bars, the total falls to zero and the list
+ * blanks — and since the figure that flashes is a real one, R$ 0,00, the app
+ * states something false on the way to something true.
+ *
+ * What is on screen is the previous month, which is honest as long as something
+ * says so. That is the spinner beside the total.
+ */
+
 /** One row per month that holds anything, oldest first. Draws the history chart. */
 export function useMonthlyTotals(categoryId: string | null = null) {
   return useQuery({
     queryKey: transactionKeys.totals(categoryId),
     queryFn: ({ signal }) => services.transactions.monthlyTotals(categoryId, { signal }),
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -36,6 +50,7 @@ export function useMonthsWithData() {
   return useQuery({
     queryKey: transactionKeys.months(),
     queryFn: ({ signal }) => services.transactions.months({ signal }),
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -43,6 +58,7 @@ export function useTransactions(month: string) {
   return useQuery({
     queryKey: transactionKeys.month(month),
     queryFn: ({ signal }) => services.transactions.listByMonth(month, { signal }),
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -50,6 +66,7 @@ export function useMonthSummary(month: string) {
   return useQuery({
     queryKey: transactionKeys.summary(month),
     queryFn: ({ signal }) => services.transactions.summary(month, { signal }),
+    placeholderData: keepPreviousData,
   })
 }
 

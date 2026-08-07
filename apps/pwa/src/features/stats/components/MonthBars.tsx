@@ -3,7 +3,6 @@ import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/da
 import { compactBRL, formatBRL } from '../../../lib/money'
 import { tick } from '../../../lib/haptics'
 import { ceiling, read, type Reading, type Trend } from '../trend'
-import { SkeletonText } from '../../../ui/Skeleton'
 import type { MonthTotal } from '../../../services/types'
 
 interface MonthBarsProps {
@@ -379,50 +378,3 @@ function centred(element: HTMLElement | null, track: HTMLElement | null): string
   return nearest?.getAttribute('data-month') ?? null
 }
 
-/** Heights that read as a chart without reading as an answer. */
-const RESTING = [52, 74, 44, 88, 61]
-
-/**
- * The chart before there is a chart.
- *
- * Same five columns, same axis, same heights of nothing in particular. The point
- * is that the layout is already final: when the data lands, the numbers appear
- * and the bars move, and nothing jumps or reflows around them.
- *
- * The bars are deliberately uneven. Five identical ones read as a real answer —
- * five months that cost the same — and the whole reason this exists is that a
- * placeholder must not be mistakeable for data. Uneven and unlabelled is
- * obviously scaffolding.
- */
-export function MonthBarsSkeleton() {
-  return (
-    <div className="overflow-hidden" role="status" aria-label="Carregando o histórico">
-      <div className="flex items-end justify-center">
-        {RESTING.map((height, index) => (
-          <span key={index} className="flex w-[20vw] max-w-24 shrink-0 flex-col items-center gap-1.5 px-1 pt-2">
-            <SkeletonText
-              sample="R$ 0.000"
-              bar="w-11"
-              className="text-[0.625rem] font-semibold"
-            />
-
-            <span className="flex h-28 w-full items-end justify-center border-b border-line">
-              <span
-                style={{ height: `${height}%` }}
-                className="block w-3 animate-pulse rounded-t-full bg-sunken motion-reduce:animate-none"
-              />
-            </span>
-
-            <span className="pb-2">
-              <SkeletonText
-                sample="AGO"
-                bar="w-7"
-                className="text-[0.625rem] font-medium tracking-wide uppercase"
-              />
-            </span>
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}

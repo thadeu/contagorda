@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/dates'
 import { compactBRL, formatBRL } from '../../../lib/money'
+import { tick } from '../../../lib/haptics'
 import { ceiling, read, type Reading, type Trend } from '../trend'
 import type { MonthTotal } from '../../../services/types'
 
@@ -35,9 +36,16 @@ interface MonthBarsProps {
  * the centre. Without them the history has months that can be seen and never
  * chosen, which is the sort of thing that reads as the app losing data.
  *
- * Snapping is mandatory. A chart where the centre decides has to have exactly
- * one answer to "what is in the centre", and free scrolling leaves a month
- * straddling the line at rest.
+ * Snapping is mandatory, and it stops at every month. Without `snap-always` a
+ * flick crosses however many months its momentum carries, and since landing
+ * somewhere is now choosing something, that turns one gesture into a decision
+ * nobody made — the list, the total and the whole screen below arrive at a month
+ * picked by friction. One flick, one month; the arrows and the target above the
+ * chart are there for the long trips.
+ *
+ * A month that settles in the centre is confirmed by feel as well as by sight.
+ * `tick` is a request rather than a call — see `lib/haptics` for what the web
+ * can and cannot promise here.
  *
  * Heights are relative to the tallest of the five, not to the tallest on record.
  * See `ceiling` for why: one month with a car deposit in it would otherwise be
@@ -191,6 +199,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
       if (middle && middle !== chosenMonth) {
         setChosenMonth(middle)
         onSelect(middle)
+        tick()
       }
     }
 
@@ -231,7 +240,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
               onClick={() => onSelect(reading.month)}
               aria-pressed={chosen}
               aria-label={label(reading)}
-              className={`flex w-[20vw] max-w-24 shrink-0 snap-center flex-col items-center gap-1.5 rounded-2xl px-1 pt-2 ${
+              className={`flex w-[20vw] max-w-24 shrink-0 snap-center snap-always flex-col items-center gap-1.5 rounded-2xl px-1 pt-2 ${
                 chosen ? 'bg-white/6' : ''
               }`}
             >

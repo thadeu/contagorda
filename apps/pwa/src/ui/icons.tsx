@@ -16,6 +16,7 @@ import {
   ListFilter,
   MoreHorizontal,
   Search,
+  Crosshair,
   Bell,
   Wallet,
   X,
@@ -49,6 +50,7 @@ export const PlusIcon = tuned(Plus)
 export const CheckIcon = tuned(Check)
 export const ChevronLeftIcon = tuned(ChevronLeft)
 export const ChevronRightIcon = tuned(ChevronRight)
+export const TargetIcon = tuned(Crosshair)
 export const ChevronDownIcon = tuned(ChevronDown)
 export const RepeatIcon = tuned(RefreshCw)
 export const PaidIcon = tuned(CircleCheckBig)

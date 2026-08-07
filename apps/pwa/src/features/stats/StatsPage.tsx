@@ -4,7 +4,7 @@ import { NavBar, NavButton } from '../../ui/NavBar'
 import { DockedSheet } from '../../ui/DockedSheet'
 import { Money } from '../../ui/Money'
 import { EmptyState } from '../../ui/EmptyState'
-import { ChevronLeftIcon, ChevronRightIcon, MoreIcon } from '../../ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon, MoreIcon, TargetIcon } from '../../ui/icons'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 import { monthKey, monthLabel, shiftMonth, todayIso } from '../../lib/dates'
 import { useMonth } from '../../app/useMonth'
@@ -125,6 +125,17 @@ export function StatsPage() {
                 label="Mês anterior"
                 disabled={month <= oldest}
                 onClick={() => setMonth(shiftMonth(month, -1))}
+              />
+
+              {/* Between the two steps, because it is the third way to move along
+                  the same line — and the only one that does not depend on where
+                  you already are. Six months out, going back costs six taps or a
+                  scroll through the chart to find the month you started on. */}
+              <NavButton
+                icon={TargetIcon}
+                label="Ir para o mês atual"
+                disabled={month === monthKey(todayIso())}
+                onClick={() => setMonth(monthKey(todayIso()))}
               />
 
               <NavButton

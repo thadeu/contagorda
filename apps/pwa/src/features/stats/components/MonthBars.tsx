@@ -60,18 +60,32 @@ interface MonthBarsProps {
  * track does it without reversing anything: it pushes right while the bars fit
  * and does nothing once they overflow, when scrolling takes over.
  *
- * The selected month is brought into view when the screen opens. Landing at the
- * far end of a decade of history and having to scroll to find the month you came
- * from is the sort of thing that gets called broken.
+ * The selected month is brought into view whenever it changes, and instantly on
+ * the first paint. Landing at the far end of a decade of history and having to
+ * scroll to find the month you came from is the sort of thing that gets called
+ * broken — and once something off screen can change the selection, a chart that
+ * only obeyed on mount would answer a tap by showing no change at all.
+ *
+ * The first one cannot animate: scrolling smoothly from wherever the browser
+ * happened to start is a chart that arrives sliding, which reads as a loading
+ * state that never resolves.
  */
 
 export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   const scroller = useRef<HTMLDivElement>(null)
   const current = useRef<HTMLButtonElement>(null)
 
+  const painted = useRef(false)
+
   useEffect(() => {
-    current.current?.scrollIntoView({ inline: 'center', block: 'nearest' })
-  }, [])
+    current.current?.scrollIntoView({
+      inline: 'center',
+      block: 'nearest',
+      behavior: painted.current ? 'smooth' : 'instant',
+    })
+
+    painted.current = true
+  }, [selected])
 
   const peak = totals.reduce((most, total) => Math.max(most, total.expense_cents), 0)
 

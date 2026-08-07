@@ -2,17 +2,30 @@ import type { Account, Category, Transaction } from '../types'
 import { monthKey, shiftMonth, todayIso } from '../../lib/dates'
 
 /**
- * Fixtures are anchored to the current month so the app always opens with
- * something to look at, and so "previous month" is never empty. Ids are real
- * UUIDs rather than "1", "2", "3" — a mock that uses short ids hides layout
- * problems that only appear once a real id is on screen.
+ * Two years of it: January of this year through December of next.
+ *
+ * Anchored to today rather than written as fixed dates, so the span always
+ * contains the current month and the app always opens onto something. Fixed
+ * dates make a mock that was true when it was written and quietly empty a year
+ * later.
+ *
+ * Long on purpose. A screen that plots months beside each other cannot be judged
+ * on two months of data — the chart has no shape, the arrows never reach an end,
+ * and a series that repeats looks the same as one that does not. Most of what is
+ * here is recurring, because most of what a household pays is.
+ *
+ * Ids are real UUIDs rather than "1", "2", "3" — a mock that uses short ids hides
+ * layout problems that only appear once a real id is on screen.
  */
 
 /** The one member the fixtures were entered by. */
 const SEED_MEMBER = '019fce00-0000-7000-8000-0000000000e1'
 
 const thisMonth = monthKey(todayIso())
-const lastMonth = shiftMonth(thisMonth, -1)
+
+/** January of this year, and every month through December of next. */
+const firstMonth = `${todayIso().slice(0, 4)}-01`
+const months = Array.from({ length: 24 }, (_, index) => shiftMonth(firstMonth, index))
 
 function on(month: string, day: number): string {
   return `${month}-${String(day).padStart(2, '0')}`
@@ -88,25 +101,99 @@ function tx(
 
 const RENT_SERIES = '019fce03-0000-7000-8000-000000000001'
 const STREAMING_SERIES = '019fce03-0000-7000-8000-000000000002'
+const SALARY_SERIES = '019fce03-0000-7000-8000-000000000003'
+const INTERNET_SERIES = '019fce03-0000-7000-8000-000000000004'
+const GYM_SERIES = '019fce03-0000-7000-8000-000000000005'
+const INSURANCE_SERIES = '019fce03-0000-7000-8000-000000000006'
+const LAPTOP_SERIES = '019fce03-0000-7000-8000-000000000007'
+
+interface SeriesSpec {
+  id: string
+  day: number
+  kind: Transaction['kind']
+  amount: number
+  description: string
+  category: string | null
+  account: string
+  /** Where it starts and how far it runs, as offsets into the span. */
+  from?: number
+  count?: number
+  /** Every how many months. Twelve is a yearly bill. */
+  every?: number
+}
+
+/**
+ * Days stay at or below the 28th. The clamp for shorter months is the domain's
+ * job and it has its own tests; a fixture that leans on it would report a bug in
+ * `occurrences` as a bug on whatever screen happened to show it.
+ */
+const series: SeriesSpec[] = [
+  { id: SALARY_SERIES, day: 5, kind: 'income', amount: 780_000, description: 'Salário', category: salario, account: nubank },
+  { id: RENT_SERIES, day: 5, kind: 'expense', amount: 210_000, description: 'Aluguel', category: moradia, account: nubank },
+  { id: INTERNET_SERIES, day: 28, kind: 'expense', amount: 13_990, description: 'Internet', category: moradia, account: nubank },
+  { id: STREAMING_SERIES, day: 18, kind: 'expense', amount: 5_590, description: 'Netflix', category: assinaturas, account: cartao },
+  { id: GYM_SERIES, day: 10, kind: 'expense', amount: 12_990, description: 'Academia', category: assinaturas, account: cartao },
+  // A yearly one, so the chart has a month that stands out for a reason.
+  { id: INSURANCE_SERIES, day: 20, kind: 'expense', amount: 189_000, description: 'Seguro do carro', category: transporte, account: nubank, from: 2, every: 12 },
+  // And one that ends: ten instalments, the shape every card statement has.
+  { id: LAPTOP_SERIES, day: 12, kind: 'expense', amount: 41_990, description: 'Notebook 10x', category: assinaturas, account: cartao, from: 4, count: 10 },
+]
+
+/**
+ * The one-offs. Enough of them, and varied enough, that no two months draw the
+ * same bar — a chart where every column matches proves nothing about the chart.
+ * The amounts move with the index rather than at random so the fixture is the
+ * same on every reload, which is what makes a screenshot worth comparing.
+ */
+const casual: { day: number; amount: number; description: string; category: string | null; account: string }[] = [
+  { day: 6, amount: 12_780, description: 'Padaria', category: mercado, account: carteira },
+  { day: 8, amount: 8_640, description: 'Almoço', category: restaurante, account: cartao },
+  { day: 11, amount: 41_230, description: 'Mercado do mês', category: mercado, account: cartao },
+  { day: 14, amount: 6_800, description: 'Farmácia', category: mercado, account: cartao },
+  { day: 19, amount: 3_200, description: 'Café', category: restaurante, account: carteira },
+  { day: 22, amount: 8_900, description: 'Uber', category: transporte, account: cartao },
+  { day: 25, amount: 29_900, description: 'Conta de luz', category: moradia, account: nubank },
+]
+
+function spread(index: number, month: number): number {
+  return 1 + (((index * 7 + month * 13) % 9) - 4) / 10
+}
 
 export const transactions: Transaction[] = [
-  tx(lastMonth, 5, 'income', 780_000, 'Salário', salario, nubank),
-  tx(lastMonth, 5, 'expense', 210_000, 'Aluguel', moradia, nubank, { series: RENT_SERIES }),
-  tx(lastMonth, 12, 'expense', 34_590, 'Mercado do mês', mercado, cartao),
-  tx(lastMonth, 18, 'expense', 5_590, 'Netflix', assinaturas, cartao, { series: STREAMING_SERIES }),
-  tx(lastMonth, 22, 'expense', 8_900, 'Uber', transporte, cartao),
+  ...series.flatMap((rule) =>
+    months
+      .map((month, index) => ({ month, index }))
+      .filter(({ index }) => index >= (rule.from ?? 0))
+      .filter(({ index }) => index < (rule.from ?? 0) + (rule.count ?? months.length) * (rule.every ?? 1))
+      .filter(({ index }) => (index - (rule.from ?? 0)) % (rule.every ?? 1) === 0)
+      .map(({ month }) =>
+        tx(month, rule.day, rule.kind, rule.amount, rule.description, rule.category, rule.account, {
+          series: rule.id,
+        }),
+      ),
+  ),
 
-  tx(thisMonth, 5, 'income', 780_000, 'Salário', salario, nubank),
-  tx(thisMonth, 5, 'expense', 210_000, 'Aluguel', moradia, nubank, { series: RENT_SERIES }),
-  tx(thisMonth, 6, 'expense', 12_780, 'Padaria', mercado, carteira),
-  tx(thisMonth, 8, 'expense', 4_290, 'Uber para o centro', transporte, cartao),
-  tx(thisMonth, 8, 'expense', 8_640, 'Almoço', restaurante, cartao),
-  tx(thisMonth, 11, 'expense', 41_230, 'Mercado do mês', mercado, cartao),
-  tx(thisMonth, 14, 'income', 150_000, 'Freela — landing page', freela, nubank),
-  tx(thisMonth, 14, 'expense', 6_800, 'Farmácia', mercado, cartao),
-  tx(thisMonth, 18, 'expense', 5_590, 'Netflix', assinaturas, cartao, { series: STREAMING_SERIES }),
-  tx(thisMonth, 19, 'expense', 3_200, 'Café', restaurante, carteira),
+  ...months.flatMap((month, monthIndex) =>
+    casual
+      .filter((_, index) => (index + monthIndex) % 7 !== 0)
+      .map((row, index) =>
+        tx(
+          month,
+          row.day,
+          'expense',
+          Math.round((row.amount * spread(index, monthIndex)) / 10) * 10,
+          row.description,
+          row.category,
+          row.account,
+        ),
+      ),
+  ),
+
+  // The freela lands twice a year and is the only income that is not the salary,
+  // which is what stops the income side from being a flat line.
+  ...months
+    .filter((_, index) => index % 6 === 3)
+    .map((month) => tx(month, 14, 'income', 150_000, 'Freela — landing page', freela, nubank)),
+
   tx(thisMonth, 22, 'expense', 18_900, 'Jantar de aniversário', restaurante, cartao),
-  tx(thisMonth, 25, 'expense', 29_900, 'Conta de luz', moradia, nubank, { paid: false }),
-  tx(thisMonth, 28, 'expense', 13_990, 'Internet', moradia, nubank, { paid: false }),
 ]

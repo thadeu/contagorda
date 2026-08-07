@@ -168,6 +168,31 @@ read rather than tapped belongs in the grab area with it: headings, detail rows,
 a filter strip. What is drawn is a hint; the target is whatever the thumb lands
 on.
 
+## 10. A screen that does not scroll locks every gesture it does not use
+
+**Decision.** On a screen whose content is fixed — Stats is chart plus docked
+sheet, and neither the page nor anything under it scrolls — every block declares
+`touch-action: none`, and the deliberate gestures declare their own: `pan-x` on
+the chart, the sheet's own rules on the sheet. A screen that genuinely scrolls
+end to end, like the dashboard, is left alone.
+
+**Why.** On a fixed screen there is no drag that can do anything except
+rubber-band the document, and that motion carries exactly one piece of
+information: this is a web page. Locking it is the difference between a screen
+that feels held in place and one that feels loose.
+
+**What we tried first.** A nav bar that folded away on scroll direction. It
+worked, and it was wrong: the bar was reacting to a gesture aimed at the list
+below it, and a header that moves on its own reads as drift rather than as
+native. The complaint it was meant to answer — the screen feels unlike an app —
+turned out to be about the gestures, not about the header.
+
+**The rule is hung per block, never at the root**, for the reason in §2:
+`touch-action` intersects down the tree, so `none` on the page would reach the
+sheet's list and take its scrolling with it. Which means a screen also needs a
+`flex-1` spacer to cover whatever strip no block reaches — a rule that cannot
+hang on an ancestor has to hang on something.
+
 ## Consequences
 
 Three components implement this — `BottomSheet`, `Modal`, `DockedSheet` — plus

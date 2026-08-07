@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BottomSheet } from '../../../ui/BottomSheet'
 import { Switch } from '../../../ui/Switch'
+import { RepeatsSheet } from './RepeatsSheet'
 import { ChevronRightIcon } from '../../../ui/icons'
 import { clamped, describe, FREQUENCIES, type Recurrence } from '../recurrence'
 import type { IsoDate } from '../../../lib/dates'
@@ -58,8 +59,8 @@ function RecurrenceSheet({
     value ?? { frequency: 'monthly', interval: 1, repeats: 11 },
   )
 
-  const [typed, setTyped] = useState(String(draft.repeats))
   const [on, setOn] = useState(value !== null)
+  const [choosing, setChoosing] = useState(false)
 
   /**
    * Nothing leaves this sheet until it closes.
@@ -107,31 +108,23 @@ function RecurrenceSheet({
           ))}
         </Field>
 
-        {/* Typed, not chosen from a set. Any list of counts is somebody's guess
-            at how long a thing lasts, and the one number missing from it is
-            always the one being entered — including 1, which is "and again next
-            month" and the shortest series there is. */}
-        <label className="flex min-h-13 items-center gap-3">
+        {/* A row, not a field. "How many months" is arithmetic; "until when" is
+            the question behind it, and the list answers both at once — which
+            also takes the keyboard, and every re-render it caused, out of the
+            sheet entirely. */}
+        <button
+          type="button"
+          onClick={() => setChoosing(true)}
+          disabled={!on}
+          className="flex min-h-13 w-full items-center gap-3 text-left"
+        >
           <span className="min-w-0 flex-1 text-sm text-muted">Se repete por</span>
 
-          <input
-            value={typed}
-            onChange={(event) => {
-              const digits = event.target.value.replace(/\D/g, '')
-
-              setTyped(digits)
-              update({ repeats: digits === '' ? 0 : Number(digits) })
-            }}
-            onBlur={() => setTyped(String(draft.repeats))}
-            disabled={!on}
-            inputMode="numeric"
-            aria-label="Quantas vezes se repete"
-            size={3}
-            className="tnum w-14 bg-transparent text-right text-base text-ink outline-none"
-          />
-
-          <span className="shrink-0 text-sm text-muted">{unit(draft)}</span>
-        </label>
+          <span className="text-base text-ink">
+            {draft.repeats} {unit(draft)}
+          </span>
+          <ChevronRightIcon className="size-4 shrink-0 text-faint" />
+        </button>
 
         <p className="text-sm leading-relaxed text-muted">
           {on ? describe(date, draft) : 'Este lançamento acontece uma vez só.'}
@@ -139,6 +132,17 @@ function RecurrenceSheet({
             ' Alguns meses não têm esse dia, então esses caem no último dia do mês.'}
         </p>
       </div>
+
+      {choosing && (
+        <RepeatsSheet
+          date={date}
+          frequency={draft.frequency}
+          interval={draft.interval}
+          value={draft.repeats}
+          onSelect={(repeats) => update({ repeats })}
+          onClose={() => setChoosing(false)}
+        />
+      )}
     </BottomSheet>
   )
 

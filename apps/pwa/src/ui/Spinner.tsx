@@ -7,7 +7,12 @@
  * its own outline and the app goes blank for a moment; this leaves the last
  * answer where it was and admits, quietly, that it is being checked.
  *
- * Thin, small and in the accent rather than in the ink. It sits beside a figure
+ * Small and thick, in the accent rather than in the ink. Thickness is what makes
+ * a ring this size legible: a hairline circle at 20px reads as a smudge and its
+ * rotation is barely visible, which defeats the one thing it is for. Small and
+ * fat turns instead of shimmering.
+ *
+ * Beside the ink rather than in it. It sits beside a figure
  * that is the point of the screen, and a heavy ring next to it competes for the
  * same glance; the accent says "the app is doing something" without pretending
  * to be another number. Sizing in `em` keeps it in proportion to whatever text
@@ -23,7 +28,7 @@ export function Spinner({ className = '' }: { className?: string }) {
     <span
       role="status"
       aria-label="Carregando"
-      className={`inline-block size-[0.72em] animate-spin rounded-full border-[1.5px] border-accent border-t-transparent ${className}`}
+      className={`inline-block size-[0.62em] animate-spin rounded-full border-[3px] border-accent border-t-transparent ${className}`}
     />
   )
 }

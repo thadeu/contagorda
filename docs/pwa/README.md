@@ -1,6 +1,6 @@
-# The sheets
+# The components
 
-Four components and the rules they share. Written down because the rules were
+The four sheets and the rules they share. Written down because the rules were
 expensive: each was found by installing the app on a phone and finding it behave
 differently from every browser it had been tested in.
 
@@ -10,6 +10,12 @@ differently from every browser it had been tested in.
 | [`Modal`](modal.md) | Presents a task with fields | Covered, unavailable |
 | [`ConfirmSheet`](confirm-sheet.md) | Asks before something cannot be undone | Covered by whatever is under it |
 | [`DockedSheet`](docked-sheet.md) | Is the bottom half of a screen | Visible and usable |
+
+And one that is not a sheet at all:
+
+| Component | What it is |
+|---|---|
+| [`Spinner`](spinner.md) | Marks a value as being checked, without taking it away |
 
 Start with **[ADR 0003](../decisions/0003-sheet-gestures-on-ios.md)**. It holds
 what all four have to do about gestures, scrolling and the safe areas, and why
@@ -32,6 +38,10 @@ A portal moves the node, not the events: React dispatches through the component
 tree, so a form opened from inside another form submits both unless it stops.
 
 What is drawn is a hint; the target is whatever a thumb can reach.
+
+A skeleton is right for a screen that has never been filled and wrong for every
+load after that. Keep the last answer and mark it instead — see
+[`Spinner`](spinner.md).
 
 ## If this becomes a library
 

@@ -6,7 +6,6 @@ import {
   ChevronRight,
   CircleCheckBig,
   Home,
-  Info,
   LogOut,
   Pencil,
   Plus,
@@ -51,7 +50,6 @@ export const CheckIcon = tuned(Check)
 export const ChevronLeftIcon = tuned(ChevronLeft)
 export const ChevronRightIcon = tuned(ChevronRight)
 export const ChevronDownIcon = tuned(ChevronDown)
-export const InfoIcon = tuned(Info)
 export const RepeatIcon = tuned(RefreshCw)
 export const PaidIcon = tuned(CircleCheckBig)
 export const UnpaidIcon = tuned(RotateCcw)

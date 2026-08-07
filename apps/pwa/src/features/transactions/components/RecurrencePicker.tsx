@@ -56,7 +56,9 @@ function RecurrenceSheet({
   onClose,
 }: RecurrencePickerProps & { onClose: () => void }) {
   const [draft, setDraft] = useState<Recurrence>(
-    value ?? { frequency: 'monthly', interval: 1, repeats: 11 },
+    // One repetition: this month and the next. A longer default would be the app
+    // guessing at a commitment on someone's behalf, and a year is a long guess.
+    value ?? { frequency: 'monthly', interval: 1, repeats: 1 },
   )
 
   const [on, setOn] = useState(value !== null)

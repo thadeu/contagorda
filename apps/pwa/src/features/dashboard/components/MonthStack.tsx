@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import { splitBRL } from '../../../lib/money'
+import { shiftMonth } from '../../../lib/dates'
+import type { AppIcon } from '../../../ui/icons'
 import { Money } from '../../../ui/Money'
-import { BottomSheet } from '../../../ui/BottomSheet'
-import { InfoIcon } from '../../../ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon } from '../../../ui/icons'
 import { MonthPicker } from './MonthPicker'
 
 interface MonthStackProps {
@@ -31,7 +31,6 @@ export function MonthStack({
   paidCents,
   totalCents,
 }: MonthStackProps) {
-  const [explaining, setExplaining] = useState(false)
   const { head, tail } = splitBRL(remainingCents)
   const progress = totalCents === 0 ? 0 : Math.min(paidCents / totalCents, 1)
   const clear = totalCents > 0 && remainingCents === 0
@@ -41,14 +40,22 @@ export function MonthStack({
       <div className="flex items-center justify-between rounded-card bg-inverse px-4 pt-3.5 pb-12">
         <MonthPicker month={month} onChange={onMonthChange} />
 
-        <button
-          type="button"
-          onClick={() => setExplaining(true)}
-          aria-label="O que este valor considera"
-          className="grid size-9 place-items-center rounded-full bg-white/12 text-white"
-        >
-          <InfoIcon className="size-4" />
-        </button>
+        {/* One month either way, which is nearly every move. The picker is
+            still there in the label for the rare jump to a month far off, and
+            two taps to reach next month was two taps too many for the thing
+            people do most. */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Step
+            icon={ChevronLeftIcon}
+            label="Mês anterior"
+            onClick={() => onMonthChange(shiftMonth(month, -1))}
+          />
+          <Step
+            icon={ChevronRightIcon}
+            label="Próximo mês"
+            onClick={() => onMonthChange(shiftMonth(month, 1))}
+          />
+        </div>
       </div>
 
       <div className="card-shadow relative -mt-8 rounded-card border border-dashed border-line bg-surface px-5 py-5">
@@ -73,15 +80,29 @@ export function MonthStack({
         </div>
       </div>
 
-      {explaining && (
-        <BottomSheet title="Falta pagar" onClose={() => setExplaining(false)}>
-          <p className="px-4 pb-4 text-[0.9375rem] leading-relaxed text-muted">
-            É a soma das saídas deste mês que ainda não foram marcadas como pagas. Entradas não
-            entram nessa conta, e o que já foi pago sai dela assim que você marca.
-          </p>
-        </BottomSheet>
-      )}
     </section>
+  )
+}
+
+/** A step through the months, quiet enough not to compete with the figure. */
+function Step({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: AppIcon
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="grid size-9 place-items-center rounded-2xl bg-white/12 text-white"
+    >
+      <Icon className="size-4" strokeWidth={2} />
+    </button>
   )
 }
 

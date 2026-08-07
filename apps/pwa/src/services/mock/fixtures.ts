@@ -106,6 +106,8 @@ const INTERNET_SERIES = '019fce03-0000-7000-8000-000000000004'
 const GYM_SERIES = '019fce03-0000-7000-8000-000000000005'
 const INSURANCE_SERIES = '019fce03-0000-7000-8000-000000000006'
 const LAPTOP_SERIES = '019fce03-0000-7000-8000-000000000007'
+const SCHOOL_SERIES = '019fce03-0000-7000-8000-000000000008'
+const CAR_LOAN_SERIES = '019fce03-0000-7000-8000-000000000009'
 
 interface SeriesSpec {
   id: string
@@ -128,15 +130,17 @@ interface SeriesSpec {
  * `occurrences` as a bug on whatever screen happened to show it.
  */
 const series: SeriesSpec[] = [
-  { id: SALARY_SERIES, day: 5, kind: 'income', amount: 780_000, description: 'Salário', category: salario, account: nubank },
-  { id: RENT_SERIES, day: 5, kind: 'expense', amount: 210_000, description: 'Aluguel', category: moradia, account: nubank },
-  { id: INTERNET_SERIES, day: 28, kind: 'expense', amount: 13_990, description: 'Internet', category: moradia, account: nubank },
+  { id: SALARY_SERIES, day: 5, kind: 'income', amount: 2_450_000, description: 'Salário', category: salario, account: nubank },
+  { id: RENT_SERIES, day: 5, kind: 'expense', amount: 520_000, description: 'Aluguel', category: moradia, account: nubank },
+  { id: SCHOOL_SERIES, day: 8, kind: 'expense', amount: 342_000, description: 'Escola', category: moradia, account: nubank },
+  { id: CAR_LOAN_SERIES, day: 15, kind: 'expense', amount: 289_000, description: 'Financiamento do carro', category: transporte, account: nubank },
+  { id: INTERNET_SERIES, day: 28, kind: 'expense', amount: 19_990, description: 'Internet', category: moradia, account: nubank },
   { id: STREAMING_SERIES, day: 18, kind: 'expense', amount: 5_590, description: 'Netflix', category: assinaturas, account: cartao },
-  { id: GYM_SERIES, day: 10, kind: 'expense', amount: 12_990, description: 'Academia', category: assinaturas, account: cartao },
+  { id: GYM_SERIES, day: 10, kind: 'expense', amount: 25_980, description: 'Academia', category: assinaturas, account: cartao },
   // A yearly one, so the chart has a month that stands out for a reason.
-  { id: INSURANCE_SERIES, day: 20, kind: 'expense', amount: 189_000, description: 'Seguro do carro', category: transporte, account: nubank, from: 2, every: 12 },
+  { id: INSURANCE_SERIES, day: 20, kind: 'expense', amount: 480_000, description: 'Seguro do carro', category: transporte, account: nubank, from: 2, every: 12 },
   // And one that ends: ten instalments, the shape every card statement has.
-  { id: LAPTOP_SERIES, day: 12, kind: 'expense', amount: 41_990, description: 'Notebook 10x', category: assinaturas, account: cartao, from: 4, count: 10 },
+  { id: LAPTOP_SERIES, day: 12, kind: 'expense', amount: 89_900, description: 'Notebook 10x', category: assinaturas, account: cartao, from: 4, count: 10 },
 ]
 
 /**
@@ -147,12 +151,12 @@ const series: SeriesSpec[] = [
  */
 const casual: { day: number; amount: number; description: string; category: string | null; account: string }[] = [
   { day: 6, amount: 12_780, description: 'Padaria', category: mercado, account: carteira },
-  { day: 8, amount: 8_640, description: 'Almoço', category: restaurante, account: cartao },
-  { day: 11, amount: 41_230, description: 'Mercado do mês', category: mercado, account: cartao },
-  { day: 14, amount: 6_800, description: 'Farmácia', category: mercado, account: cartao },
+  { day: 8, amount: 18_640, description: 'Almoço', category: restaurante, account: cartao },
+  { day: 11, amount: 148_300, description: 'Mercado do mês', category: mercado, account: cartao },
+  { day: 14, amount: 26_800, description: 'Farmácia', category: mercado, account: cartao },
   { day: 19, amount: 3_200, description: 'Café', category: restaurante, account: carteira },
-  { day: 22, amount: 8_900, description: 'Uber', category: transporte, account: cartao },
-  { day: 25, amount: 29_900, description: 'Conta de luz', category: moradia, account: nubank },
+  { day: 22, amount: 18_900, description: 'Uber', category: transporte, account: cartao },
+  { day: 25, amount: 84_600, description: 'Conta de luz', category: moradia, account: nubank },
 ]
 
 function spread(index: number, month: number): number {
@@ -193,7 +197,22 @@ export const transactions: Transaction[] = [
   // which is what stops the income side from being a flat line.
   ...months
     .filter((_, index) => index % 6 === 3)
-    .map((month) => tx(month, 14, 'income', 150_000, 'Freela — landing page', freela, nubank)),
+    .map((month) => tx(month, 14, 'income', 480_000, 'Freela — landing page', freela, nubank)),
 
-  tx(thisMonth, 22, 'expense', 18_900, 'Jantar de aniversário', restaurante, cartao),
+  tx(thisMonth, 22, 'expense', 38_900, 'Jantar de aniversário', restaurante, cartao),
+
+  /**
+   * The month somebody buys a car, and the only six-figure month here.
+   *
+   * It earns its place twice over. It is the amount that proves the label gives
+   * way to "R$ 118,4 mil" instead of wrapping, and it is the shape a real
+   * history has — a flat run of months and then one that dwarfs them. A fixture
+   * of evenly-sized months would let a chart that cannot survive an outlier look
+   * finished.
+   *
+   * It also costs something, and that is worth seeing rather than avoiding:
+   * every other bar is measured against this one, so they all shrink. A chart
+   * scaled to its peak has that property, and the month to find out is now.
+   */
+  tx(shiftMonth(thisMonth, -3), 9, 'expense', 9_800_000, 'Entrada do carro', transporte, nubank),
 ]

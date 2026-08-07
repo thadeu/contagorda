@@ -54,7 +54,11 @@ export function occurrences(start: IsoDate, { frequency, interval, repeats }: Re
  * The controls state a rule and this states its consequence, which is the part
  * anyone actually wants to agree to. It is also where the clamped days show
  * themselves: nobody reasons about February from an interval, and everybody
- * recognises a list of dates that ends where they did not expect.
+ * recognises a date that ends where they did not expect.
+ *
+ * The count is left out. It is already on screen, in the field that set it, and
+ * repeating it here only invites the reader to check one number against another
+ * — while the months are the thing they cannot work out for themselves.
  */
 export function describe(start: IsoDate, recurrence: Recurrence): string {
   const dates = occurrences(start, recurrence)
@@ -64,7 +68,7 @@ export function describe(start: IsoDate, recurrence: Recurrence): string {
     return 'Um lançamento só.'
   }
 
-  return `${dates.length} lançamentos, de ${monthLabel(monthKey(dates[0]))} a ${monthLabel(monthKey(last))}.`
+  return `De ${monthLabel(monthKey(dates[0]))} a ${monthLabel(monthKey(last))}.`
 }
 
 /** True when a clamped month moved a date off the day the series was set to. */

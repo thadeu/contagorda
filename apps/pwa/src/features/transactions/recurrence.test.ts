@@ -59,14 +59,14 @@ describe('occurrences', () => {
 })
 
 describe('describe', () => {
-  it('says how many and between which months', () => {
+  it('says which months it runs between, and leaves the count to the field', () => {
     const sentence = describeSeries('2026-08-10', {
       frequency: 'monthly',
       interval: 1,
       repeats: 11,
     })
 
-    expect(sentence).toBe('12 lançamentos, de agosto de 2026 a julho de 2027.')
+    expect(sentence).toBe('De agosto de 2026 a julho de 2027.')
   })
 
   it('says plainly when nothing repeats', () => {
@@ -98,9 +98,9 @@ describe('the shortest series', () => {
     expect(dates).toEqual(['2026-08-10', '2026-09-10'])
   })
 
-  it('reads as two rows, not one', () => {
+  it('runs from this month to the next', () => {
     expect(describeSeries('2026-08-10', { frequency: 'monthly', interval: 1, repeats: 1 })).toBe(
-      '2 lançamentos, de agosto de 2026 a setembro de 2026.',
+      'De agosto de 2026 a setembro de 2026.',
     )
   })
 })

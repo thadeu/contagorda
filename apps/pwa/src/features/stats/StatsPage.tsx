@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useLayoutEffect, useState } from 'react'
+import { useNavigate, useNavigationType } from 'react-router'
 import { NavBar, NavButton } from '@/ui/NavBar'
 import { DockedSheet } from '@/ui/DockedSheet'
 import { Money } from '@/ui/Money'
 import { EmptyState } from '@/ui/EmptyState'
 import { Spinner } from '@/ui/Spinner'
-import { ChevronLeftIcon, ChevronRightIcon, MoreIcon, TargetIcon } from '@/ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon, TargetIcon } from '@/ui/icons'
+import { useMonth } from '@/app/useMonth'
 import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
 import { monthKey, monthLabel, shiftMonth, todayIso } from '@/lib/dates'
-import { useMonth } from '@/app/useMonth'
 import { useCategories } from '@/features/accounts/hooks'
 import {
   useDeleteTransaction,
@@ -32,10 +32,15 @@ import type { Transaction } from '@/services/types'
  * beside every other one. Same data, different question, so it is a screen
  * rather than a card that grew.
  *
- * The month chosen here is the month chosen everywhere — it lives in the query
- * string, so going back leaves the dashboard on whatever the chart landed on.
- * Picking August here and returning to July would have the two screens arguing
- * about which month you are looking at.
+ * The month lives in the URL, like everywhere else in the app, so a reload lands
+ * on the month that was being read and a link to a month is a link to a month.
+ * Local state would have been simpler and buys nothing: it loses both.
+ *
+ * Arriving resets it to the current month; going back clears it from the query
+ * altogether — carrying it out is how browsing a chart ended up changing the
+ * month on a screen nobody was looking at. Between those two the screen owns it — scrolling the chart writes
+ * a month that only this screen is reading, and it is gone by the time anything
+ * else could read it.
  *
  * Choosing a category narrows everything at once — the chart, the figure and
  * the list — because they are three views of one answer and a filter that moved
@@ -64,8 +69,29 @@ import type { Transaction } from '@/services/types'
  */
 export function StatsPage() {
   const navigate = useNavigate()
-  const { search } = useLocation()
   const { month, setMonth } = useMonth()
+  const arrival = useNavigationType()
+
+  /**
+   * Opening the screen asks where you are; reloading it asks where you were.
+   *
+   * A push is somebody navigating here, and the month they browsed to last time
+   * is not an answer to that — so it resets. A pop is the first load of the
+   * document, a refresh, or a step back through history, and every one of those
+   * is a request for what the URL already says. Resetting on all of them would
+   * throw away the reload the URL is there to survive.
+   *
+   * Before paint, not after. An effect that ran afterwards would draw one frame
+   * at the old month and let the chart centre it before sliding away, which
+   * reads as the screen changing its mind in front of you.
+   */
+  useLayoutEffect(() => {
+    if (arrival !== 'PUSH') return
+
+    setMonth(monthKey(todayIso()))
+    // Once, on the way in. Anything after this is the person's own doing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const transactions = useTransactions(month)
   const categories = useCategories()
@@ -114,23 +140,22 @@ export function StatsPage() {
             title="Despesas"
             leading={
               <NavButton
+                solid
                 icon={ChevronLeftIcon}
                 label="Voltar"
-                onClick={() => navigate({ pathname: '/', search })}
+                onClick={() => navigate({ pathname: '/', search: '' })}
               />
-            }
-            trailing={
-              <NavButton disabled icon={MoreIcon} label="Mais opções" onClick={() => {}} />
             }
           />
 
-          <div className="flex items-center justify-between gap-3 px-4 pb-2">
+          <div className="flex items-center justify-between gap-3 px-3.5 pb-2">
             <p className="truncate text-[0.9375rem] font-semibold tracking-wide text-ink uppercase">
               {monthLabel(month)}
             </p>
 
             <div className="flex shrink-0 gap-1.5">
               <NavButton
+                solid
                 icon={ChevronLeftIcon}
                 label="Mês anterior"
                 disabled={month <= oldest}
@@ -142,6 +167,7 @@ export function StatsPage() {
                   you already are. Six months out, going back costs six taps or a
                   scroll through the chart to find the month you started on. */}
               <NavButton
+                solid
                 icon={TargetIcon}
                 label="Ir para o mês atual"
                 disabled={month === monthKey(todayIso())}
@@ -149,6 +175,7 @@ export function StatsPage() {
               />
 
               <NavButton
+                solid
                 icon={ChevronRightIcon}
                 label="Próximo mês"
                 disabled={month >= newest}
@@ -162,7 +189,7 @@ export function StatsPage() {
               zero, would both be worse: R$ 0,00 is a real answer — a month with
               nothing spent — and the app would be stating it with a straight
               face on the way to something else. */}
-          <p className="flex items-center gap-2.5 px-4 pb-4 text-[2rem] leading-tight font-bold text-ink">
+          <p className="flex items-center gap-2.5 px-3.5 pb-4 text-[2rem] leading-tight font-bold text-ink">
             {transactions.data ? <Money cents={totalCents} /> : <span className="opacity-0">—</span>}
 
             {busy && <Spinner />}

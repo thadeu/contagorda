@@ -116,7 +116,23 @@ interface MonthBarsProps {
  * runtime is a class Tailwind never sees and never emits.
  */
 const FILL: Record<Trend, string> = {
-  now: 'bg-now',
+  /**
+   * The current month paints as any other quiet month.
+   *
+   * Green made it a third statement in a language that only needed two: red is
+   * "this went up" and blue is "this did not", and a colour that means neither
+   * has to be learned before the chart can be read. Which month is now is
+   * already answered twice over — by the lit column and by the target beside the
+   * arrows — so the bar was spending the screen's only remaining colour to
+   * repeat it.
+   *
+   * The trend itself stays. It is what keeps the current month out of the red:
+   * it is the only month still being written, and a verdict on it is a verdict
+   * on however many days have passed. Blue here says "nothing to report yet",
+   * which is true, and the label still says "mês atual" for anyone who cannot
+   * see either.
+   */
+  now: 'bg-steady',
   rise: 'bg-rise',
   steady: 'bg-steady',
 }
@@ -156,6 +172,12 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   const track = useRef<HTMLDivElement>(null)
   const current = useRef<HTMLButtonElement>(null)
 
+  /**
+   * Whether the chart has ever positioned itself. Not "has it rendered" — a
+   * chart with no months yet cannot centre anything, and on this screen that is
+   * the normal first frame: the months arrive from their own request, after the
+   * page has already drawn.
+   */
   const painted = useRef(false)
 
   /** The last month to pass under the centre, so each one is felt exactly once. */
@@ -205,6 +227,12 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
     const element = scroller.current
     const column = current.current
 
+    /**
+     * Nothing to centre yet. Leaving `painted` alone is the whole fix: the
+     * effect runs again when the months land, and until then the chart is
+     * sitting at scroll zero showing the oldest month on record — which is what
+     * "opened on January" was.
+     */
     if (!element || !column) return
 
     const off = Math.abs(centreOf(column) - element.scrollLeft - element.clientWidth / 2)
@@ -219,7 +247,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
     }
 
     painted.current = true
-  }, [selected])
+  }, [selected, totals])
 
   /**
    * Whatever the scroll lands on becomes the month, once it has stopped.
@@ -238,6 +266,15 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
     let frame = 0
 
     function settled() {
+      /**
+       * Before the chart has placed itself, whatever sits in the middle of the
+       * frame is an accident of scroll position, not a choice. Reporting it
+       * replaces the month the screen was opened with — which is how opening
+       * the history in August could leave every screen below it showing another
+       * month entirely.
+       */
+      if (!painted.current) return
+
       const middle = centred(element, track.current)
 
       if (middle) {
@@ -313,7 +350,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
               aria-pressed={reading.month === selected}
               aria-label={label(reading)}
               className={`flex w-[20vw] max-w-24 shrink-0 snap-center snap-always flex-col items-center gap-1.5 rounded-2xl px-1 pt-2 ${
-                chosen ? 'bg-white/6' : ''
+                chosen ? 'bg-ink/[0.06]' : ''
               }`}
             >
               <span

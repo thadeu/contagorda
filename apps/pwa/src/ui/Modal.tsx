@@ -135,7 +135,6 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
         aria-modal="true"
         aria-label={title}
         data-dragging={dragging}
-        data-leaving={leaving}
         style={{
           transform:
             entered && !leaving ? `translateY(${offset}px)` : 'translateY(100%)',

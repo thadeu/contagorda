@@ -162,6 +162,13 @@
      lag behind it, so the transition is off during the gesture and only the
      release travels.
 
+     One curve, both directions. Reversing it for the exit was tried and is
+     wrong: a mirrored ease-out starts slow, and after a drag the panel already
+     carries the finger's speed — so it descends, stalls, and descends again.
+     Arriving and leaving are the same movement played in two directions, and
+     the deceleration at the end of the exit happens off-screen, where there is
+     nothing to see.
+
      The curve is the platform's own for sheets — quick to leave, slow to arrive,
      with no bounce. Linear reads as machinery and `ease` reads as a web page;
      this is what makes a panel feel like it was pushed rather than assigned a
@@ -193,16 +200,6 @@
     transition: none !important;
   }
 
-  /* Leaving is the arrival curve run backwards: the same shape mirrored in both
-     axes, so it accelerates away instead of braking.
-
-     `cubic-bezier(0.32, 0.72, 0, 1)` reversed is `(1 - 0, 1 - 1, 1 - 0.32,
-     1 - 0.72)`. Keeping the entry curve makes the panel hesitate just before it
-     is gone, which reads as lag; linear loses the character the entrance
-     established, and the two stop looking like one movement in two directions. */
-  .sheet-snap[data-leaving='true'] {
-    transition-timing-function: cubic-bezier(1, 0, 0.68, 0.28) !important;
-  }
 
   @media (prefers-reduced-motion: reduce) {
     .slide-away,

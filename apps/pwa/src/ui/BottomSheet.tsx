@@ -187,7 +187,6 @@ export function BottomSheet({
         aria-label={title}
         tabIndex={-1}
         data-dragging={dragging}
-        data-leaving={leaving}
         style={{
           transform:
             entered && !leaving ? `translateY(${Math.max(offset, 0)}px)` : 'translateY(100%)',

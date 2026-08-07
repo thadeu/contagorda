@@ -138,11 +138,15 @@ happens at once: the gesture reads as ignored and the jump at the end reads as a
 bug. Height or offset is driven live, `clamp` holds it between detents so
 overshooting simply stops, and only the release travels.
 
-Leaving is the arrival curve run backwards — the same shape mirrored in both
-axes, so the panel accelerates away instead of braking. Reusing the entry curve
-makes it hesitate just before it is gone, which reads as lag; a linear exit loses
-the character the entrance established, and the two stop looking like one
-movement in two directions.
+One curve, both directions. Two alternatives were tried and both are worse:
+linear loses the character the entrance established, and the mirrored curve —
+which accelerates away rather than braking — starts slow, so a panel released
+from a drag descends, stalls, and descends again. After a gesture the panel
+already carries the finger's speed, and any easing that begins gently reads as a
+stall.
+
+The deceleration at the end of the exit costs nothing, because by then the panel
+is off-screen and there is nothing left to watch.
 
 Closing is also deferred: the parent unmounts the sheet the moment it hears, so
 it does not hear until the movement has finished. Without that, the panel is

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/dates'
-import { roundBRL } from '../../../lib/money'
+import { compactBRL, formatBRL } from '../../../lib/money'
 import { read, type Reading, type Trend } from '../trend'
 import type { MonthTotal } from '../../../services/types'
 
@@ -29,9 +29,14 @@ interface MonthBarsProps {
  * answers both, and a month worth returning to can be picked out before it is
  * tapped rather than after.
  *
- * The cents are dropped from those labels. On a month's total they are two
- * digits that never change the answer, and they double the width of something
- * that has to sit above a bar.
+ * The cents are dropped from those labels, and six figures become "R$ 123,5
+ * mil". The label has a column and not a line: an amount that wraps drags the
+ * chart's baseline with it, and one clipped with an ellipsis is a wrong amount
+ * that looks deliberate. Anyone reading a bar wants its order of magnitude, and
+ * the exact total is set in full above the chart for the month that is chosen —
+ * so the notation gives way before the layout does. The width is asserted in
+ * `money.test.ts` rather than eyeballed, because the amount that breaks it is
+ * one nobody has entered yet.
  *
  * Colour on a bar says which way the month went, never which month is chosen.
  * That separation is what lets both be true at once: the band marks what the
@@ -98,7 +103,7 @@ const FILL: Record<Trend, string> = {
  * warning. Whatever the fill says, the label says too.
  */
 function label(reading: Reading): string {
-  const parts = [monthLabel(reading.month), roundBRL(reading.cents)]
+  const parts = [monthLabel(reading.month), formatBRL(reading.cents)]
 
   if (reading.trend === 'now') parts.push('mês atual')
 
@@ -149,14 +154,16 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
               onClick={() => onSelect(reading.month)}
               aria-pressed={chosen}
               aria-label={label(reading)}
-              className={`flex w-[4.5rem] shrink-0 snap-center flex-col items-center gap-1.5 rounded-2xl px-2 pt-2 ${
+              className={`flex w-20 shrink-0 snap-center flex-col items-center gap-1.5 rounded-2xl px-2 pt-2 ${
                 chosen ? 'bg-white/6' : ''
               }`}
             >
               <span
-                className={`tnum text-[0.625rem] font-semibold ${chosen ? 'text-ink' : 'text-faint'}`}
+                className={`tnum text-[0.625rem] font-semibold whitespace-nowrap ${
+                  chosen ? 'text-ink' : 'text-faint'
+                }`}
               >
-                {roundBRL(reading.cents)}
+                {compactBRL(reading.cents)}
               </span>
 
               <span className="flex h-28 w-full items-end justify-center border-b border-line">

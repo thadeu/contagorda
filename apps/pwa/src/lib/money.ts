@@ -44,6 +44,42 @@ export function roundBRL(cents: Cents): string {
   return `${negative ? '-' : ''}R$ ${BRL_ROUND.format(Math.abs(cents) / 100)}`
 }
 
+const BRL_COMPACT = new Intl.NumberFormat('pt-BR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+})
+
+/** Where the full form stops fitting above a bar: six figures. */
+const COMPACT_FROM = 100_000
+
+/**
+ * The figure written to a width, for a label that has a column and not a line.
+ *
+ * Under a hundred thousand it is the plain number, because that is what a
+ * household total looks like and rounding it would be answering a question
+ * nobody asked. Above that it becomes "R$ 123,5 mil" — which is not a shortening
+ * of the number so much as the honest reading of it: nobody compares two bars by
+ * their last three digits, and the exact total is already set in full above the
+ * chart for whichever month is chosen.
+ *
+ * Never an ellipsis. A truncated amount is a wrong amount that looks deliberate,
+ * and "R$ 123.4…" cannot be told apart from a number ten times larger.
+ */
+export function compactBRL(cents: Cents): string {
+  const negative = cents < 0
+  const absolute = Math.abs(cents)
+
+  /**
+   * Rounded first, then measured. Reading the threshold off the cents lets
+   * 99.999,99 through as being under six figures, and `roundBRL` then prints the
+   * six figures anyway — a boundary that is wrong for exactly one cent's worth
+   * of amounts, which is the kind nobody finds by hand.
+   */
+  if (Math.round(absolute / 100) < COMPACT_FROM) return roundBRL(cents)
+
+  return `${negative ? '-' : ''}R$ ${BRL_COMPACT.format(absolute / 100)}`
+}
+
 export function parseBRLToCents(input: string): Cents | null {
   const cleaned = input.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')
 

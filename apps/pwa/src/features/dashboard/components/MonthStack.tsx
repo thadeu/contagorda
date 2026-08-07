@@ -1,8 +1,8 @@
 import { splitBRL } from '../../../lib/money'
-import { shiftMonth } from '../../../lib/dates'
+import { monthKey, shiftMonth, todayIso } from '../../../lib/dates'
 import type { AppIcon } from '../../../ui/icons'
 import { Money } from '../../../ui/Money'
-import { ChevronLeftIcon, ChevronRightIcon } from '../../../ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon, TargetIcon } from '../../../ui/icons'
 import { MonthPicker } from './MonthPicker'
 
 interface MonthStackProps {
@@ -50,6 +50,18 @@ export function MonthStack({
             label="Mês anterior"
             onClick={() => onMonthChange(shiftMonth(month, -1))}
           />
+          {/* Between the two steps, because it is the third way to move along
+              the same line and the only one that does not depend on where you
+              already are. Same place, same icon, same rule as the history
+              screen: a control that moves between screens is a control someone
+              has to find twice. */}
+          <Step
+            icon={TargetIcon}
+            label="Ir para o mês atual"
+            disabled={month === monthKey(todayIso())}
+            onClick={() => onMonthChange(monthKey(todayIso()))}
+          />
+
           <Step
             icon={ChevronRightIcon}
             label="Próximo mês"
@@ -89,17 +101,21 @@ function Step({
   icon: Icon,
   label,
   onClick,
+  disabled = false,
 }: {
   icon: AppIcon
   label: string
   onClick: () => void
+  /** Greyed rather than gone: a control that vanishes moves the two beside it. */
+  disabled?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
-      className="grid size-9 place-items-center rounded-2xl bg-white/12 text-white"
+      className="grid size-9 place-items-center rounded-2xl bg-white/12 text-white disabled:opacity-30"
     >
       <Icon className="size-4" strokeWidth={2} />
     </button>

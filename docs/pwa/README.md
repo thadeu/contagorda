@@ -11,11 +11,13 @@ differently from every browser it had been tested in.
 | [`ConfirmSheet`](confirm-sheet.md) | Asks before something cannot be undone | Covered by whatever is under it |
 | [`DockedSheet`](docked-sheet.md) | Is the bottom half of a screen | Visible and usable |
 
-And one that is not a sheet at all:
+And the pieces that are not sheets:
 
-| Component | What it is |
+| Piece | What it is |
 |---|---|
 | [`Spinner`](spinner.md) | Marks a value as being checked, without taking it away |
+| [`AmountField`](amount-field.md) | Takes a sum of money the way a till does |
+| [`Theme`](theme.md) | Two palettes behind one attribute |
 
 Start with **[ADR 0003](../decisions/0003-sheet-gestures-on-ios.md)**. It holds
 what all four have to do about gestures, scrolling and the safe areas, and why
@@ -42,6 +44,16 @@ What is drawn is a hint; the target is whatever a thumb can reach.
 A skeleton is right for a screen that has never been filled and wrong for every
 load after that. Keep the last answer and mark it instead — see
 [`Spinner`](spinner.md).
+
+Money is entered from the right, without a separator and without a caret. The
+caret is the part people notice — see [`AmountField`](amount-field.md).
+
+Colours are named for their job, so a whole theme is one attribute and no
+component ever learns which one it is in — see [`Theme`](theme.md).
+
+There are no haptics on iOS. `navigator.vibrate` is Android-only, and the
+switch-checkbox trick does not fire from script — tested on the device. Never let
+anything be communicated by feel alone.
 
 ## If this becomes a library
 

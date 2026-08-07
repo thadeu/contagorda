@@ -43,9 +43,10 @@ interface MonthBarsProps {
  * picked by friction. One flick, one month; the arrows and the target above the
  * chart are there for the long trips.
  *
- * A month that settles in the centre is confirmed by feel as well as by sight.
- * `tick` is a request rather than a call — see `lib/haptics` for what the web
- * can and cannot promise here.
+ * Each month crossing the centre asks for a tick, the way a picker wheel does.
+ * It arrives on Android and never on iOS, which has no haptics API at all — see
+ * `lib/haptics`. Nothing here depends on it, and the month is already said by
+ * the lit column, the figure and the label.
  *
  * Heights are relative to the tallest of the five, not to the tallest on record.
  * See `ceiling` for why: one month with a car deposit in it would otherwise be

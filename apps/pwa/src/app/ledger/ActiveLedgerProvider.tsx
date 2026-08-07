@@ -23,7 +23,7 @@ import { ActiveLedgerContext, ledgerKeys, type ActiveLedger } from './activeLedg
  */
 export function ActiveLedgerProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient()
-  const ledgers = useQuery({ queryKey: ledgerKeys.list, queryFn: () => services.ledgers.list() })
+  const ledgers = useQuery({ queryKey: ledgerKeys.list, queryFn: ({ signal }) => services.ledgers.list({ signal }) })
   const [chosen, setChosen] = useState<string | null>(getActiveLedgerId())
 
   const available = useMemo(() => ledgers.data ?? [], [ledgers.data])

@@ -121,6 +121,13 @@ function byDateThenCreation(a: Transaction, b: Transaction): number {
   return a.date === b.date ? a.id.localeCompare(b.id) : a.date.localeCompare(b.date)
 }
 
+/**
+ * The mock ignores `Fetching`, and that is not an oversight: there is nothing in
+ * memory to abandon. The parameter exists here so the signature is the one the
+ * HTTP client will have, and so every call site is already passing a signal on
+ * the day that client arrives — a seam that only fits after both sides are
+ * written is a seam that gets widened by hand under pressure.
+ */
 export function createMockServices(): Services {
   return {
     ledgers: {

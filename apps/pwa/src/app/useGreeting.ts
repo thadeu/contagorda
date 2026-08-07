@@ -14,7 +14,7 @@ export const profileKey = ['profile'] as const
  * opened the profile, and keeps up if the name changes at the provider.
  */
 export function useProfile() {
-  return useQuery({ queryKey: profileKey, queryFn: () => services.profile.get() })
+  return useQuery({ queryKey: profileKey, queryFn: ({ signal }) => services.profile.get({ signal }) })
 }
 
 export function useUpdateProfile() {

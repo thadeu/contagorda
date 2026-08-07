@@ -27,7 +27,7 @@ export const transactionKeys = {
 export function useMonthlyTotals(categoryId: string | null = null) {
   return useQuery({
     queryKey: transactionKeys.totals(categoryId),
-    queryFn: () => services.transactions.monthlyTotals(categoryId),
+    queryFn: ({ signal }) => services.transactions.monthlyTotals(categoryId, { signal }),
   })
 }
 
@@ -35,21 +35,21 @@ export function useMonthlyTotals(categoryId: string | null = null) {
 export function useMonthsWithData() {
   return useQuery({
     queryKey: transactionKeys.months(),
-    queryFn: () => services.transactions.months(),
+    queryFn: ({ signal }) => services.transactions.months({ signal }),
   })
 }
 
 export function useTransactions(month: string) {
   return useQuery({
     queryKey: transactionKeys.month(month),
-    queryFn: () => services.transactions.listByMonth(month),
+    queryFn: ({ signal }) => services.transactions.listByMonth(month, { signal }),
   })
 }
 
 export function useMonthSummary(month: string) {
   return useQuery({
     queryKey: transactionKeys.summary(month),
-    queryFn: () => services.transactions.summary(month),
+    queryFn: ({ signal }) => services.transactions.summary(month, { signal }),
   })
 }
 

@@ -13,7 +13,7 @@ export const categoryKeys = {
 }
 
 export function useAccounts() {
-  return useQuery({ queryKey: accountKeys.all(), queryFn: () => services.accounts.list() })
+  return useQuery({ queryKey: accountKeys.all(), queryFn: ({ signal }) => services.accounts.list({ signal }) })
 }
 
 export function useAccount(id: string) {
@@ -29,7 +29,7 @@ export function useAccount(id: string) {
 export function useOpeningBalances(month: string) {
   return useQuery({
     queryKey: accountKeys.opening(month),
-    queryFn: () => services.accounts.openingBalances(month),
+    queryFn: ({ signal }) => services.accounts.openingBalances(month, { signal }),
   })
 }
 
@@ -44,7 +44,7 @@ export function useSetOpeningBalance(month: string) {
 }
 
 export function useCategories() {
-  return useQuery({ queryKey: categoryKeys.all(), queryFn: () => services.categories.list() })
+  return useQuery({ queryKey: categoryKeys.all(), queryFn: ({ signal }) => services.categories.list({ signal }) })
 }
 
 export function useCreateAccount() {

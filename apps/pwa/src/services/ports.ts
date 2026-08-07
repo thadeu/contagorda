@@ -23,15 +23,38 @@ import type {
  * Keeping this explicit is also how the API contract gets designed: whatever
  * the screens need shows up here first, and the endpoints follow.
  *
+ * Reads take a `Fetching`; writes do not. See `Fetching` for why that line is
+ * where it is.
+ *
  * None of these take a ledger. The active one is ambient — see `activeLedger` —
  * because that is what it will be over HTTP, where it rides on a header set once
  * by the client. Threading it through every signature here would invent a
  * parameter the API does not have and let a screen pass the wrong one.
  */
 
+/**
+ * What a read carries besides its arguments.
+ *
+ * The signal comes from the query that asked, and the client hands it to
+ * `fetch`. Abandoning a request is the point: on the history screen a finger can
+ * cross a dozen months in a second, and every month it passes over would
+ * otherwise leave a request in flight that nobody will read. Nothing goes wrong
+ * without it — each month is its own cache entry, so a late answer lands in the
+ * right place or nowhere — but the phone spends radio and battery answering
+ * questions that were already withdrawn.
+ *
+ * Only reads take it. A write that has left the client cannot be recalled, only
+ * ignored: the server may already have applied it, and a caller that treats an
+ * abort as "it did not happen" is a caller that will duplicate the transaction
+ * on the retry. Whether a write landed is a question for the next read.
+ */
+export interface Fetching {
+  signal?: AbortSignal
+}
+
 export interface TransactionsPort {
-  listByMonth(month: string): Promise<Transaction[]>
-  summary(month: string): Promise<MonthSummary>
+  listByMonth(month: string, options?: Fetching): Promise<Transaction[]>
+  summary(month: string, options?: Fetching): Promise<MonthSummary>
   /**
    * Every month holding at least one transaction, newest first.
    *
@@ -39,7 +62,7 @@ export interface TransactionsPort {
    * range guessed in the client either hides months that exist or offers empty
    * ones that lead nowhere.
    */
-  months(): Promise<string[]>
+  months(options?: Fetching): Promise<string[]>
   /**
    * Every month that holds anything, with its totals, oldest first.
    *
@@ -53,7 +76,7 @@ export interface TransactionsPort {
    * then — and fetching every transaction to keep it would give up the one
    * property this call has.
    */
-  monthlyTotals(categoryId?: string | null): Promise<MonthTotal[]>
+  monthlyTotals(categoryId?: string | null, options?: Fetching): Promise<MonthTotal[]>
   /**
    * A recurrence materialises the whole series at once. The client sends the
    * rule and the server writes the rows, because the dates are derived and a
@@ -98,7 +121,7 @@ export interface NewAccount {
 }
 
 export interface AccountsPort {
-  list(): Promise<Account[]>
+  list(options?: Fetching): Promise<Account[]>
   create(input: NewAccount): Promise<Account>
   update(id: string, input: Partial<NewAccount>): Promise<Account>
   /** Archived, never deleted: the transactions pointing at it are history. */
@@ -112,12 +135,12 @@ export interface AccountsPort {
    * missing from the map has not been opened for that month yet and starts at
    * zero, which is a real answer rather than an error.
    */
-  openingBalances(month: string): Promise<Record<string, Cents>>
+  openingBalances(month: string, options?: Fetching): Promise<Record<string, Cents>>
   setOpeningBalance(accountId: string, month: string, cents: Cents): Promise<void>
 }
 
 export interface CategoriesPort {
-  list(): Promise<Category[]>
+  list(options?: Fetching): Promise<Category[]>
   /**
    * Creating from the transaction form is the main path, so this matches on
    * name first — typing "Farmácia" twice has to reuse the category rather than
@@ -147,10 +170,10 @@ export interface CategoriesPort {
 
 export interface LedgersPort {
   /** Every ledger this person is a member of. Never empty: signing up makes one. */
-  list(): Promise<Ledger[]>
+  list(options?: Fetching): Promise<Ledger[]>
   create(name: string): Promise<Ledger>
-  members(ledgerId: string): Promise<LedgerMember[]>
-  invites(ledgerId: string): Promise<LedgerInvite[]>
+  members(ledgerId: string, options?: Fetching): Promise<LedgerMember[]>
+  invites(ledgerId: string, options?: Fetching): Promise<LedgerInvite[]>
   /**
    * Mints a link rather than sending mail.
    *
@@ -179,7 +202,7 @@ export interface ProfilePort {
    * the app would keep greeting you by the old one forever, with no way to tell
    * a stale copy from a deliberate choice.
    */
-  get(): Promise<{ display_name: string | null }>
+  get(options?: Fetching): Promise<{ display_name: string | null }>
   update(input: { display_name: string }): Promise<{ display_name: string | null }>
 }
 

@@ -5,7 +5,7 @@ import { ledgerKeys } from '../../app/ledger/activeLedgerContext'
 export function useMembers(ledgerId: string | null) {
   return useQuery({
     queryKey: ledgerKeys.members(ledgerId ?? ''),
-    queryFn: () => services.ledgers.members(ledgerId!),
+    queryFn: ({ signal }) => services.ledgers.members(ledgerId!, { signal }),
     enabled: ledgerId !== null,
   })
 }
@@ -13,7 +13,7 @@ export function useMembers(ledgerId: string | null) {
 export function useInvites(ledgerId: string | null) {
   return useQuery({
     queryKey: ledgerKeys.invites(ledgerId ?? ''),
-    queryFn: () => services.ledgers.invites(ledgerId!),
+    queryFn: ({ signal }) => services.ledgers.invites(ledgerId!, { signal }),
     enabled: ledgerId !== null,
   })
 }

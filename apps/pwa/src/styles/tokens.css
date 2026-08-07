@@ -184,6 +184,24 @@
      new position. Transform and opacity are composited, so the slide costs
      nothing on the main thread; height is here for the docked sheet's detents,
      which are short and infrequent enough to afford it. */
+  /* A bar finding its new height when the scale changes under it. Unlayered,
+     like the motion above, so a utility class cannot win it by accident.
+
+     Slower than a tap and faster than a sheet: the change is a consequence of a
+     gesture aimed elsewhere, and arriving instantly reads as a glitch while
+     arriving slowly reads as the app thinking. Each bar runs its own — they
+     start together and finish together, and the ones that barely moved say so by
+     barely moving. */
+  .bar-grow {
+    transition: height 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar-grow {
+      transition: none;
+    }
+  }
+
   .sheet-snap {
     transition:
       transform 0.34s cubic-bezier(0.32, 0.72, 0, 1),

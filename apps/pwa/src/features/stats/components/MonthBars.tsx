@@ -89,6 +89,12 @@ interface MonthBarsProps {
  * spacing between bars lives inside the column as padding — a flex gap would cut
  * the axis into dashes.
  *
+ * Bars move to a new height rather than appearing at one. The scale changes as
+ * a consequence of a gesture aimed at something else, so a bar that jumps reads
+ * as a glitch; growing says the height is a measurement being retaken. Each runs
+ * its own transition, which is what makes the ones that barely moved legible as
+ * barely having moved.
+ *
  * A month with nothing spent draws no bar at all. It used to draw a sliver, so
  * that something was there; with an axis under it, that sliver claims a small
  * amount was spent, and the line already says the month exists.
@@ -315,7 +321,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
                 {reading.cents > 0 && (
                   <span
                     style={{ height: `${Math.max(share * 100, 4)}%` }}
-                    className={`w-2.5 rounded-t-full ${FILL[reading.trend]}`}
+                    className={`bar-grow w-2.5 rounded-t-full ${FILL[reading.trend]}`}
                   />
                 )}
               </span>

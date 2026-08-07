@@ -126,8 +126,17 @@ function label(reading: Reading): string {
   return parts.join(', ')
 }
 
-/** How long a scroller has to be still before it counts as stopped. */
-const SETTLE = 140
+/**
+ * How long a scroller has to be still before it counts as stopped.
+ *
+ * Long, and deliberately so. Landing on a month now reloads the list, the total
+ * and the sentence under the chart, so the cost of answering early is a screen
+ * that rebuilds itself two or three times while somebody is still moving through
+ * the months. Waiting is cheap here because nothing is hidden in the meantime —
+ * the chart has already moved, the centre column is already lit, and the only
+ * thing still catching up is what is below it.
+ */
+const SETTLE = 800
 
 export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   const scroller = useRef<HTMLDivElement>(null)

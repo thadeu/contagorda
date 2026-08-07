@@ -322,7 +322,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
                 {reading.cents > 0 && (
                   <span
                     style={{ height: `${Math.max(share * 100, 4)}%` }}
-                    className={`bar-grow w-2.5 rounded-t-full ${FILL[reading.trend]}`}
+                    className={`bar-grow w-3 rounded-t-full ${FILL[reading.trend]}`}
                   />
                 )}
               </span>
@@ -409,7 +409,7 @@ export function MonthBarsSkeleton() {
             <span className="flex h-28 w-full items-end justify-center border-b border-line">
               <span
                 style={{ height: `${height}%` }}
-                className="block w-2.5 animate-pulse rounded-t-full bg-sunken motion-reduce:animate-none"
+                className="block w-3 animate-pulse rounded-t-full bg-sunken motion-reduce:animate-none"
               />
             </span>
 

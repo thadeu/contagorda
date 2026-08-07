@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { BottomSheet } from '../../../ui/BottomSheet'
-import { NavButton } from '../../../ui/NavBar'
-import { CheckIcon, ChevronRightIcon } from '../../../ui/icons'
+import { Switch } from '../../../ui/Switch'
+import { ChevronRightIcon } from '../../../ui/icons'
 import { clamped, describe, FREQUENCIES, type Recurrence } from '../recurrence'
 import type { IsoDate } from '../../../lib/dates'
 
@@ -65,25 +65,23 @@ function RecurrenceSheet({
       title="Repetir"
       onClose={onClose}
       actions={
-        <NavButton
-          icon={CheckIcon}
-          label="Pronto"
-          onClick={() => {
-            onChange(repeats ? draft : null)
-            onClose()
-          }}
+        <Switch
+          checked={repeats}
+          onChange={(on) => onChange(on ? draft : null)}
+          label="Repetir este lançamento"
         />
       }
     >
+      {/* Every change is already applied behind the sheet — the switch, the
+          frequency, the number. There is nothing left to confirm, so there is no
+          button confirming it: closing by any means leaves the same result, and
+          a "done" would only raise the question of what happens without it. */}
       <div className="grid gap-4 px-3 pb-2">
-        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-sunken p-1" role="group">
-          <Segment active={!repeats} onClick={() => onChange(null)}>
-            Não
-          </Segment>
-          <Segment active={repeats} onClick={() => onChange(draft)}>
-            Sim
-          </Segment>
-        </div>
+        {!repeats && (
+          <p className="text-sm leading-relaxed text-muted">
+            Este lançamento acontece uma vez só.
+          </p>
+        )}
 
         {repeats && (
           <>
@@ -181,28 +179,6 @@ function Chip({
   )
 }
 
-function Segment({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`min-h-11 rounded-xl text-sm font-semibold ${
-        active ? 'bg-inverse text-white' : 'text-muted'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
 
 function unit({ frequency, repeats }: Recurrence): string {
   if (frequency === 'yearly') return repeats === 0 ? 'ano' : 'anos'

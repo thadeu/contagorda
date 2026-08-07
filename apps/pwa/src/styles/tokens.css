@@ -193,12 +193,15 @@
     transition: none !important;
   }
 
-  /* Leaving is linear. The arrival curve decelerates because the panel is
-     settling into a place it will stay; on the way out there is nothing to
-     settle into, and the same easing makes it hesitate just before it is gone —
-     which reads as lag rather than as grace. */
+  /* Leaving is the arrival curve run backwards: the same shape mirrored in both
+     axes, so it accelerates away instead of braking.
+
+     `cubic-bezier(0.32, 0.72, 0, 1)` reversed is `(1 - 0, 1 - 1, 1 - 0.32,
+     1 - 0.72)`. Keeping the entry curve makes the panel hesitate just before it
+     is gone, which reads as lag; linear loses the character the entrance
+     established, and the two stop looking like one movement in two directions. */
   .sheet-snap[data-leaving='true'] {
-    transition-timing-function: linear !important;
+    transition-timing-function: cubic-bezier(1, 0, 0.68, 0.28) !important;
   }
 
   @media (prefers-reduced-motion: reduce) {

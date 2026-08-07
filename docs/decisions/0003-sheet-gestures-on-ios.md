@@ -131,10 +131,11 @@ happens at once: the gesture reads as ignored and the jump at the end reads as a
 bug. Height or offset is driven live, `clamp` holds it between detents so
 overshooting simply stops, and only the release travels.
 
-Leaving is linear, arriving is not. The arrival curve decelerates because the
-panel is settling into a place it will stay; on the way out there is nothing to
-settle into, and the same easing makes it hesitate just before it is gone, which
-reads as lag rather than as grace.
+Leaving is the arrival curve run backwards — the same shape mirrored in both
+axes, so the panel accelerates away instead of braking. Reusing the entry curve
+makes it hesitate just before it is gone, which reads as lag; a linear exit loses
+the character the entrance established, and the two stop looking like one
+movement in two directions.
 
 Closing is also deferred: the parent unmounts the sheet the moment it hears, so
 it does not hear until the movement has finished. Without that, the panel is

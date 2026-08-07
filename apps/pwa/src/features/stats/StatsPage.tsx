@@ -6,6 +6,7 @@ import { Money } from '../../ui/Money'
 import { EmptyState } from '../../ui/EmptyState'
 import { ChevronLeftIcon, ChevronRightIcon, MoreIcon } from '../../ui/icons'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
+import { useHideOnScroll } from '../../ui/useHideOnScroll'
 import { monthKey, monthLabel, shiftMonth, todayIso } from '../../lib/dates'
 import { useMonth } from '../../app/useMonth'
 import { useCategories } from '../accounts/hooks'
@@ -64,6 +65,13 @@ export function StatsPage() {
 
   useDocumentCanvas('deep')
 
+  /**
+   * The list inside the sheet is the only thing on this screen that scrolls, so
+   * it is what the bar listens to. Pulling rows up folds the bar away and gives
+   * the height to the rows; the first push back down returns it.
+   */
+  const list = useHideOnScroll<HTMLDivElement>()
+
   const expenses = (transactions.data ?? []).filter((row) => row.kind === 'expense')
   const shown =
     category === ALL
@@ -86,6 +94,7 @@ export function StatsPage() {
     <div className="relative h-full overflow-hidden overscroll-none bg-deep">
       <NavBar
         topInset
+        hidden={list.hidden}
         title="Despesas"
         leading={
           <NavButton
@@ -130,6 +139,7 @@ export function StatsPage() {
       <DockedSheet
         expanded={expanded}
         onExpandedChange={setExpanded}
+        scrollRef={list.ref}
         toolbar={
           <CategoryFilter
             rows={expenses}

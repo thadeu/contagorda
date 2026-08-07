@@ -87,18 +87,26 @@ describe('ceiling', () => {
    */
   it('forgets an outlier once it is out of range', () => {
     expect(ceiling(read(history, 'none'), '2026-08')).toBe(16_000)
+    expect(ceiling(read(history, 'none'), '2026-07')).toBe(16_000)
   })
 
   it('still answers to it while it is alongside', () => {
     expect(ceiling(read(history, 'none'), '2026-05')).toBe(900_000)
   })
 
-  it('reaches one month either side, and no further', () => {
-    expect(ceiling(read(history, 'none'), '2026-03')).toBe(900_000)
-    expect(ceiling(read(history, 'none'), '2026-02')).toBe(10_000)
+  it('reaches two months either side, and no further', () => {
+    expect(ceiling(read(history, 'none'), '2026-02')).toBe(900_000)
+    expect(ceiling(read(history, 'none'), '2026-06')).toBe(900_000)
+    expect(ceiling(read(history, 'none'), '2026-07')).toBe(16_000)
   })
 
-  it('does not fall off either end of the history', () => {
+  /**
+   * At the ends the window is short rather than slid inwards, which is what the
+   * chart shows: the first month sits in the centre with empty space where its
+   * earlier neighbours would be, so scaling against months it cannot show would
+   * be measuring the bars against something invisible.
+   */
+  it('goes short at the ends rather than sliding inwards', () => {
     expect(ceiling(read(history, 'none'), '2026-01')).toBe(10_000)
     expect(ceiling(read(history, 'none'), '2026-08')).toBe(16_000)
   })

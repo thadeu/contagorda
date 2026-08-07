@@ -11,64 +11,64 @@ interface MonthBarsProps {
 }
 
 /**
- * Every month there has ever been, one column each.
+ * Five months at a time, and the middle one is the month.
  *
- * It scrolls sideways rather than fitting a window into the screen. Ten years of
- * imported statements is a hundred and twenty bars, and any fixed window would
- * have to invent a rule for which ones — while a scroller lets the finger decide
- * and needs no control to say so.
+ * The chart is a window that slides over a history, not a list you happen to
+ * scroll. Whatever comes to rest in the centre is what the screen below is
+ * about, so choosing a month and looking at a month are the same act — there is
+ * no state where the list is showing March while the eye is parked on August.
  *
- * Heights are relative to the tallest of three — the month being read and its
- * two neighbours — not to the tallest on record. See `ceiling` for why: one month with a car deposit in it
- * would otherwise be the yardstick for every month that ever follows.
+ * Five because it is the smallest odd number with a shoulder on each side: a
+ * centre, a neighbour either way, and one more beyond that for the direction to
+ * be visible. Three would centre a month with nothing but its immediate
+ * neighbours, which is a comparison so short it is nearly the sentence under the
+ * chart. Seven starts to be a chart you read rather than a month you are on.
  *
- * The window follows both the selection and the scroll, and it is the *and* that
- * makes it work. Scrolling two years back to a stretch of months the outlier
- * dwarfs would otherwise show a row of slivers until one of them was tapped —
- * the chart holding a scale for a part of the history nobody is looking at.
+ * Columns are a fifth of the frame, whatever the frame is. A fixed width in
+ * pixels shows four and a half months on one phone and six on another, and the
+ * half is the tell — the eye reads a cut-off column as "there is more" and stops
+ * treating the middle as special. Proportional widths make the layout the same
+ * shape on every device, which is what makes "the one in the middle" a rule
+ * someone can rely on rather than an accident of screen size.
  *
- * But it only moves once the finger stops. Rescaling live would change a bar's
- * height under the very gesture reading it, which is the one thing a chart must
- * not do; rescaling on settle lands the new proportions where the scroll landed,
- * so they read as arriving rather than as shifting. `SETTLE` is the pause that
- * means stopped — long enough not to fire between flicks of the same gesture,
- * short enough that nobody is waiting for it.
+ * Two columns of empty space at each end, so the first and last month can reach
+ * the centre. Without them the history has months that can be seen and never
+ * chosen, which is the sort of thing that reads as the app losing data.
  *
- * The anchor is the middle column, because that is where the eye is: what
- * someone scrolled to is what they centred, not what happened to touch the left
- * edge of the frame.
+ * Snapping is mandatory. A chart where the centre decides has to have exactly
+ * one answer to "what is in the centre", and free scrolling leaves a month
+ * straddling the line at rest.
+ *
+ * Heights are relative to the tallest of the five, not to the tallest on record.
+ * See `ceiling` for why: one month with a car deposit in it would otherwise be
+ * the yardstick for every month that ever follows. The window and what is on
+ * screen are now the same five months, so the scale is always about what is
+ * being looked at.
  *
  * Every column carries its figure. Bars answer "which months were heavy" at a
  * glance and "how heavy" not at all — the height is a ratio to a peak that is
  * itself off screen half the time. With the number above each one the chart
  * answers both, and a month worth returning to can be picked out before it is
- * tapped rather than after.
+ * reached rather than after.
  *
  * The cents are dropped from those labels, and six figures become "R$ 123,5
  * mil". The label has a column and not a line: an amount that wraps drags the
  * chart's baseline with it, and one clipped with an ellipsis is a wrong amount
  * that looks deliberate. Anyone reading a bar wants its order of magnitude, and
- * the exact total is set in full above the chart for the month that is chosen —
+ * the exact total is set in full above the chart for the month in the middle —
  * so the notation gives way before the layout does. The width is asserted in
  * `money.test.ts` rather than eyeballed, because the amount that breaks it is
  * one nobody has entered yet.
  *
  * Colour on a bar says which way the month went, never which month is chosen.
- * That separation is what lets both be true at once: the band marks what the
- * list below is showing, and the fill marks a month that cost more than the one
- * before it. Had selection stayed on the fill, choosing a month would have
- * overwritten the one thing the chart is here to say.
+ * That separation is what lets both be true at once: the centre says what the
+ * list below is showing, and the fill says whether a month cost more than the
+ * one before it. Had selection stayed on the fill, moving through the months
+ * would have overwritten the one thing the chart is here to say.
  *
  * A wall of red is the message. Any single red bar is a shrug — every household
  * has a month that cost more than the last — but four in a row is a direction,
- * and a direction is something to act on. The chart is built so that reading is
- * available without counting anything.
- *
- * The chosen month is a lit column, not a coloured bar. Colour alone puts the
- * mark on the one part of the column that is also carrying data, so a tall
- * selected month and a tall expensive month make the same shape; the band covers
- * figure, bar and name together, which is what "this whole column is what the
- * screen below is about" actually looks like.
+ * and a direction is something to act on.
  *
  * The bars stand on an axis rather than floating over the page. Without a line
  * the eye has to infer the baseline from the bars themselves, which works while
@@ -76,31 +76,18 @@ interface MonthBarsProps {
  * as noise at the bottom of the screen instead of as low months on a scale.
  *
  * The line is drawn by the columns, not over them: each column carries the same
- * bottom border and they sit flush, so the axis is continuous by construction and
- * cannot drift out of step with the bars it belongs to. Which is why the gap
- * moved inside the column as padding — a flex gap would cut the axis into
- * dashes, and the spacing between bars is identical either way.
+ * bottom border and they sit flush, so the axis is continuous by construction
+ * and cannot drift out of step with the bars it belongs to. Which is why the
+ * spacing between bars lives inside the column as padding — a flex gap would cut
+ * the axis into dashes.
  *
  * A month with nothing spent draws no bar at all. It used to draw a sliver, so
  * that something was there; with an axis under it, that sliver claims a small
  * amount was spent, and the line already says the month exists.
  *
- * The newest month sits at the right edge whether there are six months or six
- * hundred. Time runs left to right, so the present belongs at the end of it —
- * and a short history hugging the left with empty space after it reads as a
- * chart that failed to load rather than one with little to say. `ms-auto` on the
- * track does it without reversing anything: it pushes right while the bars fit
- * and does nothing once they overflow, when scrolling takes over.
- *
- * The selected month is brought into view whenever it changes, and instantly on
- * the first paint. Landing at the far end of a decade of history and having to
- * scroll to find the month you came from is the sort of thing that gets called
- * broken — and once something off screen can change the selection, a chart that
- * only obeyed on mount would answer a tap by showing no change at all.
- *
- * The first one cannot animate: scrolling smoothly from wherever the browser
- * happened to start is a chart that arrives sliding, which reads as a loading
- * state that never resolves.
+ * A tap moves that month to the centre rather than selecting it where it stands.
+ * The centre is the rule, and a selected month sitting off to one side would be
+ * the exception that stops anyone believing the rule.
  */
 
 /**
@@ -142,25 +129,55 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   const painted = useRef(false)
 
   /**
-   * The month the scale is drawn around: whatever was chosen, until a scroll
-   * comes to rest somewhere else. Choosing a month clears where the scroll had
-   * settled, because picking one is a stronger statement about what someone is
-   * reading than having scrolled past it.
-   *
-   * Adjusted during the render that sees the new prop rather than in an effect
-   * afterwards. An effect would paint one frame at the old scale, and that frame
-   * is exactly the one where a tap is waiting to see its result.
+   * What the scroll last came to rest on, which is only ever news while it is
+   * on its way to becoming the selection. Kept so the settle handler can tell a
+   * month it already reported from one it has not.
    */
-  const [scrolled, setScrolled] = useState<string | null>(null)
   const [chosenMonth, setChosenMonth] = useState(selected)
 
-  if (selected !== chosenMonth) {
-    setChosenMonth(selected)
-    setScrolled(null)
-  }
+  if (selected !== chosenMonth) setChosenMonth(selected)
 
-  const anchor = scrolled ?? selected
+  /**
+   * The selection is brought to the centre whenever it changes, and instantly on
+   * the first paint — a month chosen from anywhere, including the arrows and the
+   * target above the chart, has to end up where the rule says the chosen month
+   * lives.
+   *
+   * The first one cannot animate: sliding in from wherever the browser happened
+   * to start reads as a loading state that never resolves.
+   *
+   * Already centred is left alone. Selection can arrive *from* the scroll, and
+   * scrolling a scroller back to where it already is restarts its momentum on
+   * iOS — the finger lifts, the chart stops dead, and it reads as the app
+   * fighting the gesture.
+   */
+  useEffect(() => {
+    const element = scroller.current
+    const column = current.current
 
+    if (!element || !column) return
+
+    const off = Math.abs(centreOf(column) - element.scrollLeft - element.clientWidth / 2)
+
+    if (off > 2) {
+      column.scrollIntoView({
+        inline: 'center',
+        block: 'nearest',
+        behavior: painted.current ? 'smooth' : 'instant',
+      })
+    }
+
+    painted.current = true
+  }, [selected])
+
+  /**
+   * Whatever the scroll lands on becomes the month, once it has stopped.
+   *
+   * On settle rather than live: reporting mid-flick would run the list, the
+   * total and the whole screen below through every month the finger passed
+   * over. `SETTLE` is the pause that means stopped — long enough not to fire
+   * between flicks of one gesture, short enough that nobody is waiting for it.
+   */
   useEffect(() => {
     const element = scroller.current
 
@@ -169,16 +186,12 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
     let timer: ReturnType<typeof setTimeout>
 
     function settled() {
-      const columns = track.current?.children
+      const middle = centred(element, track.current)
 
-      if (!element || !columns?.length) return
-
-      const first = columns[0] as HTMLElement
-      const middle = element.scrollLeft + element.clientWidth / 2
-      const at = Math.floor((middle - first.offsetLeft) / first.offsetWidth)
-      const column = columns[Math.min(Math.max(at, 0), columns.length - 1)]
-
-      setScrolled(column.getAttribute('data-month'))
+      if (middle && middle !== chosenMonth) {
+        setChosenMonth(middle)
+        onSelect(middle)
+      }
     }
 
     function onScroll() {
@@ -192,29 +205,19 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
       clearTimeout(timer)
       element.removeEventListener('scroll', onScroll)
     }
-  }, [])
-
-  useEffect(() => {
-    current.current?.scrollIntoView({
-      inline: 'center',
-      block: 'nearest',
-      behavior: painted.current ? 'smooth' : 'instant',
-    })
-
-    painted.current = true
-  }, [selected])
+  }, [chosenMonth, onSelect])
 
   const readings = read(totals, monthKey(todayIso()))
-  const tallest = ceiling(readings, anchor)
+  const tallest = ceiling(readings, selected)
 
   return (
-    <div ref={scroller} className="touch-pan-x overflow-x-auto overscroll-x-contain px-4">
-      <div
-        ref={track}
-        className="ms-auto flex w-max snap-x items-end"
-        role="group"
-        aria-label="Despesas por mês"
-      >
+    <div
+      ref={scroller}
+      className="touch-pan-x snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
+    >
+      <div ref={track} className="flex w-max items-end" role="group" aria-label="Despesas por mês">
+        <Edge />
+
         {readings.map((reading) => {
           const chosen = reading.month === selected
           const share = tallest === 0 ? 0 : Math.min(reading.cents / tallest, 1)
@@ -228,7 +231,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
               onClick={() => onSelect(reading.month)}
               aria-pressed={chosen}
               aria-label={label(reading)}
-              className={`flex w-20 shrink-0 snap-center flex-col items-center gap-1.5 rounded-2xl px-2 pt-2 ${
+              className={`flex w-[20vw] max-w-24 shrink-0 snap-center flex-col items-center gap-1.5 rounded-2xl px-1 pt-2 ${
                 chosen ? 'bg-white/6' : ''
               }`}
             >
@@ -259,7 +262,44 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
             </button>
           )
         })}
+
+        <Edge />
       </div>
     </div>
   )
+}
+
+/** Two columns of nothing, so the first and last month can reach the middle. */
+function Edge() {
+  return <span aria-hidden="true" className="w-[40vw] max-w-48 shrink-0" />
+}
+
+function centreOf(column: HTMLElement): number {
+  return column.offsetLeft + column.offsetWidth / 2
+}
+
+/**
+ * The month nearest the middle of the frame.
+ *
+ * Measured rather than calculated from a column width and a scroll offset. The
+ * arithmetic version has to know about the spacers at both ends and agree with
+ * the CSS about how wide a column is, and it goes quietly wrong the day either
+ * changes. Asking the elements where they are cannot disagree with where they
+ * are.
+ */
+function centred(element: HTMLElement | null, track: HTMLElement | null): string | null {
+  if (!element || !track) return null
+
+  const middle = element.scrollLeft + element.clientWidth / 2
+  const columns = [...track.querySelectorAll<HTMLElement>('[data-month]')]
+
+  const nearest = columns.reduce<HTMLElement | null>((closest, column) => {
+    if (!closest) return column
+
+    return Math.abs(centreOf(column) - middle) < Math.abs(centreOf(closest) - middle)
+      ? column
+      : closest
+  }, null)
+
+  return nearest?.getAttribute('data-month') ?? null
 }

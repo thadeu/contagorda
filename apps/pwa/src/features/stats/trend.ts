@@ -68,8 +68,8 @@ export function read(totals: MonthTotal[], current: string): Reading[] {
   })
 }
 
-/** One month either side, so the window is three: this month and its neighbours. */
-const SPAN = 1
+/** Two months either side, so the window is the five the chart shows at once. */
+const SPAN = 2
 
 /**
  * The tallest month near the one being read, which is what the bars are drawn
@@ -83,11 +83,11 @@ const SPAN = 1
  * would actually compare it with, and the shape returns as the outlier scrolls
  * out of range.
  *
- * Three months, not seven. A wider window is steadier and says less: stretch it
- * far enough and it is the whole history again, with the outlier back to
- * flattening months that have nothing to do with it. Three is the smallest
- * window that still compares — a month, the one before it and the one after —
- * and it is the same span the sentence under the chart talks about.
+ * Five, because five is what the chart shows. The scale and the frame have to be
+ * the same set of months, or the tallest bar on screen is not full and nothing
+ * says why. A wider window is steadier and says less: stretch it far enough and
+ * it is the whole history again, with the outlier back to flattening months that
+ * have nothing to do with it.
  *
  * The cost, stated plainly: the same month is not always the same height. That
  * is the trade — a chart that is legible about the recent past against one that

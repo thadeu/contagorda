@@ -68,7 +68,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={`min-h-10 shrink-0 rounded-2xl px-4 text-sm font-medium whitespace-nowrap ${
-        active ? 'bg-accent text-brand' : 'bg-sunken text-ink'
+        active ? 'bg-fill text-on-fill' : 'bg-sunken text-ink'
       }`}
     >
       {children}

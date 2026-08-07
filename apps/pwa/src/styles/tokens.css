@@ -28,11 +28,30 @@
   --color-brand-soft: #18202f;
   --color-accent: #5aa9ff;
 
+  /* What a filled control is painted with.
+     Split from `--color-accent` because the accent has two jobs that stopped
+     agreeing once the light theme's pages went dark at the top: it marks things
+     — a chosen month, a spinner — and it fills things. As a mark it has to be
+     bright enough to catch the eye against the page; as a fill it has to carry
+     text on top of it, and a pale blue with white text on it is the least
+     readable button in the app. So the light theme fills with the same near-navy
+     the month card uses, and keeps the bright blue for marking. */
+  --color-fill: #232b3a;
+  --color-on-fill: #ffffff;
+
   /* The month view's sky. Same blue as the accent, opened up and taken down to
      the page so the screen has a horizon rather than a coloured header with an
      edge — an edge is what dates the shape. */
-  --color-sky: #4a9df2;
-  --color-sky-soft: #8fc4f8;
+  --color-sky: #0a0f1a;
+  --color-sky-soft: #4a515e;
+
+  /* Flat, in both themes. The history screen tried the month view's gradient and
+     lost by it: the docked panel is what should read as raised there, and a
+     coloured page under a white panel makes the panel the second thing on the
+     screen. The stops stay as tokens so the layer is written once and shows
+     nothing here. */
+  --canvas-deep-top: var(--color-deep);
+  --canvas-deep-mid: var(--color-deep);
 
   /* Accounts. The same blue walked towards indigo — far enough that the two
      screens are told apart before anything is read, close enough that they are
@@ -49,7 +68,11 @@
   /* The strong surface that carries white text, whichever theme is on. Light
      mode spends the near-black here; dark mode cannot, because there the page
      is already near-black and the card would disappear into it. */
-  --color-inverse: #0a0f1a;
+  /* The month card, sitting on the sky. It has to go the other way now that the
+     top of the page is the near-black the card used to be: darker than a black
+     background is nothing at all, so the card lifts instead. Raised by light,
+     which is how a dark theme has always had to do it. */
+  --color-inverse: #232b3a;
 
   /* The surface of anything presented over the app. It is its own token because
      a sheet and a card are not the same thing wearing the same colour: the card
@@ -58,8 +81,18 @@
   --color-overlay: #ffffff;
 
   /* Below the canvas. For a screen whose subject is a panel: the page drops so
-     the panel can rise without being lightened past the cards elsewhere. */
-  --color-deep: #e7ebf1;
+     the panel can rise.
+
+     It was white for a while and the screen lost its floor. Panel, cards and
+     page were all one white, so the only thing separating them was a hairline —
+     and the chart, which has no border and no shadow of its own, stopped being
+     on anything at all. The dark theme never had that problem because its page
+     is the deepest thing on screen and everything reads against it.
+
+     So the light theme keeps the same grammar with the tones reversed: the page
+     is the recessive one and the panel rises by being lighter, which is what the
+     dark theme does too. Same relationship, opposite direction. */
+  --color-deep: #e8ecf1;
 
   /* How far the page is dimmed behind an overlay. Black, always — a scrim means
      less light, not the app's dark colour, so it must not follow the ink. */
@@ -72,10 +105,17 @@
      two mean money arriving and money leaving; on a chart of expenses every bar
      is already money leaving, and a red one there means the month rose against
      the one before it. Same red, different sentence — so a different name, or
-     the day one of them changes takes the other with it. */
-  --color-rise: #d4443c;
-  --color-steady: #5f83a8;
-  --color-now: #12a06a;
+     the day one of them changes takes the other with it.
+
+     Solid rather than muted. These are the only three colours on the screen and
+     each is a statement — a month went up, a month is now, a month behaved. A
+     desaturated version of a statement is a statement being mumbled, and at the
+     width of a bar there is barely any surface to carry it. Everything else on
+     the stats screen is greyscale, so there is nothing here for them to fight
+     with. */
+  --color-rise: #e12d20;
+  --color-steady: #1476e8;
+  --color-now: #00a862;
 
   --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
@@ -87,6 +127,16 @@
   --radius-chip: 0.625rem;
 
   --bg-appshell: transparent;
+
+  /* How much of the screen's own colour is showing, from 1 at the top of a page
+     to 0 once it has been scrolled. Driven by `useFadingCanvas`; everything that
+     paints a canvas reads it, so the gradient, the strip above the app and the
+     page under both fade as one thing rather than three. */
+  --canvas-fade: 1;
+
+  /* How far the list has grown into the screen, from 0 at the top of the page to
+     1 once it has been scrolled. Read by `.list-widening`. */
+  --list-expand: 0;
   --h-status-bar: env(safe-area-inset-top, 22px);
 }
 
@@ -201,6 +251,32 @@
   @media (prefers-reduced-motion: reduce) {
     .bar-grow {
       transition: none;
+    }
+  }
+
+  /*
+   * A list letting go of its card as it becomes the whole screen.
+   *
+   * Both properties are driven by one number, so the margin and the corner can
+   * never disagree — a card that has reached the edge with a radius still on it
+   * is a rounded rectangle with its corners cut off, and that is what happens
+   * when two transitions of the same gesture are timed separately.
+   *
+   * There is no `transition` here on purpose. The value arrives from a scroll
+   * handler on every frame, and a transition on top of that is a second
+   * animation chasing the first — the shape would keep moving after the finger
+   * stopped, which reads as the layout settling rather than as the list
+   * following. The smoothness is the frame rate, not an easing curve.
+   */
+  .list-widening {
+    margin-inline: calc((1 - var(--list-expand)) * 1rem);
+    border-radius: calc((1 - var(--list-expand)) * var(--radius-card));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .list-widening {
+      margin-inline: 1rem;
+      border-radius: var(--radius-card);
     }
   }
 
@@ -320,7 +396,11 @@ html[data-canvas='brand'] body {
  * top, which is the thing this whole arrangement exists to remove.
  */
 html[data-canvas='sky'] {
-  --bg-appshell: var(--color-sky);
+  --bg-appshell: color-mix(
+    in srgb,
+    var(--color-sky) calc(var(--canvas-fade) * 100%),
+    var(--color-canvas)
+  );
 }
 
 html[data-canvas='dusk'] {
@@ -328,18 +408,20 @@ html[data-canvas='dusk'] {
 }
 
 html[data-canvas='deep'] {
-  --bg-appshell: var(--color-deep);
+  --bg-appshell: color-mix(
+    in srgb,
+    var(--canvas-deep-top) calc(var(--canvas-fade) * 100%),
+    var(--color-canvas)
+  );
 }
 
 html[data-canvas='brand'] {
   --bg-appshell: var(--color-brand);
 }
 
-/* Flat and deep. The stats screen has no gradient, because the docked panel is
-   what should be read as raised and a gradient behind it competes. */
 html[data-canvas='deep'],
 html[data-canvas='deep'] body {
-  background-color: var(--color-deep);
+  background-color: var(--canvas-deep-top);
 }
 
 html[data-canvas='sky'] {
@@ -356,19 +438,53 @@ html[data-canvas='sky'],
 html[data-canvas='sky'] body,
 html[data-canvas='dusk'],
 html[data-canvas='dusk'] body {
-  background-color: var(--canvas-top);
+  background-color: color-mix(
+    in srgb,
+    var(--canvas-top) calc(var(--canvas-fade) * 100%),
+    var(--color-canvas)
+  );
 }
 
+/*
+ * The gradient moved onto a layer of its own so it can be faded.
+ *
+ * `background-image` has no opacity to animate — the alternative is mixing every
+ * stop with the canvas colour on each frame, which is three colour computations
+ * per paint to express one number. A layer at `z-index: -1` sits above the
+ * element's own background and below its content, which is exactly where a
+ * backdrop belongs, and `opacity` on it is the cheapest thing the compositor
+ * does.
+ *
+ * `isolation` keeps that negative index inside the frame instead of letting it
+ * fall behind the page, where the fade would have nothing to reveal.
+ */
 html[data-canvas='sky'] .app-surface,
-html[data-canvas='dusk'] .app-surface {
+html[data-canvas='dusk'] .app-surface,
+html[data-canvas='deep'] .app-surface {
+  isolation: isolate;
+}
+
+html[data-canvas='deep'] {
+  --canvas-top: var(--canvas-deep-top);
+  --canvas-mid: var(--canvas-deep-mid);
+}
+
+html[data-canvas='sky'] .app-surface::before,
+html[data-canvas='dusk'] .app-surface::before,
+html[data-canvas='deep'] .app-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: -1;
+  height: 26rem;
+  pointer-events: none;
+  opacity: var(--canvas-fade);
   background-image: linear-gradient(
     180deg,
     var(--canvas-top) 0%,
     var(--canvas-mid) 38%,
     var(--color-canvas) 100%
   );
-  background-repeat: no-repeat;
-  background-size: 100% 26rem;
 }
 
 /*
@@ -492,12 +608,25 @@ html[data-theme='dark'] {
   /* Both have to hold against near-black rather than against paper: the green
      in particular is unreadable at the light theme's depth once it is a bar
      three pixels wide. */
-  --color-rise: #f2635a;
-  --color-steady: #64809f;
-  --color-now: #2fbe85;
+  --color-rise: #ff4a3d;
+  --color-steady: #2f95ff;
+  --color-now: #00d183;
+
+  /* The dark theme has the opposite problem and the original answer: a page this
+     dark needs the fill to be the bright thing, and near-black on near-black is
+     the button that went missing before. */
+  --color-fill: var(--color-accent);
+  --color-on-fill: var(--color-brand);
 
   --color-sky: #16233a;
   --color-sky-soft: #101725;
+
+  /* Flat in the dark theme: both stops are the page, so the layer is there and
+     shows nothing. The stats screen wants the docked panel to be what rises, and
+     a gradient under it competes — which is only a problem once the page is dark
+     enough for the panel to be the brightest thing on it. */
+  --canvas-deep-top: var(--color-deep);
+  --canvas-deep-mid: var(--color-deep);
   --color-dusk: #1d1f3a;
   --color-dusk-soft: #131426;
 

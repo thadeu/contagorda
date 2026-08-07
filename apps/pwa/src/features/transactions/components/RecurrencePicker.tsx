@@ -180,7 +180,7 @@ function Chip({
       disabled={disabled}
       aria-pressed={active}
       className={`min-h-10 min-w-12 rounded-2xl px-4 text-sm font-medium ${
-        active ? 'bg-accent text-brand' : 'bg-sunken text-ink'
+        active ? 'bg-fill text-on-fill' : 'bg-sunken text-ink'
       }`}
     >
       {children}

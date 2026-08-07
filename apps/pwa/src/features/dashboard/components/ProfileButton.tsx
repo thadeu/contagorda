@@ -6,6 +6,7 @@ import { Button } from '@/ui/Button'
 import { BottomSheet } from '@/ui/BottomSheet'
 import { ChevronRightIcon, SignOutIcon } from '@/ui/icons'
 import { LedgerSection } from '@/features/ledgers/components/LedgerSection'
+import { ThemeSwitch } from '@/ui/ThemeSwitch'
 
 interface ProfileButtonProps {
   name: string
@@ -64,6 +65,12 @@ interface ProfileSheetProps {
  *
  * Sign-out sits alone under a divider. It is the only row that ends the session,
  * and the gap is the whole warning it needs.
+ *
+ * The name and the address moved out of the heading and into the row that owns
+ * them. Here they were a caption on a menu — read once and never again, taking
+ * the top of the panel to say something nobody opened it to learn. In the
+ * profile sheet the same two things are the subject, and one of them is
+ * editable, which is a better reason to be on screen than decoration.
  */
 export function ProfileSheet({ name, email, avatarUrl = null, onClose }: ProfileSheetProps) {
   const { signOut } = useAuth()
@@ -71,11 +78,17 @@ export function ProfileSheet({ name, email, avatarUrl = null, onClose }: Profile
 
   return (
     <>
-      <BottomSheet title={name} subtitle={email} onClose={onClose}>
+      <BottomSheet title="Conta" onClose={onClose}>
         <MenuRow onClick={() => setEditing(true)}>
           <span className="text-[0.9375rem] font-medium text-ink">Perfil</span>
           <ChevronRightIcon className="size-4 shrink-0 text-muted" />
         </MenuRow>
+
+        <div className="flex min-h-13 items-center justify-between gap-3 px-4">
+          <span className="text-[0.9375rem] font-medium text-ink">Aparência</span>
+
+          <ThemeSwitch />
+        </div>
 
         <p className="px-4 pt-3 pb-1 text-[0.6875rem] font-medium tracking-[0.08em] text-faint uppercase">
           Usuários
@@ -140,17 +153,17 @@ function ProfileFormSheet({
   }
 
   return (
-    <BottomSheet title="Perfil" onClose={onClose}>
-      <div className="flex flex-col items-center gap-2 px-4 pb-5">
-        <span className="rounded-full bg-gradient-to-br from-[#f0475f] via-[#b06cf5] to-[#4fb0f7] p-[3px]">
-          <span className="block rounded-full bg-overlay p-[3px]">
+    <BottomSheet
+      title="Perfil"
+      onClose={onClose}
+      actions={
+        <span className="rounded-full bg-gradient-to-br from-[#f0475f] via-[#b06cf5] to-[#4fb0f7] p-[2px]">
+          <span className="block rounded-full bg-overlay p-[2px]">
             <Avatar name={name} url={avatarUrl} />
           </span>
         </span>
-
-        <p className="truncate text-sm text-muted">{email}</p>
-      </div>
-
+      }
+    >
       <form onSubmit={handleSubmit} className="grid gap-2 px-4">
         <label className="block rounded-control bg-sunken px-4 py-3">
           <span className="block pb-0.5 text-xs text-muted">Nome</span>
@@ -159,6 +172,21 @@ function ProfileFormSheet({
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Como quer ser chamado"
             className="w-full bg-transparent text-base text-ink outline-none placeholder:text-faint"
+          />
+        </label>
+
+        {/* Shown and not editable, because it is the one field here that is not
+            ours. It identifies the account that signed you in, and an app that
+            offered to change it would be promising something it cannot do —
+            better to show where the address came from than to hide it and leave
+            someone wondering which account they are in. */}
+        <label className="block rounded-control bg-sunken px-4 py-3 opacity-60">
+          <span className="block pb-0.5 text-xs text-muted">E-mail</span>
+          <input
+            value={email}
+            disabled
+            readOnly
+            className="w-full bg-transparent text-base text-ink outline-none"
           />
         </label>
 

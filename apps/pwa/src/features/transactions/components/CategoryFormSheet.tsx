@@ -154,7 +154,7 @@ export function CategoryFormSheet({
                     aria-pressed={icon === option.emoji}
                     aria-label={option.terms.split(' ')[0]}
                     className={`flex aspect-square items-center justify-center rounded-2xl ${
-                      icon === option.emoji ? 'bg-accent' : 'bg-sunken'
+                      icon === option.emoji ? 'bg-fill' : 'bg-sunken'
                     }`}
                   >
                     <span className="block text-lg leading-none">{option.emoji}</span>

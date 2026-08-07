@@ -53,6 +53,12 @@ const THRESHOLD = 60
  * trades the chart for more rows and pulling it down gives the chart back; there
  * is no state where it is gone, so nothing has to be reopened.
  *
+ * On a white page it is separated by a line rather than by a tone. The light
+ * theme puts the panel and the page on the same white — there is nothing above
+ * white to raise a surface to — so the edge does the work the step in colour
+ * does everywhere else. In the dark theme the same line all but disappears
+ * against the two colours it sits between, which is the right amount of nothing.
+ *
  * It sits on a surface, not on the overlay colour. An overlay is darker than the
  * page because it is covering it; this one is lighter, because it is the raised
  * half of a screen whose background was dropped to let it rise. Same words,
@@ -129,7 +135,7 @@ export function DockedSheet({ expanded, onExpandedChange, toolbar, children }: D
         height: `clamp(${COLLAPSED}%, calc(${base}% + ${offset}px), ${EXPANDED}%)`,
         transform: entered ? 'translateY(0)' : 'translateY(100%)',
       }}
-      className="sheet-snap absolute inset-x-0 bottom-0 z-20 flex flex-col rounded-t-card bg-surface shadow-[0_-12px_32px_-16px_rgba(0,0,0,0.6)]"
+      className="sheet-snap absolute inset-x-0 bottom-0 z-20 flex flex-col rounded-t-card border-t border-line bg-surface shadow-[0_-6px_18px_-14px_rgba(0,0,0,0.28)]"
     >
       <div
         onTouchStart={handleTouchStart}
@@ -150,7 +156,7 @@ export function DockedSheet({ expanded, onExpandedChange, toolbar, children }: D
         {toolbar}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         {children}
       </div>
     </section>

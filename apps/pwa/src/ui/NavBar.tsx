@@ -28,8 +28,8 @@ interface NavBarProps {
 export function NavBar({ title, leading, trailing, topInset = false }: NavBarProps) {
   return (
     <header
-      className={`flex items-center gap-2 px-4 pb-3 ${
-        topInset ? 'pt-[calc(env(safe-area-inset-top)+0.75rem)]' : 'pt-3'
+      className={`flex items-center gap-2 px-3.5 pb-3 ${
+        topInset ? 'pt-[calc(env(safe-area-inset-top)+0.1rem)]' : 'pt-3'
       }`}
     >
       <div className="flex flex-1 justify-start">{leading}</div>
@@ -47,6 +47,16 @@ interface NavButtonProps {
   onClick?: () => void
   /** The one action the screen is for. There is at most one per bar. */
   primary?: boolean
+  /**
+   * For a bar sitting on the page rather than on a card.
+   *
+   * The quiet chip is `bg-sunken`, which is a step down from a white surface —
+   * and on the history screen the page *is* a step down, so the two land on
+   * almost the same grey and the controls disappear into it. This paints them
+   * with the raised dark instead, which is a step in a direction the page has
+   * not already taken.
+   */
+  solid?: boolean
   disabled?: boolean
   /** Lets the bar hold a form's submit, wired by id rather than by nesting. */
   type?: 'button' | 'submit'
@@ -75,6 +85,7 @@ export function NavButton({
   label,
   onClick,
   primary = false,
+  solid = false,
   disabled = false,
   type = 'button',
   form,
@@ -88,11 +99,50 @@ export function NavButton({
       aria-label={label}
       className={`grid size-10 shrink-0 place-items-center rounded-2xl disabled:opacity-30 ${
         primary
-          ? 'bg-accent text-brand ring-2 ring-accent/35 shadow-[0_3px_14px_-3px_var(--color-accent)]'
-          : 'bg-sunken text-ink'
+          ? 'bg-fill text-on-fill ring-2 ring-fill/30 shadow-[0_3px_14px_-3px_var(--color-fill)]'
+          : solid
+            ? 'bg-inverse text-white'
+            : 'bg-sunken text-ink'
       }`}
     >
       <Icon className="size-4" strokeWidth={2} aria-hidden="true" />
+    </button>
+  )
+}
+
+interface NavActionProps {
+  label: string
+  onClick?: () => void
+  disabled?: boolean
+  type?: 'button' | 'submit'
+  form?: string
+}
+
+/**
+ * The word, where the tick used to be.
+ *
+ * A check mark in the corner is the platform's shorthand and it only works once
+ * somebody already knows what it commits. Here it sat opposite a close button on
+ * a panel that can create money or change it, and the two icons made the choice
+ * look symmetrical when only one of them writes anything down. "Salvar" says
+ * which is which without being read twice.
+ *
+ * Text and not a filled button. Filled would make it the loudest thing on a
+ * panel whose subject is an amount, and it is already the only word up there —
+ * colour alone is enough to separate it from a title. It takes the fill colour
+ * rather than the accent for the same reason the filled controls do: on a light
+ * page the pale blue that reads well as a mark reads badly as a commitment.
+ */
+export function NavAction({ label, onClick, disabled = false, type = 'button', form }: NavActionProps) {
+  return (
+    <button
+      type={type}
+      form={form}
+      onClick={onClick}
+      disabled={disabled}
+      className="min-h-10 shrink-0 rounded-2xl px-1 text-[0.9375rem] font-semibold text-fill disabled:opacity-40"
+    >
+      {label}
     </button>
   )
 }

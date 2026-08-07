@@ -17,6 +17,10 @@ import {
   MoreHorizontal,
   Search,
   Crosshair,
+  Sun,
+  Moon,
+  PiggyBank,
+  BanknoteArrowDown,
   Bell,
   Wallet,
   X,
@@ -51,6 +55,10 @@ export const CheckIcon = tuned(Check)
 export const ChevronLeftIcon = tuned(ChevronLeft)
 export const ChevronRightIcon = tuned(ChevronRight)
 export const TargetIcon = tuned(Crosshair)
+export const SunIcon = tuned(Sun)
+export const MoonIcon = tuned(Moon)
+export const PiggyIcon = tuned(PiggyBank)
+export const OutflowIcon = tuned(BanknoteArrowDown)
 export const ChevronDownIcon = tuned(ChevronDown)
 export const RepeatIcon = tuned(RefreshCw)
 export const PaidIcon = tuned(CircleCheckBig)

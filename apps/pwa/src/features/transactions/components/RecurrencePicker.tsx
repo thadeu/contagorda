@@ -58,7 +58,18 @@ function RecurrenceSheet({
     value ?? { frequency: 'monthly', interval: 1, repeats: 11 },
   )
 
-  const repeats = value !== null
+  /**
+   * The field keeps its own text.
+   *
+   * Every keystroke travels to the form behind the sheet and comes back as a
+   * number, and rewriting a focused input from that round trip is what made the
+   * keyboard close and reopen on iOS. It also makes an empty field impossible:
+   * clearing the box would immediately fill it with a zero, and there is no way
+   * to type "12" over "1" without passing through nothing at all.
+   */
+  const [typed, setTyped] = useState(String(draft.repeats))
+
+  const on = value !== null
 
   return (
     <BottomSheet
@@ -66,75 +77,64 @@ function RecurrenceSheet({
       onClose={onClose}
       actions={
         <Switch
-          checked={repeats}
-          onChange={(on) => onChange(on ? draft : null)}
+          checked={on}
+          onChange={(next) => onChange(next ? draft : null)}
           label="Repetir este lançamento"
         />
       }
     >
-      {/* Every change is already applied behind the sheet — the switch, the
-          frequency, the number. There is nothing left to confirm, so there is no
-          button confirming it: closing by any means leaves the same result, and
-          a "done" would only raise the question of what happens without it. */}
-      <div className="grid gap-4 px-3 pb-2">
-        {!repeats && (
-          <p className="text-sm leading-relaxed text-muted">
-            Este lançamento acontece uma vez só.
-          </p>
-        )}
+      {/* The form is always here, and dimmed when the switch is off. Showing it
+          only when it applies makes the sheet jump on the first tap and hides
+          what the switch is even for; disabled, it is the answer to "what will
+          this do", visible before anything is committed to. */}
+      <div
+        aria-disabled={!on}
+        className={`grid gap-4 px-3 pb-2 ${on ? '' : 'pointer-events-none opacity-40'}`}
+      >
+        <Field label="A cada">
+          {FREQUENCIES.map((option) => (
+            <Chip
+              key={option.value}
+              active={draft.frequency === option.value}
+              disabled={!on}
+              onClick={() => update({ frequency: option.value })}
+            >
+              {option.label}
+            </Chip>
+          ))}
+        </Field>
 
-        {repeats && (
-          <>
-            <Field label="A cada">
-              {FREQUENCIES.map((option) => (
-                <Chip
-                  key={option.value}
-                  active={draft.frequency === option.value}
-                  onClick={() => update({ frequency: option.value })}
-                >
-                  {option.label}
-                </Chip>
-              ))}
-            </Field>
+        {/* Typed, not chosen from a set. Any list of counts is somebody's guess
+            at how long a thing lasts, and the one number missing from it is
+            always the one being entered — including 1, which is "and again next
+            month" and the shortest series there is. */}
+        <label className="flex min-h-13 items-center gap-3">
+          <span className="min-w-0 flex-1 text-sm text-muted">Se repete por</span>
 
-            {/* Typed, not chosen from a set. Any list of counts is somebody's
-                guess at how long a thing lasts, and the one number missing from
-                it is always the one being entered — including 1, which is
-                "and again next month" and the shortest series there is. */}
-            <label className="flex min-h-13 items-center gap-3">
-              <span className="min-w-0 flex-1 text-sm text-muted">Se repete por</span>
+          <input
+            value={typed}
+            onChange={(event) => {
+              const digits = event.target.value.replace(/\D/g, '')
 
-              <input
-                value={draft.repeats}
-                onChange={(event) => update({ repeats: clean(event.target.value) })}
-                inputMode="numeric"
-                aria-label="Quantas vezes se repete"
-                size={3}
-                className="tnum w-14 bg-transparent text-right text-base text-ink outline-none"
-              />
+              setTyped(digits)
+              update({ repeats: digits === '' ? 0 : Number(digits) })
+            }}
+            onBlur={() => setTyped(String(draft.repeats))}
+            disabled={!on}
+            inputMode="numeric"
+            aria-label="Quantas vezes se repete"
+            size={3}
+            className="tnum w-14 bg-transparent text-right text-base text-ink outline-none"
+          />
 
-              <span className="shrink-0 text-sm text-muted">
-                {draft.frequency === 'yearly'
-                  ? draft.repeats === 1
-                    ? 'ano'
-                    : 'anos'
-                  : draft.repeats === 1
-                    ? 'mês'
-                    : 'meses'}
-              </span>
-            </label>
+          <span className="shrink-0 text-sm text-muted">{unit(draft)}</span>
+        </label>
 
-            {/* The controls state a rule; this states its consequence, which is
-                the part anyone actually agrees to. It is also where a clamped
-                month shows itself — nobody reasons about February from an
-                interval, and everybody recognises a date that landed early. */}
-            <p className="text-sm leading-relaxed text-muted">
-              {describe(date, draft)}
-              {clamped(date, draft) &&
-                ' Alguns meses não têm esse dia, então esses caem no último dia do mês.'}
-            </p>
-          </>
-        )}
+        <p className="text-sm leading-relaxed text-muted">
+          {on ? describe(date, draft) : 'Este lançamento acontece uma vez só.'}
+          {on && clamped(date, draft) &&
+            ' Alguns meses não têm esse dia, então esses caem no último dia do mês.'}
+        </p>
       </div>
     </BottomSheet>
   )
@@ -158,10 +158,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Chip({
   active,
+  disabled,
   onClick,
   children,
 }: {
   active: boolean
+  disabled?: boolean
   onClick: () => void
   children: string
 }) {
@@ -169,6 +171,7 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={active}
       className={`min-h-10 min-w-12 rounded-2xl px-4 text-sm font-medium ${
         active ? 'bg-accent text-brand' : 'bg-sunken text-ink'
@@ -186,13 +189,3 @@ function unit({ frequency, repeats }: Recurrence): string {
   return repeats === 0 ? 'mês' : 'meses'
 }
 
-/**
- * An empty field is zero, not a crash, and nothing below one repetition is a
- * series. Typing is a state someone passes through — clearing the box to write
- * a different number must not throw away the rest of the rule.
- */
-function clean(value: string): number {
-  const digits = Number(value.replace(/\D/g, ''))
-
-  return Number.isFinite(digits) ? Math.max(digits, 0) : 0
-}

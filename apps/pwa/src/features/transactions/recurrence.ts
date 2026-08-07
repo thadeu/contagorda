@@ -56,9 +56,10 @@ export function occurrences(start: IsoDate, { frequency, interval, repeats }: Re
  * themselves: nobody reasons about February from an interval, and everybody
  * recognises a date that ends where they did not expect.
  *
- * The count is left out. It is already on screen, in the field that set it, and
- * repeating it here only invites the reader to check one number against another
- * — while the months are the thing they cannot work out for themselves.
+ * Only the end. The count is already on screen in the field that set it, and the
+ * start is the date on the form above — both would be the sentence reading back
+ * what was just typed. Where it ends is the one thing nobody can work out, and
+ * the one a clamped day can move.
  */
 export function describe(start: IsoDate, recurrence: Recurrence): string {
   const dates = occurrences(start, recurrence)
@@ -68,7 +69,7 @@ export function describe(start: IsoDate, recurrence: Recurrence): string {
     return 'Um lançamento só.'
   }
 
-  return `De ${monthLabel(monthKey(dates[0]))} a ${monthLabel(monthKey(last))}.`
+  return `Até ${monthLabel(monthKey(last))}.`
 }
 
 /** True when a clamped month moved a date off the day the series was set to. */

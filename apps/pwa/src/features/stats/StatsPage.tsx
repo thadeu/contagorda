@@ -6,7 +6,6 @@ import { Money } from '../../ui/Money'
 import { EmptyState } from '../../ui/EmptyState'
 import { ChevronLeftIcon, ChevronRightIcon, MoreIcon } from '../../ui/icons'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
-import { useHideOnScroll } from '../../ui/useHideOnScroll'
 import { monthKey, monthLabel, shiftMonth, todayIso } from '../../lib/dates'
 import { useMonth } from '../../app/useMonth'
 import { useCategories } from '../accounts/hooks'
@@ -42,6 +41,19 @@ import type { Transaction } from '../../services/types'
  * The chips are built from the unfiltered month, so choosing one never removes
  * the way back to the others.
  *
+ * Nothing on this screen gives way to a finger except the two things that
+ * should: the chart pans sideways, the sheet moves up and down. Everywhere else
+ * declares `touch-action: none`, which is what stops the whole page rubber-
+ * banding under a drag that landed on a heading — the page has nowhere to go, so
+ * the only thing that motion can express is that the app is not a native one.
+ *
+ * Declared per block rather than once at the root, because `touch-action`
+ * intersects down the tree: `none` on the page would reach the sheet's list and
+ * silently take its scrolling with it. The spacer at the bottom of the column
+ * exists for the same reason — it covers the strip of page the chart does not
+ * reach, and a rule that cannot be hung on an ancestor has to be hung on
+ * something.
+ *
  * The page does not scroll, and the sheet rests on top of it already open. It is
  * one screen with a panel on it rather than two blocks sharing the height —
  * splitting it read as two screens stacked, and left the chart without the room
@@ -65,13 +77,6 @@ export function StatsPage() {
 
   useDocumentCanvas('deep')
 
-  /**
-   * The list inside the sheet is the only thing on this screen that scrolls, so
-   * it is what the bar listens to. Pulling rows up folds the bar away and gives
-   * the height to the rows; the first push back down returns it.
-   */
-  const list = useHideOnScroll<HTMLDivElement>()
-
   const expenses = (transactions.data ?? []).filter((row) => row.kind === 'expense')
   const shown =
     category === ALL
@@ -92,54 +97,60 @@ export function StatsPage() {
 
   return (
     <div className="relative h-full overflow-hidden overscroll-none bg-deep">
-      <NavBar
-        topInset
-        hidden={list.hidden}
-        title="Despesas"
-        leading={
-          <NavButton
-            icon={ChevronLeftIcon}
-            label="Voltar"
-            onClick={() => navigate({ pathname: '/', search })}
-          />
-        }
-        trailing={
-          <NavButton disabled icon={MoreIcon} label="Mais opções" onClick={() => {}} />
-        }
-      />
-
-      <div className="flex items-center justify-between gap-3 px-4 pb-2">
-        <p className="truncate text-[0.9375rem] font-semibold tracking-wide text-ink uppercase">
-          {monthLabel(month)}
-        </p>
-
-        <div className="flex shrink-0 gap-1.5">
-          <NavButton
-            icon={ChevronLeftIcon}
-            label="Mês anterior"
-            disabled={month <= oldest}
-            onClick={() => setMonth(shiftMonth(month, -1))}
+      <div className="flex h-full flex-col">
+        <div className="touch-none">
+          <NavBar
+            topInset
+            title="Despesas"
+            leading={
+              <NavButton
+                icon={ChevronLeftIcon}
+                label="Voltar"
+                onClick={() => navigate({ pathname: '/', search })}
+              />
+            }
+            trailing={
+              <NavButton disabled icon={MoreIcon} label="Mais opções" onClick={() => {}} />
+            }
           />
 
-          <NavButton
-            icon={ChevronRightIcon}
-            label="Próximo mês"
-            disabled={month >= newest}
-            onClick={() => setMonth(shiftMonth(month, 1))}
-          />
+          <div className="flex items-center justify-between gap-3 px-4 pb-2">
+            <p className="truncate text-[0.9375rem] font-semibold tracking-wide text-ink uppercase">
+              {monthLabel(month)}
+            </p>
+
+            <div className="flex shrink-0 gap-1.5">
+              <NavButton
+                icon={ChevronLeftIcon}
+                label="Mês anterior"
+                disabled={month <= oldest}
+                onClick={() => setMonth(shiftMonth(month, -1))}
+              />
+
+              <NavButton
+                icon={ChevronRightIcon}
+                label="Próximo mês"
+                disabled={month >= newest}
+                onClick={() => setMonth(shiftMonth(month, 1))}
+              />
+            </div>
+          </div>
+
+          <Money cents={totalCents} className="block px-4 pb-4 text-[2rem] font-bold text-ink" />
         </div>
-      </div>
 
-      <Money cents={totalCents} className="block px-4 pb-4 text-[2rem] font-bold text-ink" />
+        {/* The one horizontal gesture on the screen, and the only place a finger
+            moves anything other than the sheet. */}
+        <div className="pb-4">
+          <MonthBars totals={bars} selected={month} onSelect={setMonth} />
+        </div>
 
-      <div className="pb-4">
-        <MonthBars totals={bars} selected={month} onSelect={setMonth} />
+        <div aria-hidden="true" className="flex-1 touch-none" />
       </div>
 
       <DockedSheet
         expanded={expanded}
         onExpandedChange={setExpanded}
-        scrollRef={list.ref}
         toolbar={
           <CategoryFilter
             rows={expenses}

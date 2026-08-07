@@ -175,22 +175,6 @@
      new position. Transform and opacity are composited, so the slide costs
      nothing on the main thread; height is here for the docked sheet's detents,
      which are short and infrequent enough to afford it. */
-  /* The bar folding away as a list is read. Unlayered, like the sheet motion
-     above it, so a utility class can never win the transition by accident.
-     Slower than a tap and faster than the sheet: the bar is reacting to a
-     gesture aimed at something else, and reacting instantly reads as a glitch. */
-  .navbar-fold {
-    transition:
-      grid-template-rows 0.28s cubic-bezier(0.32, 0.72, 0, 1),
-      opacity 0.2s ease;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .navbar-fold {
-      transition: none;
-    }
-  }
-
   .sheet-snap {
     transition:
       transform 0.34s cubic-bezier(0.32, 0.72, 0, 1),

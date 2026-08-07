@@ -11,11 +11,6 @@ interface NavBarProps {
    * modal opens below the status bar and must not pad for it a second time.
    */
   topInset?: boolean
-  /**
-   * Folds the bar away without moving the inset above it. Driven by scroll
-   * direction, so the caller owns the decision and the bar owns the motion.
-   */
-  hidden?: boolean
 }
 
 /**
@@ -26,44 +21,22 @@ interface NavBarProps {
  * alone drifts as soon as the controls differ in width, and the drift is the
  * kind that is only obvious once someone points at it.
  *
- * It can fold. The row collapses to nothing and what is under it rises into the
- * space, while the safe-area inset above stays exactly where it is — that inset
- * is the status bar's, not the bar's, and animating it would slide the title of
- * the screen under the clock.
- *
- * The height animates through grid rows rather than a measured pixel value.
- * Measuring means reading layout on the first paint and again whenever the
- * content changes, and a bar whose contents differ by screen would need that
- * every time; `1fr` to `0fr` asks the browser for the same answer without the
- * bookkeeping.
- *
  * Titles here are the small, fixed kind. The large title belongs to the month
  * view, where a greeting is the point of the screen; on a list of accounts the
  * name is a label, and a label competing with the content is noise.
  */
-export function NavBar({
-  title,
-  leading,
-  trailing,
-  topInset = false,
-  hidden = false,
-}: NavBarProps) {
+export function NavBar({ title, leading, trailing, topInset = false }: NavBarProps) {
   return (
-    <header className={topInset ? 'pt-[env(safe-area-inset-top)]' : undefined}>
-      <div
-        aria-hidden={hidden}
-        className={`navbar-fold grid ${hidden ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}
-      >
-        <div className="overflow-hidden">
-          <div className="flex items-center gap-2 px-4 pt-3 pb-3">
-            <div className="flex flex-1 justify-start">{leading}</div>
+    <header
+      className={`flex items-center gap-2 px-4 pb-3 ${
+        topInset ? 'pt-[calc(env(safe-area-inset-top)+0.75rem)]' : 'pt-3'
+      }`}
+    >
+      <div className="flex flex-1 justify-start">{leading}</div>
 
-            <h1 className="truncate text-[1.0625rem] font-semibold text-ink">{title}</h1>
+      <h1 className="truncate text-[1.0625rem] font-semibold text-ink">{title}</h1>
 
-            <div className="flex flex-1 justify-end">{trailing}</div>
-          </div>
-        </div>
-      </div>
+      <div className="flex flex-1 justify-end">{trailing}</div>
     </header>
   )
 }

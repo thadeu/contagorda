@@ -44,7 +44,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   const peak = totals.reduce((most, total) => Math.max(most, total.expense_cents), 0)
 
   return (
-    <div ref={scroller} className="overflow-x-auto px-4 pb-1">
+    <div ref={scroller} className="touch-pan-x overflow-x-auto overscroll-x-contain px-4 pb-1">
       <div
         className="ms-auto flex w-max snap-x items-end gap-3"
         role="group"

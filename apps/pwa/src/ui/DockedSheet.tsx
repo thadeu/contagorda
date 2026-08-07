@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { useDragLock } from './useDragLock'
 import { useEnter } from './useEnter'
 
@@ -7,13 +7,6 @@ interface DockedSheetProps {
   onExpandedChange: (expanded: boolean) => void
   /** Stays under the handle while the list moves. For controls over the list. */
   toolbar?: ReactNode
-  /**
-   * The list's scroller, handed out rather than hidden. The sheet is the only
-   * thing that scrolls on the screens that use it, so anything reacting to
-   * scroll — a bar that folds away, a shadow that appears — has nowhere else to
-   * listen. Exposing the element beats a callback per effect.
-   */
-  scrollRef?: RefObject<HTMLDivElement | null>
   children: ReactNode
 }
 
@@ -70,13 +63,7 @@ const THRESHOLD = 60
  * away — is about the page behind being unavailable. Sharing the two would mean
  * a prop for each of those, all set the opposite way here.
  */
-export function DockedSheet({
-  expanded,
-  onExpandedChange,
-  toolbar,
-  scrollRef,
-  children,
-}: DockedSheetProps) {
+export function DockedSheet({ expanded, onExpandedChange, toolbar, children }: DockedSheetProps) {
   const startY = useRef<number | null>(null)
   const startX = useRef(0)
   const axis = useRef<'none' | 'vertical' | 'horizontal'>('none')
@@ -163,10 +150,7 @@ export function DockedSheet({
         {toolbar}
       </div>
 
-      <div
-        ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
-      >
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         {children}
       </div>
     </section>

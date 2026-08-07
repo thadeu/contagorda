@@ -68,6 +68,15 @@
   --color-in: #0e7c57;
   --color-out: #d4443c;
 
+  /* The three things a bar can be saying, kept apart from `in` and `out`. Those
+     two mean money arriving and money leaving; on a chart of expenses every bar
+     is already money leaving, and a red one there means the month rose against
+     the one before it. Same red, different sentence — so a different name, or
+     the day one of them changes takes the other with it. */
+  --color-rise: #d4443c;
+  --color-steady: #5f83a8;
+  --color-now: #12a06a;
+
   --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   /* One scale, three steps. Nothing in the app is square: cards are the widest
@@ -459,6 +468,13 @@ html[data-theme='dark'] {
   --color-muted: #8b95a6;
   --color-faint: #5f6a7d;
   --color-line: #232936;
+
+  /* Both have to hold against near-black rather than against paper: the green
+     in particular is unreadable at the light theme's depth once it is a bar
+     three pixels wide. */
+  --color-rise: #f2635a;
+  --color-steady: #64809f;
+  --color-now: #2fbe85;
 
   --color-sky: #16233a;
   --color-sky-soft: #101725;

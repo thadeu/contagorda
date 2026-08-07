@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { monthShortLabel } from '../../../lib/dates'
+import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/dates'
 import { roundBRL } from '../../../lib/money'
+import { read, type Reading, type Trend } from '../trend'
 import type { MonthTotal } from '../../../services/types'
 
 interface MonthBarsProps {
@@ -31,6 +32,17 @@ interface MonthBarsProps {
  * The cents are dropped from those labels. On a month's total they are two
  * digits that never change the answer, and they double the width of something
  * that has to sit above a bar.
+ *
+ * Colour on a bar says which way the month went, never which month is chosen.
+ * That separation is what lets both be true at once: the band marks what the
+ * list below is showing, and the fill marks a month that cost more than the one
+ * before it. Had selection stayed on the fill, choosing a month would have
+ * overwritten the one thing the chart is here to say.
+ *
+ * A wall of red is the message. Any single red bar is a shrug — every household
+ * has a month that cost more than the last — but four in a row is a direction,
+ * and a direction is something to act on. The chart is built so that reading is
+ * available without counting anything.
  *
  * The chosen month is a lit column, not a coloured bar. Colour alone puts the
  * mark on the one part of the column that is also carrying data, so a tall
@@ -71,6 +83,34 @@ interface MonthBarsProps {
  * state that never resolves.
  */
 
+/**
+ * Written out rather than built from the trend, because a class assembled at
+ * runtime is a class Tailwind never sees and never emits.
+ */
+const FILL: Record<Trend, string> = {
+  now: 'bg-now',
+  rise: 'bg-rise',
+  steady: 'bg-steady',
+}
+
+/**
+ * Colour is not available to everyone, and it is the only thing carrying the
+ * warning. Whatever the fill says, the label says too.
+ */
+function label(reading: Reading): string {
+  const parts = [monthLabel(reading.month), roundBRL(reading.cents)]
+
+  if (reading.trend === 'now') parts.push('mês atual')
+
+  if (reading.trend === 'rise') parts.push('aumento em relação ao mês anterior')
+
+  if (reading.peak) parts.push('maior gasto do período')
+
+  if (reading.floor) parts.push('menor gasto do período')
+
+  return parts.join(', ')
+}
+
 export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
   const scroller = useRef<HTMLDivElement>(null)
   const current = useRef<HTMLButtonElement>(null)
@@ -87,7 +127,8 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
     painted.current = true
   }, [selected])
 
-  const peak = totals.reduce((most, total) => Math.max(most, total.expense_cents), 0)
+  const readings = read(totals, monthKey(todayIso()))
+  const ceiling = readings.reduce((most, reading) => Math.max(most, reading.cents), 0)
 
   return (
     <div ref={scroller} className="touch-pan-x overflow-x-auto overscroll-x-contain px-4">
@@ -96,17 +137,18 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
         role="group"
         aria-label="Despesas por mês"
       >
-        {totals.map((total) => {
-          const chosen = total.month === selected
-          const share = peak === 0 ? 0 : total.expense_cents / peak
+        {readings.map((reading) => {
+          const chosen = reading.month === selected
+          const share = ceiling === 0 ? 0 : reading.cents / ceiling
 
           return (
             <button
-              key={total.month}
+              key={reading.month}
               ref={chosen ? current : null}
               type="button"
-              onClick={() => onSelect(total.month)}
+              onClick={() => onSelect(reading.month)}
               aria-pressed={chosen}
+              aria-label={label(reading)}
               className={`flex w-[4.5rem] shrink-0 snap-center flex-col items-center gap-1.5 rounded-2xl px-2 pt-2 ${
                 chosen ? 'bg-white/6' : ''
               }`}
@@ -114,14 +156,14 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
               <span
                 className={`tnum text-[0.625rem] font-semibold ${chosen ? 'text-ink' : 'text-faint'}`}
               >
-                {roundBRL(total.expense_cents)}
+                {roundBRL(reading.cents)}
               </span>
 
               <span className="flex h-28 w-full items-end justify-center border-b border-line">
-                {total.expense_cents > 0 && (
+                {reading.cents > 0 && (
                   <span
                     style={{ height: `${Math.max(share * 100, 4)}%` }}
-                    className={`w-2.5 rounded-t-full ${chosen ? 'bg-accent' : 'bg-sunken'}`}
+                    className={`w-2.5 rounded-t-full ${FILL[reading.trend]}`}
                   />
                 )}
               </span>
@@ -131,7 +173,7 @@ export function MonthBars({ totals, selected, onSelect }: MonthBarsProps) {
                   chosen ? 'text-accent' : 'text-faint'
                 }`}
               >
-                {monthShortLabel(total.month)}
+                {monthShortLabel(reading.month)}
               </span>
             </button>
           )

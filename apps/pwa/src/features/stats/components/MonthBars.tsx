@@ -3,7 +3,7 @@ import { monthLabel, monthShortLabel, monthKey, todayIso } from '../../../lib/da
 import { compactBRL, formatBRL } from '../../../lib/money'
 import { tick } from '../../../lib/haptics'
 import { ceiling, read, type Reading, type Trend } from '../trend'
-import { Skeleton } from '../../../ui/Skeleton'
+import { SkeletonText } from '../../../ui/Skeleton'
 import type { MonthTotal } from '../../../services/types'
 
 interface MonthBarsProps {
@@ -400,13 +400,26 @@ export function MonthBarsSkeleton() {
       <div className="flex items-end justify-center">
         {RESTING.map((height, index) => (
           <span key={index} className="flex w-[20vw] max-w-24 shrink-0 flex-col items-center gap-1.5 px-1 pt-2">
-            <Skeleton className="h-2.5 w-12" />
+            <SkeletonText
+              sample="R$ 0.000"
+              bar="w-11"
+              className="text-[0.625rem] font-semibold"
+            />
 
             <span className="flex h-28 w-full items-end justify-center border-b border-line">
-              <Skeleton className="w-2.5 rounded-t-full" style={{ height: `${height}%` }} />
+              <span
+                style={{ height: `${height}%` }}
+                className="block w-2.5 animate-pulse rounded-t-full bg-sunken motion-reduce:animate-none"
+              />
             </span>
 
-            <Skeleton className="mt-1 mb-2 h-2 w-7" />
+            <span className="pb-2">
+              <SkeletonText
+                sample="AGO"
+                bar="w-7"
+                className="text-[0.625rem] font-medium tracking-wide uppercase"
+              />
+            </span>
           </span>
         ))}
       </div>

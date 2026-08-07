@@ -14,6 +14,41 @@
  * `bg-sunken` and not a colour of its own: it is a hole in the page, and a hole
  * is the surface behind the thing that is missing.
  */
+/**
+ * A placeholder that is exactly as tall as the text it replaces.
+ *
+ * The height comes from a copy of that text, rendered invisible and left in the
+ * layout; the bar is laid over it. Guessing at a height in `rem` is how a
+ * skeleton ends up a few pixels short of the real thing, and a few pixels short
+ * is the whole screen stepping up and down every time something loads.
+ *
+ * The `sample` is not read by anyone — it exists to be measured. What matters is
+ * that it carries the same font, size, weight and line height as the real value.
+ *
+ * Give it type, not spacing. Padding on this element lands inside the box the
+ * bar is positioned against, and the bar comes out taller than the text it is
+ * standing in for; put the margins on whatever wraps it.
+ */
+export function SkeletonText({
+  sample,
+  className = '',
+  bar = 'w-44',
+}: {
+  sample: string
+  className?: string
+  bar?: string
+}) {
+  return (
+    <span className={`relative inline-block ${className}`}>
+      <span aria-hidden="true" className="invisible">
+        {sample}
+      </span>
+
+      <Skeleton className={`absolute inset-y-[0.12em] left-0 ${bar}`} />
+    </span>
+  )
+}
+
 export function Skeleton({
   className = '',
   style,

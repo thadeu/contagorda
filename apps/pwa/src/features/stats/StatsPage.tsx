@@ -4,7 +4,7 @@ import { NavBar, NavButton } from '../../ui/NavBar'
 import { DockedSheet } from '../../ui/DockedSheet'
 import { Money } from '../../ui/Money'
 import { EmptyState } from '../../ui/EmptyState'
-import { Skeleton } from '../../ui/Skeleton'
+import { SkeletonText } from '../../ui/Skeleton'
 import { ChevronLeftIcon, ChevronRightIcon, MoreIcon, TargetIcon } from '../../ui/icons'
 import { useDocumentCanvas } from '../../ui/useDocumentCanvas'
 import { monthKey, monthLabel, shiftMonth, todayIso } from '../../lib/dates'
@@ -156,7 +156,7 @@ export function StatsPage() {
               the app is stating it with a straight face. */}
           {transactions.isPending ? (
             <div className="px-4 pb-4">
-              <Skeleton className="h-8 w-44" />
+              <SkeletonText sample="R$ 00.000,00" className="text-[2rem] font-bold" />
             </div>
           ) : (
             <Money cents={totalCents} className="block px-4 pb-4 text-[2rem] font-bold text-ink" />

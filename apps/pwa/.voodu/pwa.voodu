@@ -19,13 +19,8 @@ deployment "contagorda" "pwa" {
     dockerfile = "apps/pwa/Dockerfile"
 
     args = {
-      VITE_API_URL              = "${API_URL:-https://api.contagorda.com}"
+      VITE_API_URL = "${API_URL:-https://api.contagorda.com}"
       VITE_CLOWK_PUBLISHABLE_KEY = "${CLOWK_PUBLISHABLE_KEY}"
-
-      # Optional. The publishable key resolves the instance on its own; setting
-      # this skips that lookup, which is one fewer network hop before the app
-      # can open.
-      VITE_CLOWK_SUBDOMAIN_URL = "${CLOWK_SUBDOMAIN_URL:-}"
     }
   }
 

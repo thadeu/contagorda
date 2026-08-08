@@ -47,10 +47,10 @@ postgres "contagorda" "pg" {
   # the postmaster killed, which drops every connection at once. The limit only
   # holds because the settings below are chosen to stay under it.
   #
-  # `max_connections` is the one to keep honest: the API runs 2 replicas of one
-  # Puma worker with 5 threads, so 10 connections, plus migrations and the
-  # nightly sweep. Thirty is room to spare; a hundred (the default) reserves
-  # per-connection memory for connections that will never arrive.
+  # `max_connections` is the one to keep honest: the API runs one Puma worker
+  # with 5 threads, so 5 connections, plus migrations and the nightly sweep.
+  # Thirty leaves room for a second replica later; a hundred (the default)
+  # reserves per-connection memory for connections that will never arrive.
   command = [
     "postgres",
     "-c", "shared_buffers=64MB",

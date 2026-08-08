@@ -18,7 +18,15 @@
 #     CLOWK_SUBDOMAIN_URL="https://contagorda.clowk.dev"
 
 deployment "contagorda" "api" {
-  replicas = 2
+  # One replica. Five threads in one Puma worker answer five requests at once,
+  # which is past what a household generates — the second replica was buying
+  # continuity during a deploy, not capacity.
+  #
+  # The cost is that a deploy has a gap: the new pod has to pass its startup
+  # probe before it takes traffic, and there is no old one still answering. On a
+  # Rails boot that is tens of seconds of 502. Acceptable for an app used by the
+  # people deploying it; the day it is not, this is the line to change.
+  replicas = 1
 
   build {
     context    = "."
@@ -36,9 +44,9 @@ deployment "contagorda" "api" {
     # Logs go to stdout, where `vd logs` can see them.
     RAILS_LOG_TO_STDOUT = "1"
 
-    # Two replicas of one worker, five threads each: ten requests at once, and
-    # ten database connections. A second Puma worker per replica would double
-    # the memory and the connection count to serve a household.
+    # Five threads in one worker: five requests at once, five database
+    # connections. Both numbers matter — `max_connections` on the shared
+    # Postgres is sized against this.
     RAILS_MAX_THREADS = "5"
     WEB_CONCURRENCY   = "1"
   }
@@ -87,8 +95,8 @@ deployment "contagorda" "api" {
 
   # Measured against the neighbours rather than guessed: clowk sits at ~400Mi
   # and the PWA at ~12Mi on this same VM. One Puma worker with jemalloc (the
-  # image preloads it) settles well under this; the headroom is for a boot and
-  # the old replica overlapping during a rolling deploy.
+  # image preloads it) settles well under this; the headroom is for the boot,
+  # where a Rails process is at its fattest.
   resources {
     limits {
       cpu    = "0.5"

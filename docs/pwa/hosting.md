@@ -22,13 +22,19 @@ Neither is a default anywhere, and both are one line.
 
 ## The VM
 
-voodu's ingress is a reverse proxy: it terminates TLS and forwards to an
-upstream. It needs something to forward *to*, and a pile of files is not a
-thing that can be forwarded to.
+The obvious question is why, given that voodu's ingress *is* Caddy. Because the
+plugin is a reverse proxy and nothing else — deliberately. The whole surface of
+`ingress` is `host`, `service`, `port`, `tls {}`, `location {}` (`path` and
+`strip`) and `lb {}`; the docs put it plainly: **"No `rewrite`, no `headers`, no
+middleware… Custom HTTP transformations belong in your app."**
 
-So the image runs its own Caddy. `caddy file-server` alone would serve the
-files and 404 every deep link — the `Caddyfile` exists for `try_files` and the
-cache split, which is the whole of the two rules above. TLS and the hostname
+A reverse proxy needs something to forward *to*, and a pile of files is not a
+thing that can be forwarded to. Neither of the two rules above is expressible at
+the ingress, by design.
+
+So the image runs its own Caddy. `caddy file-server` alone would serve the files
+and 404 every deep link — the `Caddyfile` exists for `try_files` and the cache
+split, which is exactly those two rules and nothing more. TLS and the hostname
 are not in it: those belong to the ingress, one layer out.
 
 ```

@@ -12,7 +12,7 @@ module ErrorEnvelope
   class Rejected < StandardError
     attr_reader :code, :status
 
-    def initialize(code, message, status: :unprocessable_entity)
+    def initialize(code, message, status: :unprocessable_content)
       @code = code
       @status = status
 
@@ -26,7 +26,7 @@ module ErrorEnvelope
     end
 
     rescue_from ActiveRecord::RecordInvalid do |error|
-      render_error("invalid", error.record.errors.full_messages.to_sentence, :unprocessable_entity)
+      render_error("invalid", error.record.errors.full_messages.to_sentence, :unprocessable_content)
     end
 
     rescue_from ActionController::ParameterMissing do |error|
@@ -47,7 +47,7 @@ module ErrorEnvelope
       render json: { error: { code: code, message: message } }, status: status
     end
 
-    def reject!(code, message, status: :unprocessable_entity)
+    def reject!(code, message, status: :unprocessable_content)
       raise Rejected.new(code, message, status: status)
     end
 end

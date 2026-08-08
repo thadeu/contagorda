@@ -59,7 +59,7 @@ RSpec.describe "Transactions", type: :request do
     it "refuses an account from another ledger" do
       post_transaction(account_id: create(:account).id)
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     describe "with a recurrence" do
@@ -87,7 +87,7 @@ RSpec.describe "Transactions", type: :request do
       it "refuses a rule it cannot honour" do
         post_transaction(recurrence: { frequency: "daily", interval: 1, repeats: 2 })
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(json.dig(:error, :code)).to eq("invalid_recurrence")
       end
 
@@ -236,7 +236,7 @@ RSpec.describe "Transactions", type: :request do
       post "/api/v1/transactions/#{transaction.id}/recurrence",
         params: { frequency: "monthly", interval: 1, repeats: 2 }, headers: signed.scoped
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(json.dig(:error, :code)).to eq("already_recurring")
     end
   end

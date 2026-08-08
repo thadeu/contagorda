@@ -1,30 +1,44 @@
-# Dev and test run against the Postgres 18 container from docker-compose.yml,
-# on 5433 so it does not collide with a Postgres the developer already has on
-# 5432. 18 is not optional: ids default to `uuidv7()`, which arrived in that
-# version.
+# One variable decides where the database is, in every environment.
+#
+# `DATABASE_URL` and nothing else — no host, no port, no user spread across four
+# variables that have to agree. Moving between the compose container, a
+# colleague's machine and the production VM is one string.
+#
+# Development carries a default because a fresh clone should run after
+# `docker compose up`, with nothing to copy first. Production carries none: a
+# default there would be a way to boot pointed at the wrong database and not
+# find out until something was written to it.
+#
+# Postgres 18 is not optional. Ids default to `uuidv7()`, which arrived in that
+# version, and the compose file pins it.
 default: &default
   adapter: postgresql
   encoding: unicode
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: <%= ENV.fetch("PGHOST", "127.0.0.1") %>
-  port: <%= ENV.fetch("PGPORT", 5433) %>
-  username: <%= ENV.fetch("PGUSER", "contagorda") %>
-  password: <%= ENV.fetch("PGPASSWORD", "contagorda") %>
 
 development:
   <<: *default
-  database: contagorda_development
+  url: <%= ENV.fetch("DATABASE_URL", "postgres://contagorda:contagorda@127.0.0.1:5433/contagorda_development") %>
 
-# TEST_ENV_NUMBER is what keeps parallel workers off each other's data: worker 2
-# gets contagorda_test2, and so on. It is empty for worker 1 and for a plain
+# `TEST_ENV_NUMBER` is what keeps parallel workers off each other's data: worker
+# 2 gets contagorda_test2, and so on. It is empty for worker 1 and for a plain
 # `rspec` run, so both paths keep working.
+#
+# Its own variable rather than `DATABASE_URL`, so that exporting one to point the
+# console at something cannot send the suite there too — and the suite drops the
+# database it is given.
 test:
   <<: *default
-  database: contagorda_test<%= ENV["TEST_ENV_NUMBER"] %>
+  url: <%= ENV.fetch("TEST_DATABASE_URL", "postgres://contagorda:contagorda@127.0.0.1:5433/contagorda_test#{ENV['TEST_ENV_NUMBER']}") %>
 
-# Production is driven entirely by DATABASE_URL, seeded through
-# `vd config contagorda/api set DATABASE_URL=...`. Postgres lives on a separate
-# VM reachable over the private network, so no credential belongs in this file.
+# Seeded through `vd config contagorda/api set DATABASE_URL=...`. Postgres lives
+# on a separate VM reachable over the private network, so no credential belongs
+# in this file.
+#
+# No default and no `fetch`: Rails renders every environment's ERB on boot, so a
+# `fetch` here would raise in development, where the variable is not set and is
+# not meant to be. Missing in production it fails at the first connection, which
+# is loud enough and cannot be mistaken for working.
 production:
   <<: *default
   url: <%= ENV["DATABASE_URL"] %>

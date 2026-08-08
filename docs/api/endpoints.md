@@ -413,16 +413,22 @@ difference is the interesting part.
    its response in `idempotency_keys`, retries replay it, and the same key on
    another route is a 409 rather than someone else's body.
 
-## What the client owes the API
+## What the client does
 
-- **`AbortSignal` reaches `fetch`.** Every read already carries one; the HTTP
-  client has to pass it on, and the server has to survive a connection dropped
-  mid-response without filling the log with errors.
+`services/http.ts` adds everything that is true of every call, so a port is a
+URL and a shape and cannot forget a header.
+
+- **`AbortSignal` reaches `fetch`.** Every read carries one and hands it on.
 - **Writes take no signal, on purpose.** A write that has left cannot be
   recalled, only ignored — which is what the idempotency key is for.
-- **Query keys carry the ledger,** and switching clears the cache. That is
-  already true, and any new key has to keep doing it.
-- **`X-Ledger-Id` on every scoped call.** `services/http.ts` does not send it
-  yet; without it every one of these endpoints answers 404.
-- **`LedgerInvite.token` becomes `string | null`.** It arrives on creation and
-  never again — see the invite section above.
+- **`X-Ledger-Id` is read at call time,** from `getActiveLedgerId()`. A value
+  captured at import would keep answering for the ledger the app opened on.
+- **`Idempotency-Key` on the writes that create,** a fresh uuid per call.
+- **Query keys carry the ledger,** and switching clears the cache.
+- **The error message is shown as it arrived.** The server writes it in pt-BR;
+  a client that turned codes into sentences would need a release — and on iOS a
+  review — to fix a word.
+
+`VITE_USE_MOCK=true` runs the whole app on fixtures instead, which is what the
+UI tests do: `.env.test` declares it rather than relying on a variable being
+absent.

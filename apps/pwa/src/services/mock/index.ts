@@ -144,7 +144,13 @@ export function createMockServices(): Services {
 
       members: (ledgerId) => delay(ledgerData[ledgerId]?.members ?? []),
 
-      invites: (ledgerId) => delay(ledgerData[ledgerId]?.invites ?? []),
+      // The token is dropped on the way out, the way the server drops it: it
+      // keeps only a digest, so an invite read back has no link to rebuild. The
+      // mock has the token right there and hides it anyway — a mock that is
+      // more generous than the API is a mock that lets a screen be built on
+      // something that will not be there.
+      invites: (ledgerId) =>
+        delay((ledgerData[ledgerId]?.invites ?? []).map((invite) => ({ ...invite, token: null }))),
 
       createInvite: (ledgerId) => {
         // Stand-in only. The real token is minted by the server from a

@@ -9,6 +9,11 @@ dev-dist/
 .env.*
 !.env.example
 
+# The test environment is declared, not inherited. Nothing in it is secret, and
+# a suite whose behaviour depends on an untracked file is a suite that passes on
+# one machine.
+!.env.test
+
 apps/pwa/.vite/
 apps/rapi/tmp/
 apps/rapi/log/

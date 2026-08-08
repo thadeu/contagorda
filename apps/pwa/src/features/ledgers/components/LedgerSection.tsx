@@ -40,9 +40,35 @@ export function LedgerSection() {
   const [sent, setSent] = useState<ShareResult | null>(null)
   const [removing, setRemoving] = useState<LedgerMember | null>(null)
 
+  /**
+   * The token of the invite minted in this sheet.
+   *
+   * It arrives once, in the response that created it, and the server keeps only
+   * a digest — so an invite read back later has no token to share. Holding it
+   * here keeps the link shareable for as long as the screen is open; after that
+   * the way to get one is to revoke and mint another, which is also the right
+   * thing to do with a link that went to the wrong person.
+   */
+  const [minted, setMinted] = useState<{ id: string; token: string } | null>(null)
+
   const live = (invites.data ?? []).filter(usable)
   const people = members.data ?? []
   const owner = canInvite(current)
+
+  /**
+   * Catches the token on its way past, and does not share it.
+   *
+   * Sharing here would be the obvious thing and would not work: `navigator.share`
+   * needs a gesture, and by the time the invite comes back from the network the
+   * tap that asked for it has expired. So the row grows a share button and the
+   * person taps that — which is a real gesture, and also lets them decide who
+   * gets the link.
+   */
+  function minting(invite: LedgerInvite) {
+    if (invite.token === null) return
+
+    setMinted({ id: invite.id, token: invite.token })
+  }
 
   async function share(token: string) {
     setSent(
@@ -98,10 +124,21 @@ export function LedgerSection() {
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[0.9375rem] text-ink">Convite pendente</span>
             <span className="block truncate text-xs text-muted">
-              Vale até {new Date(invite.expires_at).toLocaleDateString('pt-BR')} ·{' '}
-              <button type="button" onClick={() => share(invite.token)} className="text-accent">
-                {label(sent)}
-              </button>
+              Vale até {new Date(invite.expires_at).toLocaleDateString('pt-BR')}
+              {shareable(invite, minted) !== null ? (
+                <>
+                  {' · '}
+                  <button
+                    type="button"
+                    onClick={() => share(shareable(invite, minted)!)}
+                    className="text-accent"
+                  >
+                    {label(sent)}
+                  </button>
+                </>
+              ) : (
+                ' · link já enviado'
+              )}
             </span>
           </span>
 
@@ -123,7 +160,7 @@ export function LedgerSection() {
       )}
 
       {owner && live.length === 0 && (
-        <Row onClick={() => create.mutate()}>
+        <Row onClick={() => create.mutate(undefined, { onSuccess: minting })}>
           <span className="text-[0.9375rem] text-ink">
             {create.isPending ? 'Criando convite…' : 'Convidar alguém'}
           </span>
@@ -164,6 +201,18 @@ function label(sent: ShareResult | null): string {
   if (sent === 'failed') return 'não deu para compartilhar'
 
   return 'compartilhar'
+}
+
+/**
+ * The token to share for this invite, when there is one to share.
+ *
+ * Null for an invite that was read back from the server rather than minted
+ * here: only its digest is stored, so the link cannot be rebuilt.
+ */
+function shareable(invite: LedgerInvite, minted: { id: string; token: string } | null) {
+  if (invite.token !== null) return invite.token
+
+  return minted !== null && minted.id === invite.id ? minted.token : null
 }
 
 function usable(invite: LedgerInvite): boolean {

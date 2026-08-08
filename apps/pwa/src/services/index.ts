@@ -1,14 +1,21 @@
-import type { Services } from './ports'
-import { createMockServices } from './mock'
+import type { Services } from '@/services/ports'
+import { createMockServices } from '@/services/mock'
+import { createApiServices } from '@/services/api'
 
 /**
  * The one place that decides where data comes from.
  *
- * Today it is always the mock. When the API is ready this becomes a choice
- * between two implementations of the same interfaces, and nothing above it
- * changes — which is the point of building the screens first.
+ * `VITE_USE_MOCK=true` keeps the fixtures. It is off by default — the app talks
+ * to the API unless somebody says otherwise — but the mock stays in the repo
+ * rather than being deleted: it is what lets a screen be built, and the UI tests
+ * be run, without a database anywhere near them.
+ *
+ * A string comparison and not a truthy check, because every Vite env value is a
+ * string and `"false"` is truthy.
  */
-export const services: Services = createMockServices()
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
-export type { Services } from './ports'
-export * from './types'
+export const services: Services = USE_MOCK ? createMockServices() : createApiServices()
+
+export type { Services } from '@/services/ports'
+export * from '@/services/types'

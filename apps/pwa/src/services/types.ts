@@ -39,8 +39,16 @@ export interface LedgerMember {
 
 export interface LedgerInvite {
   id: string
-  /** What the link carries. Whoever opens it and signs in claims the place. */
-  token: string
+  /**
+   * What the link carries. Whoever opens it and signs in claims the place.
+   *
+   * Present only on the invite that was just created, and `null` on every one
+   * read back afterwards. The server stores a digest, so an invite it could
+   * show again would be an invite it was keeping in the clear — and a leaked
+   * table would hand over working invitations. The link is shared at the moment
+   * it is minted, or a new one is.
+   */
+  token: string | null
   expires_at: string
   revoked_at: string | null
   accepted_at: string | null

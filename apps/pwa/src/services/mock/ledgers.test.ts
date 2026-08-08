@@ -50,7 +50,7 @@ describe('mock ledgers', () => {
     const [ledger] = await services.ledgers.list()
     const created = await services.ledgers.createInvite(ledger.id)
 
-    const joined = await services.ledgers.acceptInvite(created.token)
+    const joined = await services.ledgers.acceptInvite(created.token!)
 
     expect(joined.id).toBe(ledger.id)
     expect(getActiveLedgerId()).toBe(ledger.id)
@@ -62,6 +62,6 @@ describe('mock ledgers', () => {
 
     await services.ledgers.revokeInvite(created.id)
 
-    await expect(services.ledgers.acceptInvite(created.token)).rejects.toThrow()
+    await expect(services.ledgers.acceptInvite(created.token!)).rejects.toThrow()
   })
 })

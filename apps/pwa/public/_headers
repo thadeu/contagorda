@@ -1,0 +1,24 @@
+# What may be cached, and for how long.
+#
+# The same split the Caddyfile makes for the VM, said again here because
+# Cloudflare Pages does not read a Caddyfile. Both files exist while both hosts
+# are possible targets, and they have to agree — a bundle cached differently
+# depending on where it was served from is a bug that only reproduces in one
+# place.
+
+# Asset filenames carry a content hash, so a changed file is a different name.
+# Nothing that answers to one of these can ever go stale.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The shell cannot be cached at all. Cached, a returning phone keeps loading the
+# old bundle and asking for assets a deploy has already deleted — and the app
+# comes back broken for the person who used it most recently.
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Cache-Control: no-cache

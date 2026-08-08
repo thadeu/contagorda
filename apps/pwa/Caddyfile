@@ -12,8 +12,10 @@
 	# they are 404s. The invite link is the case that makes it not optional: it
 	# is the one URL somebody arrives at from outside.
 	#
-	# `public/_redirects` says the same thing to Cloudflare Pages, which does not
-	# read a Caddyfile. Both have to exist while both are possible targets.
+	# `public/_redirects` says this to Cloudflare Pages and `public/_headers`
+	# says the rule below — Pages does not read a Caddyfile. All three have to
+	# agree while both hosts are possible targets: forgetting one gives a bug
+	# that reproduces on one host and not the other. See docs/pwa/hosting.md.
 	try_files {path} /index.html
 
 	# Hashed asset filenames can be cached forever; `index.html` cannot be cached

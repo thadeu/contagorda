@@ -55,6 +55,10 @@ There are no haptics on iOS. `navigator.vibrate` is Android-only, and the
 switch-checkbox trick does not fire from script — tested on the device. Never let
 anything be communicated by feel alone.
 
+A built app is a pile of files, and files answer `/` and nothing else. Every
+host has to be told twice that a deep link is the shell and that the shell is
+never cached — see [Hosting](hosting.md).
+
 ## If this becomes a library
 
 The four differ in what they are for, not in how a finger moves them. The

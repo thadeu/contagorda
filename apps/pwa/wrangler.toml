@@ -1,0 +1,21 @@
+# Cloudflare Pages, for `wrangler pages deploy` and for CI.
+#
+# Only the output directory belongs here. The build itself runs from the repo
+# root, because the lockfile and the workspace definition live there:
+#
+#   pnpm install --frozen-lockfile
+#   pnpm --filter @contagorda/pwa build
+#
+# With the git integration those two lines go in the project's build settings,
+# along with the root directory. This file is what makes a deploy from a
+# terminal land in the same place.
+#
+# **The `VITE_*` values are not here and cannot be.** Vite inlines them at build
+# time, so they have to exist as environment variables when the build runs —
+# Pages build variables in the dashboard, not runtime bindings. A variable added
+# here would be read by nothing.
+#
+# See docs/pwa/hosting.md.
+
+name = "contagorda"
+pages_build_output_dir = "dist"

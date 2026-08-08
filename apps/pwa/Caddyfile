@@ -4,7 +4,11 @@
 # which terminates https and knows the hostname. This one only answers with
 # files.
 
-:8080 {
+# Port 80, because that is where voodu's ingress looks unless told otherwise —
+# `upstream: pwa:80`. Meeting the default is one fewer thing to declare and one
+# fewer pair of numbers to keep in step. Nothing is published to the host, so
+# the port is not competing with anything.
+:80 {
 	root * /srv
 
 	# Every path is the app. `/invite/<token>` and `/stats` belong to the

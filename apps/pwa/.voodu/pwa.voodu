@@ -18,7 +18,7 @@
 
 app "contagorda" "pwa" {
   host = "${APP_HOST:-app.contagorda.com}"
-  replicas = 2
+  replicas = 1
 
   # Where the build arguments below come from.
   #
@@ -49,16 +49,20 @@ app "contagorda" "pwa" {
     dockerfile = "apps/pwa/Dockerfile"
 
     # The keys have to be listed — docker needs a `--build-arg` for each — but
-    # the values come from the bucket above. No defaults: a bundle is built once
-    # and carries whatever it was given, so a missing value should stop the
-    # deploy rather than quietly ship a guess pointing at production.
+    # the values come from the bucket above. Not optional: without them Vite
+    # falls back to whatever `.env` it can find, and the first deploy went out
+    # pointing at `http://127.0.0.1:3000` for exactly that reason. The repo root
+    # `.dockerignore` now keeps that file out of the context; these put the real
+    # values in.
     args = {
       VITE_API_URL = "${VITE_API_URL}"
       VITE_CLOWK_PUBLISHABLE_KEY = "${VITE_CLOWK_PUBLISHABLE_KEY}"
     }
   }
 
-  ports = ["8080"]
+  # No `ports`. The ingress routes to `<name>:80` unless told otherwise, so the
+  # container listens on 80 and there is nothing to declare — see the Caddyfile.
+  # Nothing is published to the host, so the port competes with nothing.
 
   tls { email = "ops@contagorda.com" }
 
@@ -66,7 +70,7 @@ app "contagorda" "pwa" {
     readiness {
       http_get {
         path = "/"
-        port = 8080
+        port = 80
       }
       period = "10s"
     }
@@ -74,7 +78,7 @@ app "contagorda" "pwa" {
     liveness {
       http_get {
         path = "/"
-        port = 8080
+        port = 80
       }
       period = "30s"
       failure_threshold = 3

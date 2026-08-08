@@ -49,4 +49,4 @@ FROM caddy:2-alpine
 COPY apps/pwa/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/apps/pwa/dist /srv
 
-EXPOSE 8080
+EXPOSE 80

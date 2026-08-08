@@ -1,0 +1,30 @@
+# What must not reach a build context rooted here.
+#
+# Only builds whose context is the repo root read this file — `apps/rapi` builds
+# from its own directory and is unaffected.
+
+# **The one that bit.** Without this, `COPY apps/pwa apps/pwa` carries the
+# developer's `.env` into the image, and Vite reads it: a production bundle went
+# out pointing at `http://127.0.0.1:3000`. It builds, it deploys, it serves, and
+# every request goes to a machine that is not there.
+#
+# The values a build needs arrive as build arguments. A file that sets the same
+# names is a second source of truth that only the person who has it can see.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Reinstalled inside the image from the lockfile, and a host `node_modules` is
+# built for the host's platform.
+**/node_modules
+
+# The image builds this itself. A stale local copy would be shipped instead of
+# the one the build just produced.
+**/dist
+**/dev-dist
+
+.git
+**/.turbo
+**/tmp
+**/log
+**/*.log

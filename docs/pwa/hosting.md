@@ -68,8 +68,16 @@ neither of them where secrets go.
 
 | | Where |
 |---|---|
-| VM | `build { args = { … } }` in `.voodu/pwa.voodu` |
+| VM | `build { args = { … } }` in `.voodu/pwa.voodu`, interpolated from the shell |
 | Pages | build environment variables, in the project's settings |
+
+On the VM the keys have to be listed in `build { args }` — docker needs a
+`--build-arg` for each — but the *values* come from `${VAR}`. The obvious wish
+is to keep those on the controller with `vd config` and never in a shell.
+`env_from` does feed a bucket into `${VAR}` at parse time, which is exactly
+that; the catch is that **the lookup only runs for a local apply.** With
+`-r prod` the CLI forwards over SSH and interpolation stays shell-only, so for
+this repo the values live in a gitignored `.envrc` — see `.envrc.example`.
 
 Nothing secret can travel either way — whatever goes in comes out readable in
 the bundle. The Clowk publishable key is fine there by design; the secret key

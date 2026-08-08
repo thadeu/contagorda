@@ -1,0 +1,33 @@
+# What `vd apply` interpolates into the manifests. Copy to `.envrc`.
+#
+#   cp .envrc.example .envrc && direnv allow
+#
+# These are build arguments for the PWA and hostnames for the ingresses — not
+# runtime configuration. Everything the app needs at runtime lives on the
+# controller instead:
+#
+#   vd config contagorda/api set DATABASE_URL=... REDIS_URL=... CLOWK_SECRET_KEY=...
+#
+# **Why the PWA's values are here and not there.** A config bucket can feed
+# `${VAR}` at parse time — `env_from` does that — but only for a local apply.
+# With `-r prod` the CLI forwards over SSH and interpolation stays shell-only,
+# and `-r prod` is how this is deployed. So the shell is where they have to be.
+#
+# Nothing secret belongs in this file. Vite inlines every `VITE_*` value into
+# the bundle, so whatever goes in comes out readable by anyone who opens the
+# app. The Clowk *secret* key is not here and never will be — it lives on the
+# API side, through `vd config`.
+
+# Where the PWA sends its requests. Baked into the bundle at build time.
+export API_URL="https://api.contagorda.com"
+
+# Public by design: it ships in the bundle and doubles as the expected `aud` on
+# tokens the API verifies. No default in the manifest — a bundle built without
+# it would be an app that cannot sign anybody in, and failing the apply is the
+# better of the two.
+export CLOWK_PUBLISHABLE_KEY="pk_live_xxx"
+
+# The hostnames the ingresses answer on. Both have defaults in the manifests;
+# override for a staging box.
+export APP_HOST="app.contagorda.com"
+export API_HOST="api.contagorda.com"

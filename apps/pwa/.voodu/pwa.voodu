@@ -20,6 +20,7 @@
 # comes out readable in the bundle.
 
 app "contagorda" "pwa" {
+  host = "${APP_HOST:-app.contagorda.com}"
   replicas = 2
 
   build {
@@ -27,21 +28,12 @@ app "contagorda" "pwa" {
     dockerfile = "apps/pwa/Dockerfile"
 
     args = {
-      VITE_API_URL               = "${API_URL:-https://api.contagorda.com}"
+      VITE_API_URL = "${API_URL:-https://api.contagorda.com}"
       VITE_CLOWK_PUBLISHABLE_KEY = "${CLOWK_PUBLISHABLE_KEY}"
     }
   }
 
-  ports = ["8080"]
-
-  host = "${APP_HOST:-app.contagorda.com}"
-
-  # https is not a nicety for this app. `crypto.randomUUID`, the Web Share API
-  # and service workers are all gated on a secure context, and on plain http
-  # they are missing rather than broken — the app runs and quietly does less.
-  tls {
-    email = "ops@contagorda.com"
-  }
+  tls { email = "ops@contagorda.com" }
 
   # Caddy serving files starts in milliseconds and answers or does not. There is
   # no warm-up to wait through and no dependency that can be half-up, so
@@ -68,7 +60,7 @@ app "contagorda" "pwa" {
   resources {
     limits {
       cpu    = "0.5"
-      memory = "128Mi"
+      memory = "110Mi"
     }
   }
 }

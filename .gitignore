@@ -9,6 +9,12 @@ dev-dist/
 .env.*
 !.env.example
 
+# What a deploy interpolates into the manifests. Not secret — everything in it
+# ends up readable in the browser bundle — but it is per-machine, and the
+# example is the one that gets read.
+.envrc
+!.envrc.example
+
 # The test environment is declared, not inherited. Nothing in it is secret, and
 # a suite whose behaviour depends on an untracked file is a suite that passes on
 # one machine.

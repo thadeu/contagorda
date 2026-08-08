@@ -51,7 +51,7 @@ RSpec.describe "GET /api/v1/me", type: :request do
     it "exposes no column beyond the ones it means to" do
       get "/api/v1/me", headers: auth_headers
 
-      expect(json.keys).to contain_exactly(:id, :email, :name, :avatar_url)
+      expect(json.keys).to contain_exactly(:id, :email, :name, :avatar_url, :display_name, :membership_id)
     end
   end
 

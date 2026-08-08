@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::API
-  include Clowk::Authenticable
+  include Clowk::Authenticable, ErrorEnvelope
 
   before_action :authenticate_clowk!
 

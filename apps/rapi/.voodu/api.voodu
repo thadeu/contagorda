@@ -33,13 +33,20 @@ deployment "contagorda" "api" {
     dockerfile = "Dockerfile"
   }
 
-  # Thruster listens on 80 by default, and caddy already has that port on the
-  # host. Moving it to 3000 keeps every number in this file the same one.
-  ports = ["3000"]
+  # No `ports`. The ingress reaches the container over the container network, so
+  # nothing needs publishing to the host — and 127.0.0.1:3000 there already
+  # belongs to clowk, so publishing this one would fail to start rather than
+  # fail to route.
 
   env = {
     RAILS_ENV = "production"
-    HTTP_PORT = "3000"
+
+    # Thruster fronts Puma, and the two need different ports. Its defaults are
+    # `HTTP_PORT=80` and `TARGET_PORT=3000`, and it starts Rails with `PORT` set
+    # to the target — so moving only `HTTP_PORT` to 3000 would have both binding
+    # 3000 and the container dying on "address already in use".
+    HTTP_PORT   = "3000"
+    TARGET_PORT = "3001"
 
     # Logs go to stdout, where `vd logs` can see them.
     RAILS_LOG_TO_STDOUT = "1"

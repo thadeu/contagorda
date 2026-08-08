@@ -5,13 +5,21 @@
 # Applied from the **repo root**, not from this directory: the build context is
 # the workspace, because the lockfile and the workspace definition live there.
 #
+# One `app` block rather than a deployment and an ingress. It expands into
+# exactly that pair server-side, and for something that is one process behind
+# one hostname the pair was two blocks saying one thing.
+#
+# The image runs its own Caddy over the built files — the ingress is a reverse
+# proxy and has no `try_files`, so the deep links belong in the container. See
+# docs/pwa/hosting.md.
+#
 # Vite inlines every `VITE_*` value at build time, so these are build arguments
 # rather than env. A static bundle has no runtime configuration — pointing this
 # at another API means building it again, which is also why `vd config` is the
 # wrong place for them and why nothing secret can go here: whatever goes in
 # comes out readable in the bundle.
 
-deployment "contagorda" "pwa" {
+app "contagorda" "pwa" {
   replicas = 2
 
   build {
@@ -19,12 +27,21 @@ deployment "contagorda" "pwa" {
     dockerfile = "apps/pwa/Dockerfile"
 
     args = {
-      VITE_API_URL = "${API_URL:-https://api.contagorda.com}"
+      VITE_API_URL               = "${API_URL:-https://api.contagorda.com}"
       VITE_CLOWK_PUBLISHABLE_KEY = "${CLOWK_PUBLISHABLE_KEY}"
     }
   }
 
   ports = ["8080"]
+
+  host = "${APP_HOST:-app.contagorda.com}"
+
+  # https is not a nicety for this app. `crypto.randomUUID`, the Web Share API
+  # and service workers are all gated on a secure context, and on plain http
+  # they are missing rather than broken — the app runs and quietly does less.
+  tls {
+    email = "ops@contagorda.com"
+  }
 
   # Caddy serving files starts in milliseconds and answers or does not. There is
   # no warm-up to wait through and no dependency that can be half-up, so
@@ -53,17 +70,5 @@ deployment "contagorda" "pwa" {
       cpu    = "0.5"
       memory = "128Mi"
     }
-  }
-}
-
-ingress "contagorda" "pwa" {
-  host = "${APP_HOST:-app.contagorda.com}"
-  port = 8080
-
-  # https is not a nicety for this app. `crypto.randomUUID`, the Web Share API
-  # and service workers are all gated on a secure context, and on plain http
-  # they are missing rather than broken — the app runs and quietly does less.
-  tls {
-    email = "ops@contagorda.com"
   }
 }

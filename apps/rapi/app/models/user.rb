@@ -1,13 +1,12 @@
 class User < ApplicationRecord
-  has_many :accounts, dependent: :destroy
-  has_many :categories, dependent: :destroy
-  has_many :transactions, dependent: :destroy
-  has_many :recurring_series, dependent: :destroy
+  has_many :memberships, class_name: "Ledger::Membership", dependent: :destroy
+  has_many :ledgers, through: :memberships
 
   validates :clowk_sub, presence: true, uniqueness: true
   validates :email, presence: true
 
-  # Mirrors a verified token's claims onto a local row.
+  # Mirrors a verified token's claims onto a local row, and makes sure the
+  # person has somewhere to keep money.
   #
   # Matching is on `sub` alone, never on email: Clowk lets a user change their
   # address, and keying on it would either strand the old row or hand one
@@ -20,6 +19,31 @@ class User < ApplicationRecord
     user.avatar_url = claims.avatar_url
     user.save! if user.changed?
 
+    user.ensure_ledger!
     user
   end
+
+  # `GET /ledgers` is never empty, because the app has nothing to render until a
+  # ledger is known — it blocks on that answer before the first screen paints.
+  # So signing up creates one rather than asking.
+  def ensure_ledger!
+    return if memberships.exists?
+
+    Ledger.transaction do
+      ledger = Ledger.create!(name: default_ledger_name)
+      memberships.create!(ledger: ledger, role: "owner")
+    end
+  end
+
+  # What to call the person. Their own choice first, then the identity
+  # provider's name — never a stored copy of it, which would freeze the day they
+  # changed it there.
+  def preferred_name
+    display_name.presence || name.presence || email
+  end
+
+  private
+    def default_ledger_name
+      "Minhas contas"
+    end
 end

@@ -1,6 +1,6 @@
 FactoryBot.define do
-  factory :account do
-    user
+  factory :account, class: "Ledger::Account" do
+    ledger
     name { "Nubank" }
     kind { "checking" }
   end

@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe RecurringSeries do
+RSpec.describe Ledger::RecurringSeries do
   describe "#occurrence_on" do
     # The case docs/decisions/0001 exists for. A test that stops at February
     # proves nothing: both the anchored and the chained calculation agree for

@@ -1,9 +1,11 @@
 class CreateRecurringSeries < ActiveRecord::Migration[8.1]
   def change
     create_table :recurring_series, id: :uuid, default: -> { "uuidv7()" } do |t|
-      t.references :user, type: :uuid, null: false, foreign_key: true
+      t.references :ledger, type: :uuid, null: false, foreign_key: true
       t.references :account, type: :uuid, null: false, foreign_key: true
       t.references :category, type: :uuid, foreign_key: true
+      t.references :created_by, type: :uuid,
+        foreign_key: { to_table: :ledger_memberships, on_delete: :nullify }
 
       t.string :kind, null: false
       t.bigint :amount_cents, null: false
@@ -24,7 +26,7 @@ class CreateRecurringSeries < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :recurring_series, %i[user_id starts_on]
+    add_index :recurring_series, %i[ledger_id starts_on]
     add_check_constraint :recurring_series, "kind IN ('expense', 'income')",
       name: "recurring_series_kind_check"
     add_check_constraint :recurring_series,

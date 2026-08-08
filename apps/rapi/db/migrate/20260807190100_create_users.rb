@@ -11,6 +11,11 @@ class CreateUsers < ActiveRecord::Migration[8.1]
       t.string :name
       t.string :avatar_url
 
+      # What the person chose to be called here, when they chose anything. Null
+      # means the identity provider's name stands — storing a copy of that name
+      # would freeze it, and nothing could tell a stale copy from a decision.
+      t.string :display_name
+
       t.timestamps
     end
 

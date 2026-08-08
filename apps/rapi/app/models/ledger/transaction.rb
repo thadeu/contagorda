@@ -1,21 +1,24 @@
-class Transaction < ApplicationRecord
+class Ledger::Transaction < ApplicationRecord
+  self.table_name = "transactions"
+
   KINDS = %w[expense income].freeze
 
-  belongs_to :user
-  belongs_to :account
-  belongs_to :category, optional: true
-  belongs_to :recurring_series, optional: true
+  belongs_to :ledger, class_name: "Ledger"
+  belongs_to :account, class_name: "Ledger::Account"
+  belongs_to :category, class_name: "Ledger::Category", optional: true
+  belongs_to :recurring_series, class_name: "Ledger::RecurringSeries", optional: true
+  belongs_to :created_by, class_name: "Ledger::Membership", optional: true
 
   validates :kind, inclusion: { in: KINDS }
   validates :amount_cents, numericality: { greater_than: 0, only_integer: true }
   validates :description, presence: true
   validates :date, presence: true
 
-  # Guards against a transaction pointing at another user's account or category.
-  # The controller already scopes through current_user; this is the backstop for
-  # every other path — console, importer, job.
-  validate :account_belongs_to_user
-  validate :category_belongs_to_user
+  # Guards against a transaction pointing at another ledger's account or
+  # category. The controller already scopes through the current ledger; this is
+  # the backstop for every other path — console, importer, job.
+  validate :account_belongs_to_ledger
+  validate :category_belongs_to_ledger
 
   scope :expenses, -> { where(kind: "expense") }
   scope :incomes, -> { where(kind: "income") }
@@ -42,15 +45,15 @@ class Transaction < ApplicationRecord
   end
 
   private
-    def account_belongs_to_user
-      return if account.nil? || account.user_id == user_id
+    def account_belongs_to_ledger
+      return if account.nil? || account.ledger_id == ledger_id
 
-      errors.add(:account, "does not belong to this user")
+      errors.add(:account, "does not belong to this ledger")
     end
 
-    def category_belongs_to_user
-      return if category.nil? || category.user_id == user_id
+    def category_belongs_to_ledger
+      return if category.nil? || category.ledger_id == ledger_id
 
-      errors.add(:category, "does not belong to this user")
+      errors.add(:category, "does not belong to this ledger")
     end
 end

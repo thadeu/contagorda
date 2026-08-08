@@ -1,11 +1,15 @@
-class RecurringSeries < ApplicationRecord
+class Ledger::RecurringSeries < ApplicationRecord
+  self.table_name = "recurring_series"
+
   KINDS = %w[expense income].freeze
   FREQUENCIES = %w[weekly monthly yearly].freeze
 
-  belongs_to :user
-  belongs_to :account
-  belongs_to :category, optional: true
-  has_many :transactions, dependent: :nullify
+  belongs_to :ledger, class_name: "Ledger"
+  belongs_to :account, class_name: "Ledger::Account"
+  belongs_to :category, class_name: "Ledger::Category", optional: true
+  belongs_to :created_by, class_name: "Ledger::Membership", optional: true
+
+  has_many :transactions, class_name: "Ledger::Transaction", dependent: :nullify
 
   validates :kind, inclusion: { in: KINDS }
   validates :frequency, inclusion: { in: FREQUENCIES }

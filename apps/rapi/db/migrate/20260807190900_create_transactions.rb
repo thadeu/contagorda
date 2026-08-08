@@ -1,9 +1,15 @@
 class CreateTransactions < ActiveRecord::Migration[8.1]
   def change
     create_table :transactions, id: :uuid, default: -> { "uuidv7()" } do |t|
-      t.references :user, type: :uuid, null: false, foreign_key: true
+      t.references :ledger, type: :uuid, null: false, foreign_key: true
       t.references :account, type: :uuid, null: false, foreign_key: true
       t.references :category, type: :uuid, foreign_key: true
+
+      # Who entered it, so a shared ledger can say who. Stamped server-side from
+      # the authenticated membership — a client that names its own author names
+      # someone else's.
+      t.references :created_by, type: :uuid,
+        foreign_key: { to_table: :ledger_memberships, on_delete: :nullify }
 
       # Direction lives here, not in the sign of the amount. amount_cents is
       # always positive, so no report can forget an abs() and quietly halve a
@@ -33,10 +39,13 @@ class CreateTransactions < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    # The dashboard reads a month at a time, always for one user.
-    add_index :transactions, %i[user_id date]
+    # The dashboard reads a month at a time, always for one ledger.
+    add_index :transactions, %i[ledger_id date]
     add_index :transactions, %i[account_id date]
-    add_index :transactions, %i[user_id kind date]
+    add_index :transactions, %i[ledger_id kind date]
+
+    # `GET /monthly_totals?category_id=` groups two years at a time.
+    add_index :transactions, %i[ledger_id category_id date]
 
     # "Edit all future occurrences" is a range scan over one series.
     add_index :transactions, %i[recurring_series_id date]

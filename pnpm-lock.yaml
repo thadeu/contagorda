@@ -11,11 +11,11 @@ importers:
   apps/pwa:
     dependencies:
       '@clowk/core':
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: ^1.2.0
+        version: 1.2.0
       '@clowk/react':
-        specifier: ^1.1.1
-        version: 1.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^1.1.2
+        version: 1.1.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@tanstack/query-sync-storage-persister':
         specifier: ^5.101.4
         version: 5.101.4
@@ -187,11 +187,11 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@clowk/core@1.1.1':
-    resolution: {integrity: sha512-3cTeojgaQkehFg1TbqfasKKut4LD/G9SjWsw6RGjyfSkr1jeGJa+QmXwbofbgjwxOwpy1KuR2TjUOKFrqIXF6A==}
+  '@clowk/core@1.2.0':
+    resolution: {integrity: sha512-vIAx6XZYrdjzqJX/dQGpbbg816Du8W+BZjZYlRR0QL5Jwkf6SHYedKLbFcNdOh8TN3+ymSIS9f+czsfegaciKA==}
 
-  '@clowk/react@1.1.1':
-    resolution: {integrity: sha512-Kmll9O0a0IMaqtfxN5/9VEBWRn+2Wl19B9dbIluPgU+k4kVAZkUrZNxtdZpepFMTWnbuBpY6ScDlYpIn7u73zw==}
+  '@clowk/react@1.1.2':
+    resolution: {integrity: sha512-anpnyVNS/+pOe8+rT1weYkjnl/lx8rvS2bb5qknpTfI4HKeQ7/6Bx8e+Lyyo8qKM2MokpddG8cvD7t9Q9jPVqw==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
@@ -2211,13 +2211,13 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@clowk/core@1.1.1':
+  '@clowk/core@1.2.0':
     dependencies:
       jose: 6.2.8
 
-  '@clowk/react@1.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@clowk/react@1.1.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@clowk/core': 1.1.1
+      '@clowk/core': 1.2.0
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 

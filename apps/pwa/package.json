@@ -12,8 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clowk/core": "^1.1.1",
-    "@clowk/react": "^1.1.1",
+    "@clowk/core": "^1.2.0",
+    "@clowk/react": "^1.1.2",
     "@tanstack/query-sync-storage-persister": "^5.101.4",
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-query-persist-client": "^5.101.4",

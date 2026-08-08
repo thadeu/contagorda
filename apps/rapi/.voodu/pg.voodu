@@ -37,9 +37,22 @@ postgres "contagorda" "pg" {
   #
   # 5433, because 5432 on this box already belongs to the Postgres serving
   # clowk. And bound to the private address rather than `0.0.0.0`: a database
-  # answering on a public port is found, and it is found by people running
-  # scanners rather than by people who need it.
-  ports = ["10.124.0.3:5433:5432"]
+  # answering on a public port gets found, and by people running scanners rather
+  # than by people who need it.
+  #
+  # The address itself comes from the controller, not from this file. It is a
+  # fact about the machine rather than about the app — it changes when the box
+  # does, not when the code does — and a repository is a poor place to learn
+  # where somebody's database listens.
+  #
+  #   vd config contagorda/pgbox set PG_BIND_IP=10.124.0.3 -r pgbox
+  #
+  # Its own bucket rather than the one clowk uses: `env_from` also stacks the
+  # bucket into the container's environment, and clowk's holds a
+  # `POSTGRES_PASSWORD` that is not this database's.
+  env_from = ["contagorda/pgbox"]
+
+  ports = ["${PG_BIND_IP}:5433:5432"]
 
   env = {
     POSTGRES_DB = "contagorda_production"

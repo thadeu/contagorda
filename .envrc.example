@@ -13,9 +13,9 @@
 # in the manifest resolve from it. Rotating a key is one `vd config set` rather
 # than a message to everybody who deploys.
 #
-# The catch: that lookup only runs for a **local** apply. With `-r <remote>` the
-# CLI forwards over SSH and interpolation goes back to shell-only. So either
-# deploy from the box, or keep these exported.
+# The lookup works on a remote apply too, `-r prod` included — checked against
+# this deployment, since the reference says otherwise and is out of date. Keep
+# these only as a fallback for a box whose bucket has not been seeded yet.
 #
 # Nothing secret belongs here or in that bucket. Vite inlines every `VITE_*`
 # value into the bundle, so whatever goes in comes out readable by anyone who

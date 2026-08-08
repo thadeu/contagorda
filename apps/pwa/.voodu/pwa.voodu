@@ -35,9 +35,9 @@ app "contagorda" "pwa" {
   # It also stacks the bucket as runtime env in the container, which for a Caddy
   # serving static files does nothing. Harmless, and not the reason it is here.
   #
-  # **The lookup only runs for a local apply.** With `-r <remote>` the CLI
-  # forwards over SSH and interpolation goes back to shell-only — so deploy from
-  # the box, or export the two values. See docs/pwa/hosting.md.
+  # It works on a remote apply too, `-r prod` included — checked against this
+  # deployment, since the reference says otherwise and is out of date.
+  # See docs/pwa/hosting.md.
   env_from = ["contagorda/pwa"]
 
   build {

@@ -86,9 +86,10 @@ resolve from it. Rotating a key is one `vd config set` rather than a message to
 everybody who deploys. (It also stacks the bucket as runtime env in the
 container, which for a Caddy serving static files does nothing.)
 
-**The lookup only runs for a local apply.** With `-r <remote>` the CLI forwards
-over SSH and interpolation goes back to shell-only — deploy from the box, or
-keep the values exported. `.envrc.example` is that fallback.
+The lookup works on a remote apply too, `-r prod` included — checked against
+this deployment rather than taken from the reference, which says otherwise and
+is out of date. `.envrc.example` remains as a fallback for a box where the
+bucket has not been seeded, not as the normal path.
 
 **Interpolation runs over the whole file, comments included.** A placeholder
 written out in prose is looked up like any other and fails the apply with

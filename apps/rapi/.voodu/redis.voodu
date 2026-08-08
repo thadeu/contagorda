@@ -19,9 +19,13 @@ redis "contagorda" "cache" {
   # rather than `noeviction`: every key here is derived data that can be
   # recomputed, so dropping the coldest one is always cheaper than refusing to
   # store the newest.
+  # `maxmemory` sits below the container limit on purpose. Redis counts the data
+  # it stores; the process also carries fragmentation and copy-on-write pages,
+  # and a limit set to the same number is a limit the OOM killer reaches first.
+  # Roughly three quarters is the usual room to leave.
   command = [
     "redis-server",
-    "--maxmemory", "256mb",
+    "--maxmemory", "96mb",
     "--maxmemory-policy", "allkeys-lru",
 
     # No persistence. Losing the whole cache costs one recomputation per key,
@@ -29,6 +33,17 @@ redis "contagorda" "cache" {
     "--save", "",
     "--appendonly", "no",
   ]
+
+  # Small, because it shares the VM with clowk (using ~400Mi) and the PWA
+  # (~12Mi). What lives in here is derived data — a month's rows, a summary, a
+  # stamp — and the eviction policy above means a full cache costs a
+  # recomputation, never an error.
+  resources {
+    limits {
+      cpu    = "0.25"
+      memory = "128Mi"
+    }
+  }
 
   # The plugin's default probes — tcp_socket liveness, `redis-cli ping`
   # readiness — are the right ones. Declaring any `probes {}` block would

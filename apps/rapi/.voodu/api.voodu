@@ -36,8 +36,11 @@ deployment "contagorda" "api" {
     # Logs go to stdout, where `vd logs` can see them.
     RAILS_LOG_TO_STDOUT = "1"
 
+    # Two replicas of one worker, five threads each: ten requests at once, and
+    # ten database connections. A second Puma worker per replica would double
+    # the memory and the connection count to serve a household.
     RAILS_MAX_THREADS = "5"
-    WEB_CONCURRENCY   = "2"
+    WEB_CONCURRENCY   = "1"
   }
 
   # Migrations run once per deploy, not once per replica. The image's entrypoint
@@ -82,10 +85,14 @@ deployment "contagorda" "api" {
     }
   }
 
+  # Measured against the neighbours rather than guessed: clowk sits at ~400Mi
+  # and the PWA at ~12Mi on this same VM. One Puma worker with jemalloc (the
+  # image preloads it) settles well under this; the headroom is for a boot and
+  # the old replica overlapping during a rolling deploy.
   resources {
     limits {
-      cpu    = "1"
-      memory = "768Mi"
+      cpu    = "0.5"
+      memory = "384Mi"
     }
   }
 }

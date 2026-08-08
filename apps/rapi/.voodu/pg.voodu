@@ -1,23 +1,30 @@
-# Postgres.
+# Postgres — and the first question is whether this file should be applied at
+# all.
 #
-#   vd apply -f .voodu/pg.voodu -r db
+# **The database VM has 1 GB and already runs the Postgres that serves
+# clowk_production.** Adding a second instance beside it doubles everything that
+# is per-instance and not per-database: the postmaster, WAL buffers,
+# autovacuum workers, the background writer, and a second `shared_buffers`
+# holding a second copy of nothing useful. Two postgres processes on 1 GB is how
+# a box starts swapping.
 #
-# On the database VM, not the API one — hence its own file and its own `-r`.
-# `api.voodu` reaches it over the private network through `DATABASE_URL`, and
-# Postgres is never published to the internet.
-#
-# **Apply this only if this ledger's Postgres is not already declared
-# somewhere else.** voodu upserts by `(scope, name)`, so applying a second
-# declaration of the same pod under a different name would stand up a second
-# database next to the one holding the money.
-#
-#   vd config contagorda/pg set POSTGRES_PASSWORD="$(openssl rand -hex 24)"
-#
-# Then create the database and point the API at it:
+# So the normal path is to use the one that is there:
 #
 #   vd pg:create contagorda_production
 #   vd config contagorda/api set \
-#     DATABASE_URL="postgres://postgres:PASSWORD@pg-0.contagorda:5432/contagorda_production"
+#     DATABASE_URL="postgresql://USER:PASS@10.124.0.3:5432/contagorda_production"
+#
+# One postmaster, two databases, no new memory. Postgres has kept tenants apart
+# that way since before containers existed, and `pg_dump` still takes them
+# separately.
+#
+# Apply this file only when the two really must be isolated — different uptime
+# expectations, a version upgrade on one and not the other, or a restore that
+# must not touch the neighbour. Everything below assumes that decision was made
+# deliberately and that the box is still the 1 GB one.
+#
+#   vd apply -f .voodu/pg.voodu -r db
+#   vd config contagorda/pg set POSTGRES_PASSWORD="$(openssl rand -hex 24)"
 
 postgres "contagorda" "pg" {
   # 18 is not a preference. Ids default to `uuidv7()`, which arrived in that
@@ -31,6 +38,33 @@ postgres "contagorda" "pg" {
     # into a directory that already has anything in it, and a volume often
     # arrives with `lost+found`.
     PGDATA = "/var/lib/postgresql/data/pgdata"
+  }
+
+  # Sized for a second instance on a 1 GB box, not for a database server.
+  #
+  # A memory limit on Postgres is not a safety net — it is a cliff. Postgres
+  # does not know about the cgroup, so it will happily allocate past it and get
+  # the postmaster killed, which drops every connection at once. The limit only
+  # holds because the settings below are chosen to stay under it.
+  #
+  # `max_connections` is the one to keep honest: the API runs 2 replicas of one
+  # Puma worker with 5 threads, so 10 connections, plus migrations and the
+  # nightly sweep. Thirty is room to spare; a hundred (the default) reserves
+  # per-connection memory for connections that will never arrive.
+  command = [
+    "postgres",
+    "-c", "shared_buffers=64MB",
+    "-c", "effective_cache_size=192MB",
+    "-c", "max_connections=30",
+    "-c", "work_mem=2MB",
+    "-c", "maintenance_work_mem=32MB",
+  ]
+
+  resources {
+    limits {
+      cpu    = "0.5"
+      memory = "256Mi"
+    }
   }
 
   # The plugin ships a tcp_socket liveness and a `pg_isready` readiness, which

@@ -1,13 +1,10 @@
 # The PWA, served from the same VM as the API.
 #
-#   vd apply -f apps/pwa/.voodu/pwa.voodu -r prod
+#   cd apps/pwa && vd apply -f .voodu/pwa.voodu -r prod
 #
-# Applied from the **repo root**, not from this directory: the build context is
-# the workspace, because the lockfile and the workspace definition live there.
-#
-# One `app` block rather than a deployment and an ingress. It expands into
-# exactly that pair server-side, and for something that is one process behind
-# one hostname the pair was two blocks saying one thing.
+# One `app` block rather than a deployment and an ingress: it expands into
+# exactly that pair server-side, and for one process behind one hostname the
+# pair was two blocks saying one thing.
 #
 # The image runs its own Caddy over the built files — the ingress is a reverse
 # proxy and has no `try_files`, so the deep links belong in the container. See
@@ -24,7 +21,11 @@ app "contagorda" "pwa" {
   replicas = 2
 
   build {
-    context    = "."
+    # The repo root, reached from here. Not a preference: `pnpm install
+    # --frozen-lockfile` needs the lockfile and the workspace definition, and
+    # both live at the root. There is no lockfile inside `apps/pwa` and there
+    # should not be one — two lockfiles resolve to two answers.
+    context    = "../.."
     dockerfile = "apps/pwa/Dockerfile"
 
     args = {
@@ -33,11 +34,10 @@ app "contagorda" "pwa" {
     }
   }
 
+  ports = ["8080"]
+
   tls { email = "ops@contagorda.com" }
 
-  # Caddy serving files starts in milliseconds and answers or does not. There is
-  # no warm-up to wait through and no dependency that can be half-up, so
-  # readiness is the whole story.
   probes {
     readiness {
       http_get {
@@ -52,7 +52,7 @@ app "contagorda" "pwa" {
         path = "/"
         port = 8080
       }
-      period            = "30s"
+      period = "30s"
       failure_threshold = 3
     }
   }

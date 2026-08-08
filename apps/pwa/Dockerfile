@@ -1,10 +1,18 @@
 # The PWA, built and then served as files.
 #
-# Built from the repo root, not from this directory: the lockfile and the
-# workspace definition live up there, and an install without them is an install
-# of different versions than the ones anybody tested.
+# **The build context is the repo root, wherever you run this from.** The
+# lockfile and the workspace definition live up there, and `pnpm install
+# --frozen-lockfile` without them is an install of different versions than the
+# ones anybody tested. There is no lockfile inside `apps/pwa` and there should
+# not be one.
 #
-#   docker build -f apps/pwa/Dockerfile --build-arg VITE_API_URL=... .
+# Every path below is therefore relative to the repo root, not to this file:
+#
+#   docker build -f apps/pwa/Dockerfile .          # from the repo root
+#   docker build -f Dockerfile ../..               # from apps/pwa
+#
+# The manifest says the same thing with `context = "../.."`, so `vd apply` works
+# from this directory.
 #
 # Vite inlines every `VITE_*` value at build time. There is no runtime
 # configuration for a static bundle — the variables are build arguments here,

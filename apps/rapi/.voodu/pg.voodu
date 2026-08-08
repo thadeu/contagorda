@@ -1,0 +1,39 @@
+# Postgres.
+#
+#   vd apply -f .voodu/pg.voodu -r db
+#
+# On the database VM, not the API one — hence its own file and its own `-r`.
+# `api.voodu` reaches it over the private network through `DATABASE_URL`, and
+# Postgres is never published to the internet.
+#
+# **Apply this only if this ledger's Postgres is not already declared
+# somewhere else.** voodu upserts by `(scope, name)`, so applying a second
+# declaration of the same pod under a different name would stand up a second
+# database next to the one holding the money.
+#
+#   vd config contagorda/pg set POSTGRES_PASSWORD="$(openssl rand -hex 24)"
+#
+# Then create the database and point the API at it:
+#
+#   vd pg:create contagorda_production
+#   vd config contagorda/api set \
+#     DATABASE_URL="postgres://postgres:PASSWORD@pg-0.contagorda:5432/contagorda_production"
+
+postgres "contagorda" "pg" {
+  # 18 is not a preference. Ids default to `uuidv7()`, which arrived in that
+  # version, and every table in this schema uses it.
+  image = "postgres:18-alpine"
+
+  env = {
+    POSTGRES_DB = "contagorda_production"
+
+    # Under the mount rather than at its root: Postgres refuses to initialise
+    # into a directory that already has anything in it, and a volume often
+    # arrives with `lost+found`.
+    PGDATA = "/var/lib/postgresql/data/pgdata"
+  }
+
+  # The plugin ships a tcp_socket liveness and a `pg_isready` readiness, which
+  # is what we would have written. Declaring `probes {}` here would replace both
+  # rather than add to them.
+}

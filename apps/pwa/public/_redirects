@@ -1,0 +1,13 @@
+# Every path is the app.
+#
+# Cloudflare Pages serves files, and only `/` exists as one. `/invite/<token>`,
+# `/stats` and every other route belong to the router, which cannot run until
+# something has been served — so without this, opening one directly is a 404.
+#
+# The invite link is the case that makes it not optional: it is the one URL
+# somebody arrives at from outside, pasted into a browser, never navigated to
+# from inside the app.
+#
+# 200 and not 302: the address stays what the person opened, which is what the
+# router reads to decide where they landed.
+/*    /index.html   200

@@ -1,0 +1,125 @@
+# The API, and the way in.
+#
+#   vd apply -f .voodu/api.voodu -r prod
+#
+# Build mode: the CLI tarballs this directory and the server builds the
+# Dockerfile that is already here. No registry, no CI step that has to publish
+# before a deploy can start.
+#
+# Nothing secret is in this file. Everything below reads from the controller:
+#
+#   vd config contagorda/api set \
+#     DATABASE_URL="postgres://contagorda:PASSWORD@pg-0.contagorda:5432/contagorda_production" \
+#     REDIS_URL="redis://cache-0.contagorda:6379/0" \
+#     CORS_ORIGINS="https://app.contagorda.com" \
+#     RAILS_MASTER_KEY="$(cat config/master.key)" \
+#     CLOWK_PUBLISHABLE_KEY="pk_live_..." \
+#     CLOWK_SECRET_KEY="sk_live_..." \
+#     CLOWK_SUBDOMAIN_URL="https://contagorda.clowk.dev"
+
+deployment "contagorda" "api" {
+  replicas = 2
+
+  build {
+    context    = "."
+    dockerfile = "Dockerfile"
+  }
+
+  # Thruster listens on 80 by default, and caddy already has that port on the
+  # host. Moving it to 3000 keeps every number in this file the same one.
+  ports = ["3000"]
+
+  env = {
+    RAILS_ENV = "production"
+    HTTP_PORT = "3000"
+
+    # Logs go to stdout, where `vd logs` can see them.
+    RAILS_LOG_TO_STDOUT = "1"
+
+    RAILS_MAX_THREADS = "5"
+    WEB_CONCURRENCY   = "2"
+  }
+
+  # Migrations run once per deploy, not once per replica. The image's entrypoint
+  # also runs `db:prepare` on boot — Rails takes an advisory lock, so two
+  # replicas starting together cannot collide — but doing it here means the
+  # schema is already in place when the first one starts, instead of two pods
+  # queueing behind the same lock.
+  release {
+    pre_command = ["bin/rails", "db:migrate"]
+    timeout     = "5m"
+  }
+
+  probes {
+    # Rails with bootsnap cold is not fast. Without this window the pod is
+    # killed for failing a liveness check it was never going to pass yet.
+    startup {
+      http_get {
+        path = "/up"
+        port = 3000
+      }
+      period            = "5s"
+      failure_threshold = 12
+    }
+
+    # Caddy follows readiness: a pod that stops passing this is taken out of
+    # rotation instead of answering with errors.
+    readiness {
+      http_get {
+        path = "/up"
+        port = 3000
+      }
+      period = "10s"
+    }
+
+    liveness {
+      http_get {
+        path = "/up"
+        port = 3000
+      }
+      period            = "30s"
+      failure_threshold = 3
+    }
+  }
+
+  resources {
+    limits {
+      cpu    = "1"
+      memory = "768Mi"
+    }
+  }
+}
+
+ingress "contagorda" "api" {
+  host = "${API_HOST:-api.contagorda.com}"
+  port = 3000
+
+  # The PWA is served from Cloudflare over https, so this has to be https too:
+  # a page on https cannot call http, and the browser refuses before the request
+  # is made — with an error that says nothing about CORS.
+  tls {
+    email = "ops@contagorda.com"
+  }
+}
+
+# An idempotency key is only useful for as long as a retry is plausible. Kept
+# forever, a safety net becomes a table.
+cronjob "contagorda" "sweep-idempotency-keys" {
+  schedule = "17 4 * * *"
+  timezone = "America/Sao_Paulo"
+
+  # The image the deployment above just built, rather than a second build of the
+  # same directory. Build mode tags `<scope>-<name>:latest`, and a nightly
+  # sweep has no reason to make every deploy build twice.
+  image = "contagorda-api:latest"
+
+  command  = ["bin/rails", "runner", "IdempotencyKey.stale.delete_all"]
+  env_from = ["contagorda/api"]
+
+  env = {
+    RAILS_ENV = "production"
+  }
+
+  successful_history_limit = 3
+  failed_history_limit     = 5
+}

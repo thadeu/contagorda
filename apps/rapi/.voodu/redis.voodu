@@ -1,0 +1,36 @@
+# Redis.
+#
+#   vd apply -f .voodu/redis.voodu -r prod
+#
+# On the API VM, beside the app: every read is answered from this first, so the
+# round trip belongs on localhost rather than across a network.
+#
+# It is not optional. Cache invalidation here works by replacing a stamp that
+# the next read has to see, and with an in-process store each Puma worker keeps
+# its own — a write in one worker leaves the others serving what they had. On a
+# phone that reads as data coming back after you pulled to refresh.
+#
+#   vd config contagorda/api set REDIS_URL="redis://cache-0.contagorda:6379/0"
+
+redis "contagorda" "cache" {
+  image = "redis:8-alpine"
+
+  # A cache with no ceiling is a memory leak with good manners. `allkeys-lru`
+  # rather than `noeviction`: every key here is derived data that can be
+  # recomputed, so dropping the coldest one is always cheaper than refusing to
+  # store the newest.
+  command = [
+    "redis-server",
+    "--maxmemory", "256mb",
+    "--maxmemory-policy", "allkeys-lru",
+
+    # No persistence. Losing the whole cache costs one recomputation per key,
+    # and writing it to disk buys nothing but io.
+    "--save", "",
+    "--appendonly", "no",
+  ]
+
+  # The plugin's default probes — tcp_socket liveness, `redis-cli ping`
+  # readiness — are the right ones. Declaring any `probes {}` block would
+  # replace both.
+}

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '@/services'
 import { getActiveLedgerId, setActiveLedgerId } from '@/services/activeLedger'
 import { ActiveLedgerContext, ledgerKeys, type ActiveLedger } from './activeLedgerContext'
+import { Unreachable } from './Unreachable'
 
 /**
  * Decides which ledger the app is reading, and makes switching safe.
@@ -50,8 +51,27 @@ export function ActiveLedgerProvider({ children }: { children: ReactNode }) {
     [available, current, client],
   )
 
+  /**
+   * Nothing below can render without a ledger, and the two ways of not having
+   * one are not the same thing.
+   *
+   * Still asking: render nothing, the way the boot screen does. It is a moment,
+   * and a flash of anything would be worse than a moment of the background.
+   *
+   * Asked and failed: say so. This used to return `null` here too, and an API
+   * that was down produced a blank screen with no explanation and no way
+   * forward — which is how it looked on the first deploy, before the API
+   * existed at all.
+   *
+   * An empty list counts as a failure. `GET /ledgers` is never empty by
+   * contract — signing up creates one — so an empty answer means something is
+   * wrong upstream, and waiting forever for a ledger that is not coming is the
+   * one thing not to do.
+   */
   if (current === null) {
-    return null
+    if (ledgers.isPending) return null
+
+    return <Unreachable onRetry={() => void ledgers.refetch()} retrying={ledgers.isFetching} />
   }
 
   return <ActiveLedgerContext value={value}>{children}</ActiveLedgerContext>

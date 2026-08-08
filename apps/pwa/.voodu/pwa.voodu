@@ -64,7 +64,9 @@ app "contagorda" "pwa" {
   # container listens on 80 and there is nothing to declare — see the Caddyfile.
   # Nothing is published to the host, so the port competes with nothing.
 
-  tls { email = "ops@contagorda.com" }
+  tls {
+    email = "ops@contagorda.com"
+  }
 
   probes {
     readiness {

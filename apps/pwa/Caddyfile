@@ -9,6 +9,29 @@
 # fewer pair of numbers to keep in step. Nothing is published to the host, so
 # the port is not competing with anything.
 :80 {
+	# Plain http has to become https, and this is the only layer that can say so.
+	#
+	# The ingress serves :80 and :443 from one server with the same routes, so
+	# Caddy's automatic redirect never fires — a TLS host stays reachable over
+	# http and simply answers. For this app that is not cosmetic: on http the
+	# origin the browser reports is `http://…`, which is what goes to Clowk as
+	# the redirect_uri and gets refused, and every secure-context API —
+	# `crypto.randomUUID`, Web Share, service workers — is absent rather than
+	# broken. Installed to a home screen from http, it stays http forever.
+	#
+	# `X-Forwarded-Proto` is what the proxy in front sets, and the only way in
+	# here to tell the two apart.
+	@insecure {
+		header X-Forwarded-Proto http
+		not path /.well-known/acme-challenge/*
+	}
+
+	# The ACME path is excluded on purpose. The challenge arrives over http by
+	# definition, and a redirect on it would break the renewal that keeps https
+	# working — the failure would land 60 days later, on a certificate nobody
+	# was watching.
+	redir @insecure https://{host}{uri} 308
+
 	root * /srv
 
 	# Every path is the app. `/invite/<token>` and `/stats` belong to the

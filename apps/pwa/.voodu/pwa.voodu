@@ -1,0 +1,74 @@
+# The PWA, served from the same VM as the API.
+#
+#   vd apply -f apps/pwa/.voodu/pwa.voodu -r prod
+#
+# Applied from the **repo root**, not from this directory: the build context is
+# the workspace, because the lockfile and the workspace definition live there.
+#
+# Vite inlines every `VITE_*` value at build time, so these are build arguments
+# rather than env. A static bundle has no runtime configuration — pointing this
+# at another API means building it again, which is also why `vd config` is the
+# wrong place for them and why nothing secret can go here: whatever goes in
+# comes out readable in the bundle.
+
+deployment "contagorda" "pwa" {
+  replicas = 2
+
+  build {
+    context    = "."
+    dockerfile = "apps/pwa/Dockerfile"
+
+    args = {
+      VITE_API_URL              = "${API_URL:-https://api.contagorda.com}"
+      VITE_CLOWK_PUBLISHABLE_KEY = "${CLOWK_PUBLISHABLE_KEY}"
+
+      # Optional. The publishable key resolves the instance on its own; setting
+      # this skips that lookup, which is one fewer network hop before the app
+      # can open.
+      VITE_CLOWK_SUBDOMAIN_URL = "${CLOWK_SUBDOMAIN_URL:-}"
+    }
+  }
+
+  ports = ["8080"]
+
+  # Caddy serving files starts in milliseconds and answers or does not. There is
+  # no warm-up to wait through and no dependency that can be half-up, so
+  # readiness is the whole story.
+  probes {
+    readiness {
+      http_get {
+        path = "/"
+        port = 8080
+      }
+      period = "10s"
+    }
+
+    liveness {
+      http_get {
+        path = "/"
+        port = 8080
+      }
+      period            = "30s"
+      failure_threshold = 3
+    }
+  }
+
+  resources {
+    limits {
+      cpu    = "0.5"
+      memory = "128Mi"
+    }
+  }
+}
+
+ingress "contagorda" "pwa" {
+  host = "${APP_HOST:-app.contagorda.com}"
+  port = 8080
+
+  # https is not a nicety for this app. `crypto.randomUUID`, the Web Share API
+  # and service workers are all gated on a secure context, and on plain http
+  # they are missing rather than broken — the app runs and quietly does less.
+  tls {
+    email = "ops@contagorda.com"
+  }
+}

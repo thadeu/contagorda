@@ -1,0 +1,30 @@
+# Serving the built app.
+#
+# No TLS and no host matching here: this sits behind voodu's caddy ingress,
+# which terminates https and knows the hostname. This one only answers with
+# files.
+
+:8080 {
+	root * /srv
+
+	# Every path is the app. `/invite/<token>` and `/stats` belong to the
+	# router, which cannot run until something has been served — so without this
+	# they are 404s. The invite link is the case that makes it not optional: it
+	# is the one URL somebody arrives at from outside.
+	#
+	# `public/_redirects` says the same thing to Cloudflare Pages, which does not
+	# read a Caddyfile. Both have to exist while both are possible targets.
+	try_files {path} /index.html
+
+	# Hashed asset filenames can be cached forever; `index.html` cannot be cached
+	# at all, or a returning phone keeps loading the old bundle and asking for
+	# assets that a deploy has already removed.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	@shell path / /index.html /manifest.webmanifest
+	header @shell Cache-Control "no-cache"
+
+	encode gzip zstd
+	file_server
+}

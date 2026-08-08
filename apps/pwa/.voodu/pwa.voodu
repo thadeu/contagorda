@@ -20,6 +20,26 @@ app "contagorda" "pwa" {
   host = "${APP_HOST:-app.contagorda.com}"
   replicas = 2
 
+  # Where the build arguments below come from.
+  #
+  # `env_from` does two things, and the second is the one that matters here: the
+  # CLI fetches the bucket from the controller *before* parsing, so the
+  # placeholders below resolve from `vd config` instead of from whoever's shell
+  # is running the deploy. Rotating a key is one `vd config set`, not a message
+  # to everybody.
+  #
+  # Interpolation runs over the whole file, comments included — a placeholder
+  # written out in prose here is looked up like any other and fails the apply
+  # when nothing defines it. Hence the wording.
+  #
+  # It also stacks the bucket as runtime env in the container, which for a Caddy
+  # serving static files does nothing. Harmless, and not the reason it is here.
+  #
+  # **The lookup only runs for a local apply.** With `-r <remote>` the CLI
+  # forwards over SSH and interpolation goes back to shell-only — so deploy from
+  # the box, or export the two values. See docs/pwa/hosting.md.
+  env_from = ["contagorda/pwa"]
+
   build {
     # The repo root, reached from here. Not a preference: `pnpm install
     # --frozen-lockfile` needs the lockfile and the workspace definition, and
@@ -28,9 +48,13 @@ app "contagorda" "pwa" {
     context    = "../.."
     dockerfile = "apps/pwa/Dockerfile"
 
+    # The keys have to be listed — docker needs a `--build-arg` for each — but
+    # the values come from the bucket above. No defaults: a bundle is built once
+    # and carries whatever it was given, so a missing value should stop the
+    # deploy rather than quietly ship a guess pointing at production.
     args = {
-      VITE_API_URL = "${API_URL:-https://api.contagorda.com}"
-      VITE_CLOWK_PUBLISHABLE_KEY = "${CLOWK_PUBLISHABLE_KEY}"
+      VITE_API_URL = "${VITE_API_URL}"
+      VITE_CLOWK_PUBLISHABLE_KEY = "${VITE_CLOWK_PUBLISHABLE_KEY}"
     }
   }
 

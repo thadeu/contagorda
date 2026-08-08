@@ -72,12 +72,27 @@ neither of them where secrets go.
 | Pages | build environment variables, in the project's settings |
 
 On the VM the keys have to be listed in `build { args }` — docker needs a
-`--build-arg` for each — but the *values* come from `${VAR}`. The obvious wish
-is to keep those on the controller with `vd config` and never in a shell.
-`env_from` does feed a bucket into `${VAR}` at parse time, which is exactly
-that; the catch is that **the lookup only runs for a local apply.** With
-`-r prod` the CLI forwards over SSH and interpolation stays shell-only, so for
-this repo the values live in a gitignored `.envrc` — see `.envrc.example`.
+`--build-arg` for each — but the values come from the controller:
+
+```sh
+vd config contagorda/pwa set \
+  VITE_API_URL="https://api.contagorda.com" \
+  VITE_CLOWK_PUBLISHABLE_KEY="pk_live_xxx"
+```
+
+`env_from` is what makes that work, and not for the reason it looks like: the
+CLI fetches the bucket *before parsing*, so the placeholders in the manifest
+resolve from it. Rotating a key is one `vd config set` rather than a message to
+everybody who deploys. (It also stacks the bucket as runtime env in the
+container, which for a Caddy serving static files does nothing.)
+
+**The lookup only runs for a local apply.** With `-r <remote>` the CLI forwards
+over SSH and interpolation goes back to shell-only — deploy from the box, or
+keep the values exported. `.envrc.example` is that fallback.
+
+**Interpolation runs over the whole file, comments included.** A placeholder
+written out in prose is looked up like any other and fails the apply with
+`undefined variable(s)`. Describe them; do not spell them.
 
 Nothing secret can travel either way — whatever goes in comes out readable in
 the bundle. The Clowk publishable key is fine there by design; the secret key

@@ -1,31 +1,32 @@
-# What `vd apply` interpolates into the manifests. Copy to `.envrc`.
+# The fallback, for a deploy that runs with `-r <remote>`. Copy to `.envrc`.
 #
 #   cp .envrc.example .envrc && direnv allow
 #
-# These are build arguments for the PWA and hostnames for the ingresses — not
-# runtime configuration. Everything the app needs at runtime lives on the
-# controller instead:
+# **The normal path does not need this file.** The manifests read their values
+# from the controller:
 #
-#   vd config contagorda/api set DATABASE_URL=... REDIS_URL=... CLOWK_SECRET_KEY=...
+#   vd config contagorda/pwa set \
+#     VITE_API_URL="https://api.contagorda.com" \
+#     VITE_CLOWK_PUBLISHABLE_KEY="pk_live_xxx"
 #
-# **Why the PWA's values are here and not there.** A config bucket can feed
-# `${VAR}` at parse time — `env_from` does that — but only for a local apply.
-# With `-r prod` the CLI forwards over SSH and interpolation stays shell-only,
-# and `-r prod` is how this is deployed. So the shell is where they have to be.
+# `env_from` makes the CLI fetch that bucket before parsing, so the placeholders
+# in the manifest resolve from it. Rotating a key is one `vd config set` rather
+# than a message to everybody who deploys.
 #
-# Nothing secret belongs in this file. Vite inlines every `VITE_*` value into
-# the bundle, so whatever goes in comes out readable by anyone who opens the
-# app. The Clowk *secret* key is not here and never will be — it lives on the
-# API side, through `vd config`.
+# The catch: that lookup only runs for a **local** apply. With `-r <remote>` the
+# CLI forwards over SSH and interpolation goes back to shell-only. So either
+# deploy from the box, or keep these exported.
+#
+# Nothing secret belongs here or in that bucket. Vite inlines every `VITE_*`
+# value into the bundle, so whatever goes in comes out readable by anyone who
+# opens the app. The Clowk *secret* key is not here and never will be — it lives
+# on the API side, through `vd config contagorda/api set`.
 
-# Where the PWA sends its requests. Baked into the bundle at build time.
-export API_URL="https://api.contagorda.com"
+export VITE_API_URL="https://api.contagorda.com"
 
 # Public by design: it ships in the bundle and doubles as the expected `aud` on
-# tokens the API verifies. No default in the manifest — a bundle built without
-# it would be an app that cannot sign anybody in, and failing the apply is the
-# better of the two.
-export CLOWK_PUBLISHABLE_KEY="pk_live_xxx"
+# tokens the API verifies.
+export VITE_CLOWK_PUBLISHABLE_KEY="pk_live_xxx"
 
 # The hostnames the ingresses answer on. Both have defaults in the manifests;
 # override for a staging box.

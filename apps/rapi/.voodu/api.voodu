@@ -94,9 +94,13 @@ ingress "contagorda" "api" {
   host = "${API_HOST:-api.contagorda.com}"
   port = 3000
 
-  # The PWA is served from Cloudflare over https, so this has to be https too:
-  # a page on https cannot call http, and the browser refuses before the request
-  # is made — with an error that says nothing about CORS.
+  # The PWA is served over https, so this has to be too: a page on https cannot
+  # call http, and the browser refuses before the request leaves — with an error
+  # that says nothing about CORS.
+  #
+  # The redirect for plain http comes from Rails (`force_ssl`), not from here.
+  # The ingress serves :80 and :443 from one server, so a TLS host stays
+  # reachable over http and simply answers — see production.rb.
   tls {
     email = "ops@contagorda.com"
   }

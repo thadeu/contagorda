@@ -18,14 +18,24 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  config.assume_ssl = true
-
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+  # Not `assume_ssl`. It tells Rails every request already arrived over SSL,
+  # which means `force_ssl` never redirects — a plain http request is served in
+  # the clear, Authorization header and all. The generated default assumes a
+  # proxy that does not forward the scheme; caddy does forward it, and Rails
+  # trusts `X-Forwarded-Proto` from a private address, which the container
+  # network is.
+  #
+  # The failure mode if that ever stops being true is loud rather than silent: a
+  # redirect loop on the first request, not a token quietly sent over http.
+  #
+  # It matters because the ingress serves :80 and :443 from one server, so
+  # nothing in front of this app redirects — see apps/pwa/Caddyfile, which had
+  # to solve the same problem a different way.
   config.force_ssl = true
 
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  # The probe reaches `/up` over http inside the pod, and a health check that
+  # answers with a redirect is a health check that stopped checking.
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]

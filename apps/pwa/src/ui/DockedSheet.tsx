@@ -159,6 +159,8 @@ export function DockedSheet({ expanded, onExpandedChange, toolbar, children }: D
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         {children}
       </div>
+
+      <div className="footer-edge footer-edge-card" aria-hidden="true" />
     </section>
   )
 }

@@ -176,6 +176,8 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
           {children}
         </div>
 
+        <div className="footer-edge footer-edge-panel" aria-hidden="true" />
+
         <div aria-hidden="true" className="absolute inset-x-0 top-full h-24 bg-surface" />
       </div>
       </div>

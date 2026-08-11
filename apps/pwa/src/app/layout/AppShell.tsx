@@ -53,6 +53,8 @@ function Shell() {
             <Outlet />
           </ErrorBoundary>
         </main>
+
+        <div className="footer-edge" aria-hidden="true" />
       </div>
 
       <RotateNotice />

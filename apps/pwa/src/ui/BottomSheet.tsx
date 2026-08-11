@@ -243,6 +243,8 @@ export function BottomSheet({
         >
           {children}
         </div>
+
+        <div className="footer-edge footer-edge-panel" aria-hidden="true" />
       </div>
       </div>
     </Portal>

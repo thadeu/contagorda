@@ -682,3 +682,71 @@ html[data-theme='dark'] body {
     background-color: var(--color-canvas);
   }
 }
+
+/*
+ * The foot of a surface, and content leaving through it.
+ *
+ * Two things that are really the same thing: a shadow along the bottom edge
+ * that makes the surface read as something set into the screen rather than
+ * printed on it, and a fade over the same band so a list leaves instead of
+ * being cut off at a line.
+ *
+ * The cut is what gives a web app away. Native lists on iOS dissolve into the
+ * chrome below them — the row nearest the edge is half there — and a scroller
+ * whose last row ends at a hard boundary reads as a document in a window.
+ *
+ * The bottom edge and no other. A shadow at the top would darken a header that
+ * is meant to be read at full strength, and darken it permanently rather than
+ * as something scrolled past; the sides have nothing passing under them at all.
+ * The offset and the negative spread are what confine it to one edge: the
+ * shadow is pulled in from every side by its own blur, then pushed back out
+ * through the bottom, so only that edge is left with anything.
+ *
+ * Every surface that scrolls wears its own, because every one of them has its
+ * own bottom edge and its own colour behind it. The app frame is one; a panel
+ * presented over it is another, and portalled out of the frame entirely, so the
+ * frame's edge is behind it and could never have shown through.
+ *
+ * It must not eat a tap. Everything here is paint.
+ */
+.footer-edge {
+  --edge-fade: 2rem;
+  --edge-shadow-size: 1.5rem;
+  --edge-shadow: rgb(10 15 26 / 12%);
+  --edge-color: var(--color-canvas);
+
+  /* The app frame ends where the screen does, so its band has to cover the
+     home indicator's inset as well. A panel keeps that inset as padding of its
+     own and ends above it. */
+  --edge-inset: env(safe-area-inset-bottom, 0px);
+
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  height: calc(var(--edge-fade) + var(--edge-inset));
+  pointer-events: none;
+  box-shadow: inset 0 calc(-1 * var(--edge-shadow-size)) var(--edge-shadow-size)
+    calc(-1 * var(--edge-shadow-size)) var(--edge-shadow);
+  background-image: linear-gradient(to top, var(--edge-color), transparent);
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+/* Anything presented over the app: it fades into the panel's own surface, not
+   into the page the panel is covering. */
+.footer-edge-panel {
+  --edge-color: var(--color-overlay);
+  --edge-inset: 0px;
+}
+
+/* The history screen's docked list sits on a card rather than on an overlay. */
+.footer-edge-card {
+  --edge-color: var(--color-surface);
+  --edge-inset: 0px;
+}
+
+html[data-theme='dark'] .footer-edge {
+  --edge-shadow: rgb(0 0 0 / 55%);
+}

@@ -8,7 +8,13 @@ import { uuid } from '@/lib/uuid'
  * call sites: the bearer token, the ledger, the idempotency key. A port that
  * had to remember them would be a port that can forget one.
  */
-const API_URL = import.meta.env.VITE_API_URL
+/**
+ * Where the API answers. Without VITE_API_URL it is port 3000 on whatever host
+ * served the app, so opening the PWA from a phone as http://192.168.x.x:5173
+ * reaches the API on that same machine — a fixed 127.0.0.1 would be the phone
+ * itself.
+ */
+const API_URL = import.meta.env.VITE_API_URL || `${location.protocol}//${location.hostname}:3000`
 
 export class ApiError extends Error {
   readonly status: number

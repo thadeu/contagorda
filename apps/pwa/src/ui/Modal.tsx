@@ -67,11 +67,19 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
    * scroll. A form usually can, so in practice this is the heading — but a short
    * one is draggable everywhere, which is what a native sheet does and what
    * makes it feel like an object rather than a window with a handle.
+   *
+   * And except on content that runs a drag of its own, which says so with
+   * `data-owns-drag`. A reorderable row is the case: it is held and moved, and
+   * on a list short enough not to scroll every one of those gestures was also
+   * pulling the sheet down — two things travelling from one finger. The element
+   * that has its own answer for the gesture keeps it.
    */
   function draggableFrom(target: EventTarget | null): boolean {
     const node = content.current
 
     if (!node || !(target instanceof Node)) return true
+
+    if (target instanceof Element && target.closest('[data-owns-drag]')) return false
 
     if (!node.contains(target)) return true
 
@@ -79,16 +87,21 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
   }
 
   function handleTouchStart(event: React.TouchEvent) {
-    if (!draggableFrom(event.target)) return
-
     /*
      * The innermost sheet takes the gesture and nobody else hears about it.
      * React dispatches through the component tree, where a sheet opened from
      * inside another one is its descendant however the portals arranged the DOM
      * — so without this, dragging the category sheet drags the transaction modal
      * underneath it, and every panel in the stack moves at once.
+     *
+     * Before the decision below and not after it: a gesture this panel declines
+     * to drag with — a scrolling list, a row that reorders by being held — is
+     * still this panel's gesture, and a panel further out must not inherit it
+     * for having heard it last.
      */
     event.stopPropagation()
+
+    if (!draggableFrom(event.target)) return
 
     startY.current = event.touches[0].clientY
     setDragging(true)
@@ -96,9 +109,9 @@ export function Modal({ title, onClose, trailing, children }: ModalProps) {
   }
 
   function handleTouchMove(event: React.TouchEvent) {
-    if (startY.current === null) return
-
     event.stopPropagation()
+
+    if (startY.current === null) return
 
     setOffset(Math.max(event.touches[0].clientY - startY.current, 0))
   }

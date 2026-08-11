@@ -66,6 +66,8 @@ export function createApiServices(): Services {
 
       archive: (id) => request<void>(`/accounts/${id}/archive`, { method: 'POST' }),
 
+      reorder: (ids) => request<Account[]>('/accounts/order', { method: 'PUT', body: { ids } }),
+
       // A missing key means zero. The server sends only what somebody set, and
       // writing every account out with a zero would invent a decision nobody
       // made.

@@ -127,6 +127,15 @@ export interface AccountsPort {
   /** Archived, never deleted: the transactions pointing at it are history. */
   archive(id: string): Promise<void>
   /**
+   * The whole order, as one write, answering with the list the server stored.
+   *
+   * Ids rather than positions: dragging one account past two others moves three
+   * rows, and a client sending one position per account could land some of them
+   * and lose the rest — leaving an order nobody arranged. Where each account
+   * sits is the server's arithmetic; this says only what came after what.
+   */
+  reorder(ids: string[]): Promise<Account[]>
+  /**
    * What each account holds at the start of a month, keyed by account id.
    *
    * A balance belongs to a month, not to the account. An account carries one

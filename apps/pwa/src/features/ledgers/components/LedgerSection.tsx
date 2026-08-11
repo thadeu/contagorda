@@ -15,14 +15,18 @@ import { CheckIcon, PlusIcon } from '@/ui/icons'
 import type { LedgerInvite, LedgerMember } from '@/services/types'
 
 /**
- * Who is in this space, and how someone else gets in.
+ * Which spaces you can work in, and — in the one you own — who else is in it.
  *
- * A list rather than a panel of buttons. Everything here is a person or an
- * invitation — one row each, its single action on the right — so reading it
+ * A list rather than a panel of buttons. Everything here is a space, a person or
+ * an invitation — one row each, its single action on the right — so reading it
  * answers "who can see my money" before anything is tapped.
  *
  * The switcher only appears once there is a choice to make. A person using this
  * alone should never meet the concept: one ledger, no list, nothing to pick.
+ *
+ * The roster is the owner's view. Somebody who was let into a space already sees
+ * whose it is, one group above, and a list of two rows repeating that under a
+ * heading of its own said the same thing twice.
  *
  * Inviting and removing are the owner's alone, so a member is shown neither.
  * That is politeness rather than protection — the rules that matter live where
@@ -56,6 +60,15 @@ export function LedgerSection() {
   const owner = canInvite(current)
 
   /**
+   * Two lists, because a space you own and a space somebody let you into are not
+   * the same kind of thing and are not read the same way. Yours is known by its
+   * name; theirs by whose it is — which is also what tells two spaces called the
+   * same thing apart, and they will be, since nobody has ever named one.
+   */
+  const mine = ledgers.filter((ledger) => ledger.role === 'owner')
+  const joined = ledgers.filter((ledger) => ledger.role === 'member')
+
+  /**
    * Catches the token on its way past, and does not share it.
    *
    * Sharing here would be the obvious thing and would not work: `navigator.share`
@@ -82,32 +95,59 @@ export function LedgerSection() {
 
   return (
     <section className="grid">
-      {ledgers.length > 1 &&
-        ledgers.map((ledger) => (
-          <Row key={ledger.id} onClick={() => switchTo(ledger.id)}>
-            <span className="min-w-0">
-              <span className="block truncate text-[0.9375rem] font-medium text-ink">
-                {ledger.name}
-              </span>
-              <span className="block text-xs text-muted">
-                {ledger.member_count === 1 ? 'só você' : `${ledger.member_count} pessoas`}
-              </span>
-            </span>
+      {ledgers.length > 1 && (
+        <>
+          <GroupLabel>Espaços</GroupLabel>
 
-            {ledger.id === ledgerId && <CheckIcon className="size-4 shrink-0 text-accent" />}
-          </Row>
-        ))}
+          {mine.map((ledger) => (
+            <Row key={ledger.id} onClick={() => switchTo(ledger.id)}>
+              <span className="min-w-0">
+                <span className="block truncate text-[0.9375rem] font-medium text-ink">
+                  {ledger.name}
+                </span>
+                <span className="block text-xs text-muted">
+                  {ledger.member_count === 1 ? 'só você' : `você e mais ${ledger.member_count - 1}`}
+                </span>
+              </span>
 
-      {people.map((person) => (
+              {ledger.id === ledgerId && <CheckIcon className="size-4 shrink-0 text-accent" />}
+            </Row>
+          ))}
+
+          {joined.length > 0 && <GroupLabel>Compartilhado comigo</GroupLabel>}
+
+          {joined.map((ledger) => (
+            <Row key={ledger.id} onClick={() => switchTo(ledger.id)}>
+              <span className="min-w-0">
+                <span className="block truncate text-[0.9375rem] font-medium text-ink">
+                  {ledger.owner_name ?? ledger.name}
+                </span>
+                <span className="block truncate text-xs text-muted">{ledger.owner_email}</span>
+              </span>
+
+              {ledger.id === ledgerId && <CheckIcon className="size-4 shrink-0 text-accent" />}
+            </Row>
+          ))}
+        </>
+      )}
+
+      {owner && <GroupLabel>Quem tem acesso</GroupLabel>}
+
+      {owner && people.map((person) => (
         <div key={person.id} className="flex min-h-12 items-center gap-3 px-4 py-2">
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[0.9375rem] text-ink">{person.name}</span>
-            <span className="block truncate text-xs text-muted">
-              {person.role === 'owner' ? 'dono' : person.email}
+            <span className="block truncate text-[0.9375rem] text-ink">
+              {person.you ? `${person.name} (você)` : person.name}
             </span>
+
+            <span className="block truncate text-xs text-muted">{person.email}</span>
           </span>
 
-          {owner && person.role !== 'owner' && (
+          {person.role === 'owner' && (
+            <span className="shrink-0 text-xs text-muted">criou este espaço</span>
+          )}
+
+          {person.role !== 'owner' && (
             <button
               type="button"
               onClick={() => setRemoving(person)}
@@ -119,7 +159,8 @@ export function LedgerSection() {
         </div>
       ))}
 
-      {live.map((invite) => (
+      {owner &&
+        live.map((invite) => (
         <div key={invite.id} className="flex min-h-12 items-center gap-3 px-4 py-2">
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[0.9375rem] text-ink">Convite pendente</span>
@@ -180,6 +221,14 @@ export function LedgerSection() {
         />
       )}
     </section>
+  )
+}
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-4 pt-3 pb-1 text-[0.6875rem] font-medium tracking-[0.08em] text-faint uppercase">
+      {children}
+    </p>
   )
 }
 

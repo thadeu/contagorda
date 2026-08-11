@@ -8,7 +8,7 @@ module Api
     class MembersController < BaseController
       def index
         render json: ledger.memberships.includes(:user).order(:created_at).map { |member|
-          Ledger::Membership::Serialize.call(membership: member)
+          Ledger::Membership::Serialize.call(membership: member, viewer: membership)
         }
       end
 

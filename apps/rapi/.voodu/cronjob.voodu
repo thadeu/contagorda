@@ -1,0 +1,21 @@
+# An idempotency key is only useful for as long as a retry is plausible. Kept
+# forever, a safety net becomes a table.
+cronjob"contagorda" "sweep-idempotency-keys" {
+  schedule = "17 4 * * *"
+  timezone = "America/Sao_Paulo"
+
+  # The imag the deployment above just built, rather than a second build of the
+  # same directory. Build mode tags `<scope>-<name>:latest`, and a nightly
+  # sweep has no reason to make every deploy build twice.
+  image = "contagorda-api:latest"
+
+  command  = ["bin/rails", "runner", "IdempotencyKey.stale.delete_all"]
+  env_from = ["contagorda/api"]
+
+  env = {
+    RAILS_ENV = "production"
+  }
+
+  successful_history_limit = 3
+  failed_history_limit     = 5
+}

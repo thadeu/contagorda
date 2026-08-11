@@ -22,4 +22,10 @@ describe('manifest', () => {
   it('runs standalone', () => {
     expect(manifest.display).toBe('standalone')
   })
+
+  // Honoured on Android and ignored by iOS, which is why `.rotate-notice`
+  // exists. Both are needed and neither replaces the other.
+  it('asks for portrait', () => {
+    expect(manifest.orientation).toBe('portrait')
+  })
 })

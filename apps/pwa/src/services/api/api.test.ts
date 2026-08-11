@@ -109,6 +109,7 @@ describe('the API client', () => {
     ['repeat', () => services.transactions.repeat('t1', { frequency: 'monthly', interval: 1, repeats: 3 }), 'POST', '/transactions/t1/recurrence'],
     ['accounts', () => services.accounts.list(), 'GET', '/accounts'],
     ['archive', () => services.accounts.archive('a1'), 'POST', '/accounts/a1/archive'],
+    ['reorder', () => services.accounts.reorder(['a2', 'a1']), 'PUT', '/accounts/order'],
     ['opening balances', () => services.accounts.openingBalances('2026-08'), 'GET', '/accounts/opening_balances?month=2026-08'],
     ['set opening balance', () => services.accounts.setOpeningBalance('a1', '2026-08', 100), 'PUT', '/accounts/a1/opening_balances/2026-08'],
     ['categories', () => services.categories.list(), 'GET', '/categories'],
@@ -122,6 +123,14 @@ describe('the API client', () => {
 
     expect(calls[0].init.method ?? 'GET').toBe(method)
     expect(calls[0].url).toBe(`http://127.0.0.1:3000/api/v1${path}`)
+  })
+
+  // The whole order in one body. One request per moved account would let a
+  // dropped connection land half an arrangement nobody made.
+  it('sends the account ids in the order they were left in', async () => {
+    await services.accounts.reorder(['a3', 'a1', 'a2'])
+
+    expect(JSON.parse(calls[0].init.body as string)).toEqual({ ids: ['a3', 'a1', 'a2'] })
   })
 
   it('leaves an omitted query parameter out entirely', async () => {

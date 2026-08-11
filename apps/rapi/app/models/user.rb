@@ -43,7 +43,11 @@ class User < ApplicationRecord
   end
 
   private
+    # What the first ledger is called. Nobody is asked, and nobody can change
+    # it yet, so it has to be a name that is still true once a second one
+    # exists: "Conta Pessoal" says which of the two this is, where "Minhas
+    # contas" described both and told them apart from neither.
     def default_ledger_name
-      "Minhas contas"
+      "Conta Pessoal"
     end
 end

@@ -28,6 +28,24 @@ RSpec.describe "Ledgers", type: :request do
       expect(shared).to include(role: "member", member_count: 2)
     end
 
+    # A ledger somebody shared carries a name chosen for their own list, where
+    # it was the only one. Whose it is has to come across too.
+    it "names the owner of every ledger" do
+      owner = sign_in
+      guest = sign_in
+
+      guest.user.memberships.create!(ledger: owner.ledger, role: "member")
+
+      get "/api/v1/ledgers", headers: guest.headers
+
+      shared = json.find { |ledger| ledger[:id] == owner.ledger.id }
+      expect(shared[:owner_name]).to eq(owner.user.preferred_name)
+      expect(shared[:owner_email]).to eq(owner.user.email)
+
+      mine = json.find { |ledger| ledger[:id] != owner.ledger.id }
+      expect(mine[:owner_name]).to eq(guest.user.preferred_name)
+    end
+
     it "shows nobody else's ledgers" do
       mine = sign_in
       theirs = sign_in
@@ -35,6 +53,35 @@ RSpec.describe "Ledgers", type: :request do
       get "/api/v1/ledgers", headers: mine.headers
 
       expect(json.map { |ledger| ledger[:id] }).not_to include(theirs.ledger.id)
+    end
+  end
+
+  describe "GET /api/v1/ledgers/:ledger_id/members" do
+    # The list is read to answer "who can see my money", and one of the rows is
+    # always the person asking. Which one is not something a client should work
+    # out by comparing addresses — two people here share one, which is what a
+    # comparison would get wrong, and the server never has to guess.
+    it "marks the row belonging to the reader" do
+      owner = sign_in
+      guest = sign_in
+      mine = guest.user.memberships.create!(ledger: owner.ledger, role: "member")
+
+      get "/api/v1/ledgers/#{owner.ledger.id}/members", headers: guest.headers
+
+      expect(json.count { |member| member[:you] }).to eq(1)
+      expect(json.find { |member| member[:you] }[:id]).to eq(mine.id)
+      expect(json.find { |member| member[:role] == "owner" }[:you]).to be(false)
+    end
+
+    it "answers differently for each reader" do
+      owner = sign_in
+      guest = sign_in
+
+      guest.user.memberships.create!(ledger: owner.ledger, role: "member")
+
+      get "/api/v1/ledgers/#{owner.ledger.id}/members", headers: owner.headers
+
+      expect(json.find { |member| member[:you] }[:role]).to eq("owner")
     end
   end
 

@@ -38,6 +38,10 @@ Rails.application.configure do
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
+  # Host authorization allows localhost and .local out of the box, which leaves
+  # out the one address a phone on the same network can use to reach here.
+  config.hosts << /\A(10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)\z/
+
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
 

@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '@/services'
 import type { Scope } from '@/services/ports'
@@ -113,6 +114,21 @@ export function useTogglePaid(month: string) {
 
     onSettled: () => invalidate(client, month),
   })
+}
+
+/**
+ * Ask the month again, and resolve once it has actually answered.
+ *
+ * Everything a month shows is invalidated together, not just the rows: the
+ * total, the picker and the per-category figures are read off the same data, and
+ * a refresh that renewed the list alone would leave a screen that half agrees
+ * with itself. The promise is the point — whoever pulled has to know when to
+ * stop showing that something is happening.
+ */
+export function useRefreshMonth(month: string): () => Promise<unknown> {
+  const client = useQueryClient()
+
+  return useCallback(() => invalidate(client, month), [client, month])
 }
 
 function invalidate(client: ReturnType<typeof useQueryClient>, month: string) {

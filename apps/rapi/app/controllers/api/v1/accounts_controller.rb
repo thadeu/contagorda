@@ -26,6 +26,17 @@ module Api
         render json: Ledger::Account::Serialize.call(account: account)
       end
 
+      # The list as the person arranged it. Answers with the whole list rather
+      # than 204, so the client can settle on what the server actually stored
+      # instead of trusting the order it drew.
+      def order
+        Ledger::Account::Reorder.call(ledger: current_ledger, ids: ordered_ids)
+
+        Cache.bump(current_ledger, Ledger::Account)
+
+        render json: Ledger::Account::List.call(ledger: current_ledger)
+      end
+
       # Archived rather than deleted: the transactions that reference it are
       # financial history, and history does not get to disappear because an
       # account was closed.
@@ -41,6 +52,10 @@ module Api
       private
         def account_params
           params.permit(:name, :kind, :institution)
+        end
+
+        def ordered_ids
+          params.permit(ids: [])[:ids] || []
         end
     end
   end

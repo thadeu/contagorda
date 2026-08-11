@@ -20,6 +20,31 @@ class Rack::Attack
     request.ip if request.path.start_with?("/api/v1/invites/") && request.post?
   end
 
+  # Paths this app has never had and never will. A request for one is a scanner
+  # working through a list, and the throttle above does not touch it: probing is
+  # cheap precisely because it is a handful of requests spread thin.
+  #
+  # One strike is enough. There is no honest way to ask for `/wp-json/` here.
+  PROBE = %r{
+    \A/(
+      wp-|wordpress|xmlrpc\.php|phpmyadmin|
+      \.env|\.git|
+      admin/config|cgi-bin|vendor/phpunit
+    )
+  }xi
+
+  blocklist("probes") do |request|
+    Fail2Ban.filter("probe:#{request.ip}", maxretry: 1, findtime: 1.hour, bantime: 1.hour) do
+      PROBE.match?(request.path)
+    end
+  end
+
+  # 404 rather than 403: a blocked caller learns nothing about why, and a
+  # scanner reading responses sees the same thing every other dead host returns.
+  self.blocklisted_responder = lambda do |_request|
+    [ 404, { "Content-Type" => "application/json" }, [ { error: { code: "not_found" } }.to_json ] ]
+  end
+
   self.throttled_responder = lambda do |_request|
     [
       429,

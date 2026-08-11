@@ -5,8 +5,9 @@
 # user id would be the same value in every ledger they are in, and would say so
 # to anyone who compared two.
 class Ledger::Membership::Serialize < ApplicationOperation
-  def initialize(membership:)
+  def initialize(membership:, viewer: nil)
     @membership = membership
+    @viewer = viewer
   end
 
   def call
@@ -14,7 +15,13 @@ class Ledger::Membership::Serialize < ApplicationOperation
       id: @membership.id,
       name: @membership.display_name,
       email: @membership.user.email,
-      role: @membership.role
+      role: @membership.role,
+
+      # Which row is the person reading it. The client could compare the address
+      # against the one it signed in with and be right nearly always, which is
+      # the problem: the server is the only party that knows for certain, and it
+      # already knows — the answer costs a comparison it has the values for.
+      you: @viewer.present? && @membership.id == @viewer.id
     }
   end
 end

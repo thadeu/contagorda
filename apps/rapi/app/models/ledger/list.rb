@@ -9,7 +9,11 @@ class Ledger::List < ApplicationOperation
 
   def call
     memberships.map do |membership|
-      Ledger::Serialize.call(membership: membership, member_count: counts[membership.ledger_id])
+      Ledger::Serialize.call(
+        membership: membership,
+        member_count: counts[membership.ledger_id],
+        owner: owners[membership.ledger_id]
+      )
     end
   end
 
@@ -26,5 +30,17 @@ class Ledger::List < ApplicationOperation
         .where(ledger_id: memberships.map(&:ledger_id))
         .group(:ledger_id)
         .count
+    end
+
+    # The owner of each ledger, in one query and with the users along for the
+    # ride. Asking per ledger would be two more queries each — the membership
+    # and then the person — on the one response the app blocks on before it
+    # paints anything.
+    def owners
+      @owners ||= Ledger::Membership
+        .owners
+        .where(ledger_id: memberships.map(&:ledger_id))
+        .includes(:user)
+        .index_by(&:ledger_id)
     end
 end

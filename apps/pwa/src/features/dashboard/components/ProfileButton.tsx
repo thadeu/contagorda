@@ -78,7 +78,7 @@ export function ProfileSheet({ name, email, avatarUrl = null, onClose }: Profile
 
   return (
     <>
-      <BottomSheet title="Conta" onClose={onClose}>
+      <BottomSheet title="Conta" showTitle={false} onClose={onClose}>
         <MenuRow onClick={() => setEditing(true)}>
           <span className="text-[0.9375rem] font-medium text-ink">Perfil</span>
           <ChevronRightIcon className="size-4 shrink-0 text-muted" />
@@ -89,10 +89,6 @@ export function ProfileSheet({ name, email, avatarUrl = null, onClose }: Profile
 
           <ThemeSwitch />
         </div>
-
-        <p className="px-4 pt-3 pb-1 text-[0.6875rem] font-medium tracking-[0.08em] text-faint uppercase">
-          Usuários
-        </p>
 
         <LedgerSection />
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_07_191000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -32,8 +32,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_07_191000) do
     t.string "kind", default: "checking", null: false
     t.uuid "ledger_id", null: false
     t.string "name", null: false
+    t.integer "position", null: false
     t.datetime "updated_at", null: false
     t.index ["ledger_id", "archived_at"], name: "index_accounts_on_ledger_id_and_archived_at"
+    t.index ["ledger_id", "position"], name: "index_accounts_on_ledger_id_and_position"
     t.index ["ledger_id"], name: "index_accounts_on_ledger_id"
     t.check_constraint "kind::text = ANY (ARRAY['checking'::character varying, 'savings'::character varying, 'credit_card'::character varying, 'cash'::character varying, 'investment'::character varying]::text[])", name: "accounts_kind_check"
   end

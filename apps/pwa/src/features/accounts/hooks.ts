@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { services } from '@/services'
 import { getActiveLedgerId } from '@/services/activeLedger'
 import type { NewAccount } from '@/services/ports'
+import type { Account } from '@/services/types'
 
 export const accountKeys = {
   all: () => ['accounts', getActiveLedgerId()] as const,
@@ -64,6 +65,55 @@ export function useUpdateAccount() {
       services.accounts.update(id, input),
     onSuccess: () => client.invalidateQueries({ queryKey: accountKeys.all() }),
   })
+}
+
+/**
+ * Where the person dragged an account to, applied before the server hears about
+ * it. A row that springs back to its old place while a request is in flight
+ * reads as a gesture that failed, so the cache moves first and the server
+ * answers with the list it stored — which is what the cache then keeps.
+ */
+export function useReorderAccounts() {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: (ids: string[]) => services.accounts.reorder(ids),
+
+    onMutate: async (ids) => {
+      const key = accountKeys.all()
+
+      await client.cancelQueries({ queryKey: key })
+
+      const previous = client.getQueryData<Account[]>(key)
+
+      client.setQueryData<Account[]>(key, (list) => (list ? inIdOrder(list, ids) : list))
+
+      return { previous }
+    },
+
+    // Put the old order back rather than leaving the screen asserting an
+    // arrangement the server never accepted.
+    onError: (_error, _ids, context) => {
+      if (context?.previous) client.setQueryData(accountKeys.all(), context.previous)
+    },
+
+    // The response is the whole list, so there is nothing left to go and ask
+    // for — and taking it wholesale is what settles a drag that raced an
+    // account created on another device.
+    onSuccess: (list) => client.setQueryData(accountKeys.all(), list),
+  })
+}
+
+/**
+ * The same arithmetic the server does, so the optimistic list and the one that
+ * comes back agree: named accounts in the order given, anything unnamed keeping
+ * its relative place at the end.
+ */
+function inIdOrder(list: Account[], ids: string[]): Account[] {
+  const named = ids.map((id) => list.find((a) => a.id === id)).filter((a) => a !== undefined)
+  const rest = list.filter((a) => !ids.includes(a.id))
+
+  return [...named, ...rest]
 }
 
 /**

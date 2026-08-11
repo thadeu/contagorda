@@ -46,10 +46,31 @@ describe('LedgerSection for a member', () => {
           value={{
             ledgerId: 'l1',
             ledgers: [
-              { id: 'l1', name: 'Nossa casa', member_count: 2, role: 'member' },
-              { id: 'l2', name: 'Meu espaço', member_count: 1, role: 'owner' },
+              {
+                id: 'l1',
+                name: 'Nossa casa',
+                member_count: 2,
+                role: 'member',
+                owner_name: 'Ana',
+                owner_email: 'ana@exemplo.com',
+              },
+              {
+                id: 'l2',
+                name: 'Conta Pessoal',
+                member_count: 1,
+                role: 'owner',
+                owner_name: 'Você',
+                owner_email: 'voce@exemplo.com',
+              },
             ],
-            current: { id: 'l1', name: 'Nossa casa', member_count: 2, role: 'member' },
+            current: {
+              id: 'l1',
+              name: 'Nossa casa',
+              member_count: 2,
+              role: 'member',
+              owner_name: 'Ana',
+              owner_email: 'ana@exemplo.com',
+            },
             shared: true,
             switchTo: () => {},
           }}
@@ -59,10 +80,18 @@ describe('LedgerSection for a member', () => {
       </QueryClientProvider>,
     )
 
+    // A space somebody let you into is known by whose it is, not by the name
+    // they chose for it back when it was the only one in their own list.
     await waitFor(() => {
-      expect(screen.getByText(/nossa casa/i)).toBeTruthy()
+      expect(screen.getByText('Ana')).toBeTruthy()
     })
 
+    expect(screen.getByText('ana@exemplo.com')).toBeTruthy()
+    expect(screen.getByText(/compartilhado comigo/i)).toBeTruthy()
+    expect(screen.queryByText(/nossa casa/i)).toBeNull()
+
+    // The roster would be the owner and you, which the row above already said.
+    expect(screen.queryByText(/quem tem acesso/i)).toBeNull()
     expect(screen.queryByRole('button', { name: /convidar/i })).toBeNull()
   })
 })

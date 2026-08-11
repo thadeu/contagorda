@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
   Search,
   Crosshair,
+  GripVertical,
   Sun,
   Moon,
   PiggyBank,
@@ -72,3 +73,4 @@ export const BellIcon = tuned(Bell)
 export const MoreIcon = tuned(MoreHorizontal)
 export const FilterIcon = tuned(ListFilter)
 export const ClearIcon = tuned(Eraser)
+export const DragHandleIcon = tuned(GripVertical)

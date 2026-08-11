@@ -20,6 +20,14 @@ Rails.application.routes.draw do
       # not a path segment on purpose: nothing in the app takes a ledger as an
       # argument, so no screen can pass the wrong one.
       resources :accounts, only: %i[index create update] do
+        # Declared on the collection, and declared first: `PUT /accounts/order`
+        # and `PUT /accounts/:id` are the same shape to a router, so an `order`
+        # route defined after the resource would be read as an update of an
+        # account whose id is the word "order".
+        collection do
+          put :order
+        end
+
         member do
           post :archive
         end

@@ -46,12 +46,42 @@ export function AppShell() {
 
 function Shell() {
   return (
-    <div className="app-surface relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
-      <main className="app-scroll flex-1 overflow-y-auto overscroll-contain">
-        <ErrorBoundary>
-          <Outlet />
-        </ErrorBoundary>
-      </main>
+    <>
+      <div className="app-surface relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">
+        <main className="app-scroll flex-1 overflow-y-auto overscroll-contain">
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
+        </main>
+      </div>
+
+      <RotateNotice />
+    </>
+  )
+}
+
+/**
+ * The app is portrait, and on a phone that is not negotiable.
+ *
+ * The manifest says `orientation: portrait`, which settles it on Android and is
+ * ignored by iOS — where the installed app turns with the phone and there is no
+ * API to stop it: `screen.orientation.lock` does not exist in Safari. So the
+ * screen is covered instead of rotated. Every figure here is right-aligned
+ * against a column of money, and sideways that column is three characters wide
+ * with the description running under it.
+ *
+ * Covering rather than hiding the app: `display: none` would take the scroll
+ * position of whatever was being read with it, and give it back at the top.
+ *
+ * Bounded by height as well as orientation, so it is phones and not desktops. A
+ * browser window is landscape nearly always, and a tablet held sideways has
+ * room for the layout the phone does not.
+ */
+function RotateNotice() {
+  return (
+    <div className="rotate-notice">
+      <p className="text-base font-semibold text-ink">Gire o aparelho</p>
+      <p className="pt-1 text-sm text-muted">O Conta Gorda foi feito para a vertical.</p>
     </div>
   )
 }

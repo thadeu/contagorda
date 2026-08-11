@@ -13,6 +13,9 @@ SHELL := /bin/bash
 
 APPS := $(patsubst apps/%/Makefile,%,$(wildcard apps/*/Makefile))
 
+# The address other devices on the network use to reach this machine.
+LAN_IP := $(shell ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo localhost)
+
 .PHONY: help up up-with-logs down logs tunnel setup test test-turbo lint typecheck check
 
 help:
@@ -59,9 +62,10 @@ up:
 up-with-logs: up
 	@command -v overmind >/dev/null || { echo "overmind not installed (brew install overmind)"; exit 1; }
 	@test -f apps/rapi/.env || { echo "-----> create apps/rapi/.env: cp apps/rapi/.env.example apps/rapi/.env"; exit 1; }
-	@# localhost, not 127.0.0.1, for the PWA: vite binds IPv6 only, so the
-	@# v4 address refuses the connection while localhost resolves to ::1.
-	@echo "-----> api http://127.0.0.1:3000  ·  pwa http://localhost:5173"
+	@# Both bind 0.0.0.0 (rails -b, vite --host) so another device on the same
+	@# network can reach them. Remember a LAN address is not a secure context —
+	@# `make tunnel` is what gives the phone the full platform.
+	@echo "-----> api http://$(LAN_IP):3000  ·  pwa http://$(LAN_IP):5173"
 	@overmind start -f Procfile.dev
 
 down:

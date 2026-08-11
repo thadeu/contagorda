@@ -56,7 +56,7 @@ Rails.application.configure do
   # write in one worker leaves the others serving what they had — which reads
   # like data that comes back when you pull to refresh.
   config.cache_store = :redis_cache_store, {
-    url: ENV.fetch("REDIS_URL"),
+    url: ENV.fetch("REDIS_URL", ""),
     # A cache that cannot be reached must not take the request down with it.
     # Losing the cache costs a recomputation; refusing to answer costs the app.
     error_handler: ->(method:, returning:, exception:) {

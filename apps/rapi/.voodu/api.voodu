@@ -26,9 +26,19 @@ deployment "contagorda" "api" {
   # probe before it takes traffic, and there is no old one still answering. On a
   # Rails boot that is tens of seconds of 502. Acceptable for an app used by the
   # people deploying it; the day it is not, this is the line to change.
-  replicas = 1
+  replicas = 2
 
   build {
+    # This directory, not the repo root. The PWA builds from the root because
+    # `pnpm install --frozen-lockfile` needs a lockfile and a workspace file
+    # that only exist there; the API's `Gemfile` and `Gemfile.lock` are right
+    # here and no gem comes from a path outside it.
+    #
+    # The Dockerfile is written against this context — `COPY Gemfile
+    # Gemfile.lock ./` and `COPY . .`. Rooting the build higher makes those
+    # lines point at paths that do not exist, the build fails, and the release
+    # that follows reports the confusing half: no `contagorda-api:latest` to
+    # run, so docker tries to pull one from a registry that has never seen it.
     context    = "."
     dockerfile = "Dockerfile"
   }
@@ -87,7 +97,7 @@ deployment "contagorda" "api" {
         path = "/up"
         port = 3000
       }
-      period = "10s"
+      period = "30s"
     }
 
     liveness {
@@ -95,7 +105,7 @@ deployment "contagorda" "api" {
         path = "/up"
         port = 3000
       }
-      period            = "30s"
+      period            = "60s"
       failure_threshold = 3
     }
   }
@@ -107,7 +117,7 @@ deployment "contagorda" "api" {
   resources {
     limits {
       cpu    = "0.5"
-      memory = "384Mi"
+      memory = "200Mi"
     }
   }
 }
@@ -128,24 +138,3 @@ ingress "contagorda" "api" {
   }
 }
 
-# An idempotency key is only useful for as long as a retry is plausible. Kept
-# forever, a safety net becomes a table.
-cronjob "contagorda" "sweep-idempotency-keys" {
-  schedule = "17 4 * * *"
-  timezone = "America/Sao_Paulo"
-
-  # The image the deployment above just built, rather than a second build of the
-  # same directory. Build mode tags `<scope>-<name>:latest`, and a nightly
-  # sweep has no reason to make every deploy build twice.
-  image = "contagorda-api:latest"
-
-  command  = ["bin/rails", "runner", "IdempotencyKey.stale.delete_all"]
-  env_from = ["contagorda/api"]
-
-  env = {
-    RAILS_ENV = "production"
-  }
-
-  successful_history_limit = 3
-  failed_history_limit     = 5
-}

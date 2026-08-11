@@ -58,10 +58,18 @@ const you: LedgerMember = {
   name: 'Você',
   email: 'voce@exemplo.com',
   role: 'owner',
+  you: true,
 }
 
 let ledgerList: Ledger[] = [
-  { id: SEED_LEDGER, name: 'Nossa casa', member_count: 1, role: 'owner' },
+  {
+    id: SEED_LEDGER,
+    name: 'Conta Pessoal',
+    member_count: 1,
+    role: 'owner',
+    owner_name: you.name,
+    owner_email: you.email,
+  },
 ]
 
 let ledgerData: Record<string, LedgerData> = {
@@ -134,7 +142,14 @@ export function createMockServices(): Services {
       list: () => delay(ledgerList),
 
       create: (name) => {
-        const created: Ledger = { id: uuid(), name: name.trim(), member_count: 1, role: 'owner' }
+        const created: Ledger = {
+          id: uuid(),
+          name: name.trim(),
+          member_count: 1,
+          role: 'owner',
+          owner_name: you.name,
+          owner_email: you.email,
+        }
 
         ledgerList = [...ledgerList, created]
         ledgerData = { ...ledgerData, [created.id]: emptyLedger() }
@@ -263,6 +278,16 @@ export function createMockServices(): Services {
         patch({ accounts: data().accounts.map((a) => (a.id === id ? { ...a, ...input } : a)) })
 
         return delay(data().accounts.find((a) => a.id === id)!)
+      },
+
+      reorder: (ids) => {
+        const accounts = data().accounts
+        const named = ids.map((id) => accounts.find((a) => a.id === id)).filter((a) => a !== undefined)
+        const rest = accounts.filter((a) => !ids.includes(a.id))
+
+        patch({ accounts: [...named, ...rest] })
+
+        return delay(data().accounts.filter((a) => a.archived_at === null))
       },
 
       openingBalances: (month) => {

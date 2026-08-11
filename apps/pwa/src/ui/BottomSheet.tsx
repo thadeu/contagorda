@@ -11,6 +11,15 @@ import { useTouchScrollGuard } from './useTouchScrollGuard'
 interface BottomSheetProps {
   title: string
   subtitle?: string
+  /**
+   * Whether the title is drawn as well as announced.
+   *
+   * A sheet whose rows already say what they are does not need a word above
+   * them repeating it. The dialog keeps the name either way — it is what a
+   * screen reader announces on the way in, and dropping it to save a line of
+   * pixels would take the label with it.
+   */
+  showTitle?: boolean
   onClose: () => void
   /**
    * Whether pulling up opens a taller detent.
@@ -57,6 +66,7 @@ const EXPANDED = 92
 export function BottomSheet({
   title,
   subtitle,
+  showTitle = true,
   onClose,
   expandable = false,
   actions,
@@ -120,16 +130,23 @@ export function BottomSheet({
   }
 
   function handleTouchStart(event: React.TouchEvent) {
-    if (!draggableFrom(event.target)) return
-
     /*
      * The innermost sheet takes the gesture and nobody else hears about it.
      * React dispatches through the component tree, where a sheet opened from
      * inside another one is its descendant however the portals arranged the DOM
      * — so without this, dragging the category sheet drags the transaction modal
      * underneath it, and every panel in the stack moves at once.
+     *
+     * Before the decision below and not after it: a gesture this panel declines
+     * to drag with is still this panel's gesture. Scrolling a list inside a
+     * sheet used to leak upward for exactly that reason — the sheet returned
+     * early, the modal behind it heard a touch it could not see the origin of,
+     * and the form moved while the list scrolled. It only showed once a list in
+     * a sheet grew long enough to scroll at all.
      */
     event.stopPropagation()
+
+    if (!draggableFrom(event.target)) return
 
     startY.current = event.touches[0].clientY
     setDragging(true)
@@ -137,9 +154,9 @@ export function BottomSheet({
   }
 
   function handleTouchMove(event: React.TouchEvent) {
-    if (startY.current === null) return
-
     event.stopPropagation()
+
+    if (startY.current === null) return
 
     const delta = event.touches[0].clientY - startY.current
 
@@ -206,14 +223,16 @@ export function BottomSheet({
             <span className="h-1 w-10 rounded-full bg-ink/30" />
           </div>
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="truncate text-base font-semibold text-ink">{title}</p>
-              {subtitle && <p className="truncate pt-0.5 text-sm text-muted">{subtitle}</p>}
-            </div>
+          {(showTitle || subtitle || actions) && (
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                {showTitle && <p className="truncate text-base font-semibold text-ink">{title}</p>}
+                {subtitle && <p className="truncate pt-0.5 text-sm text-muted">{subtitle}</p>}
+              </div>
 
-            {actions && <div className="flex shrink-0 items-center gap-1.5">{actions}</div>}
-          </div>
+              {actions && <div className="flex shrink-0 items-center gap-1.5">{actions}</div>}
+            </div>
+          )}
 
           {grab}
         </header>

@@ -8,7 +8,7 @@ class Ledger::Account::List < ApplicationOperation
   end
 
   def call
-    @ledger.accounts.order(:created_at).map do |account|
+    @ledger.accounts.in_order.map do |account|
       Ledger::Account::Serialize.call(account: account)
     end
   end

@@ -32,4 +32,13 @@
 
 # Ignore Docker-related files
 /.dockerignore
-/Dockerfile*
+
+# `/Dockerfile*` used to be here, and it cannot be: voodu builds by tarballing
+# this directory and then looking for the Dockerfile inside what arrived. A
+# local `docker build` never notices the rule — the CLI reads the Dockerfile
+# itself and hands it to the daemon out of band — so the exclusion only ever
+# breaks the deploy, and breaks it two steps away from the cause: no Dockerfile,
+# no image, and a release that reports a failed registry pull.
+#
+# The file ends up inside the image through `COPY . .`. It describes how the
+# image was built and reveals nothing that the image does not already contain.

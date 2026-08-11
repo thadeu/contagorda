@@ -31,6 +31,23 @@ function on(month: string, day: number): string {
   return `${month}-${String(day).padStart(2, '0')}`
 }
 
+/**
+ * Accounts written as a table and given ids from one counter.
+ *
+ * Twenty of them spelled out in full would be a hundred lines in which the only
+ * thing that varies is three words a row, and the one detail that must not
+ * repeat — the id — would be the one a copy-paste gets wrong.
+ */
+function more(rows: [string, Account['kind'], string | null][]): Account[] {
+  return rows.map(([name, kind, institution], index) => ({
+    id: `019fce00-0000-7000-8000-${String(index + 4).padStart(12, '0')}`,
+    name,
+    kind,
+    institution,
+    archived_at: null,
+  }))
+}
+
 export const accounts: Account[] = [
   {
     id: '019fce00-0000-7000-8000-000000000001',
@@ -53,6 +70,37 @@ export const accounts: Account[] = [
     institution: null,
     archived_at: null,
   },
+
+  // Twenty more, appended and never inserted: the three above are reached by
+  // index for the opening balances and by id for every seeded transaction, so
+  // the order of what came first is load-bearing.
+  //
+  // They are here to make a long list a thing that can be looked at — the
+  // picker scrolling, the drag carrying a row past a screenful, two accounts
+  // whose names differ only by what is under them. A fixture set of three
+  // proves none of that.
+  ...more([
+    ['Itaú', 'checking', 'Itaú Unibanco'],
+    ['Cartão Itaú', 'credit_card', 'Itaú Unibanco'],
+    ['Bradesco', 'checking', 'Bradesco'],
+    ['Poupança Bradesco', 'savings', 'Bradesco'],
+    ['Banco do Brasil', 'checking', 'Banco do Brasil'],
+    ['Caixa', 'checking', 'Caixa Econômica'],
+    ['Poupança Caixa', 'savings', 'Caixa Econômica'],
+    ['Inter', 'checking', 'Banco Inter'],
+    ['Cartão Inter', 'credit_card', 'Banco Inter'],
+    ['C6', 'checking', 'C6 Bank'],
+    ['Cartão C6', 'credit_card', 'C6 Bank'],
+    ['PicPay', 'checking', 'PicPay'],
+    ['Mercado Pago', 'checking', 'Mercado Pago'],
+    ['Cartão Amex', 'credit_card', 'American Express'],
+    ['Reserva de emergência', 'savings', 'Nu Pagamentos'],
+    ['Tesouro Direto', 'investment', 'Rico'],
+    ['Ações', 'investment', 'XP Investimentos'],
+    ['Cripto', 'investment', 'Binance'],
+    ['Dinheiro do mercado', 'cash', null],
+    ['Cofrinho', 'cash', null],
+  ]),
 ]
 
 export const categories: Category[] = [

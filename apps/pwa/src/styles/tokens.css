@@ -633,6 +633,52 @@ html[data-theme='dark'] {
   color-scheme: dark;
 }
 
+/*
+ * The document as well as the page, and the document is the one that matters.
+ *
+ * A root element with a background of its own is what paints the canvas — the
+ * whole painting surface, including the strip below the viewport that a
+ * standalone PWA leaves along the bottom edge. `body` then paints only its own
+ * box, which is exactly the height of the viewport and no further.
+ *
+ * So the light `#f2f4f7` on `html` was still there under a dark theme, showing
+ * as a pale band at the foot of the installed app whenever anything made that
+ * strip visible for a moment. Switching ledgers is the reliable way to see it:
+ * the cache is cleared, the tree below the provider unmounts while the new
+ * ledger loads, and the band appears and leaves with it.
+ */
+html[data-theme='dark'],
 html[data-theme='dark'] body {
   background-color: #0b0e13;
+}
+
+/*
+ * The landscape cover. See `RotateNotice` in AppShell for why it covers rather
+ * than rotates, and why iOS needs it at all when the manifest already asks for
+ * portrait.
+ *
+ * `max-height` is what keeps this on phones: a desktop window is landscape
+ * nearly always, and a tablet held sideways is a screen this layout fits. 500px
+ * sits above every iPhone in landscape and below every window anybody works in.
+ *
+ * Above the sheets, which sit at `z-40`. A modal open when the phone turns must
+ * not be the thing on top.
+ */
+.rotate-notice {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .rotate-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: var(--color-canvas);
+  }
 }

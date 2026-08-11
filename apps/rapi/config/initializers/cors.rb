@@ -8,7 +8,17 @@
 # class of problem CORS exists to bound.
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins ENV.fetch("CORS_ORIGINS", "http://localhost:5173").split(",").map(&:strip)
+    listed = ENV.fetch("CORS_ORIGINS", "http://localhost:5173").split(",").map(&:strip)
+
+    # In development the PWA is also opened from a phone on the same network,
+    # where its origin is this machine's LAN address — an address that changes
+    # with the network and so cannot be listed. Private ranges only, and only
+    # here: in production the list above is the whole story.
+    if Rails.env.development?
+      listed += [ %r{\Ahttp://(127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+):\d+\z} ]
+    end
+
+    origins(*listed)
 
     resource "*",
       headers: :any,

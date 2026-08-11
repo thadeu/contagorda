@@ -1,8 +1,10 @@
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMonth } from '@/app/useMonth'
 import { useGreeting } from '@/app/useGreeting'
-import { useTransactions } from '@/features/transactions/hooks'
+import { useRefreshMonth, useTransactions } from '@/features/transactions/hooks'
+import { usePullToRefresh } from '@/ui/usePullToRefresh'
+import { Spinner } from '@/ui/Spinner'
 import { MonthList } from '@/features/transactions/MonthList'
 import { MonthStack } from './components/MonthStack'
 import { ProfileSheet } from './components/ProfileButton'
@@ -21,6 +23,9 @@ export function DashboardPage() {
   const { firstName, avatarUrl, email } = useGreeting()
   const transactions = useTransactions(month)
 
+  const content = useRef<HTMLDivElement>(null)
+  const { refreshing } = usePullToRefresh(content, useRefreshMonth(month))
+
   const { current, shared } = useActiveLedger()
 
   useDocumentCanvas('sky')
@@ -34,7 +39,9 @@ export function DashboardPage() {
   const paidCents = sum(paid)
 
   return (
-    <div className="pb-0.5">
+    <div ref={content} className="relative pb-0.5" aria-busy={refreshing}>
+      <PullIndicator />
+
       <IdentityRow
         name={firstName}
         avatarUrl={avatarUrl}
@@ -74,6 +81,26 @@ export function DashboardPage() {
       </div>
 
       <MonthList month={month} />
+    </div>
+  )
+}
+
+/**
+ * Sits above the top of the page, and is only ever seen because the page has
+ * been pulled down past it.
+ *
+ * Its opacity is the pull itself — `--pull` runs from 0 to 1 over the distance
+ * that has to be travelled before letting go means anything, so the spinner
+ * arrives exactly as the gesture becomes one. Read from CSS rather than from
+ * state, because the alternative is a re-render for every frame of a drag.
+ */
+function PullIndicator() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-x-0 -top-9 flex justify-center opacity-[var(--pull,0)]"
+    >
+      <Spinner className="text-[2rem]" />
     </div>
   )
 }

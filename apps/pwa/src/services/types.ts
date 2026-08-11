@@ -27,6 +27,15 @@ export interface Ledger {
    * it is answered by the API rather than derived on the client.
    */
   role: 'owner' | 'member'
+  /**
+   * Who this space belongs to.
+   *
+   * A ledger somebody shared carries a name they chose for their own list,
+   * where it was the only one. In yours it can sit beside a ledger called
+   * exactly the same thing, and whose it is answers which is which.
+   */
+  owner_name: string | null
+  owner_email: string | null
 }
 
 export interface LedgerMember {
@@ -35,6 +44,12 @@ export interface LedgerMember {
   email: string
   /** Only an owner may invite or remove. A ledger always keeps one. */
   role: 'owner' | 'member'
+  /**
+   * Whether this row is the person reading it. Answered by the server: matching
+   * the address against the one signed in with would be right nearly always,
+   * and nearly always is not what a list of who can see your money needs.
+   */
+  you: boolean
 }
 
 export interface LedgerInvite {

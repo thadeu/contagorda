@@ -10,7 +10,7 @@ import { MonthStack } from './components/MonthStack'
 import { ProfileSheet } from './components/ProfileButton'
 import { IdentityRow } from './components/IdentityRow'
 import { SpendingCard } from './components/SpendingCard'
-import { TotalBalance } from './components/TotalBalance'
+import { IncomeCard } from './components/IncomeCard'
 import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
 import { useFadingCanvas } from '@/ui/useFadingCanvas'
 import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
@@ -34,9 +34,11 @@ export function DashboardPage() {
   const rows = transactions.data ?? []
   const expenses = rows.filter((t) => t.kind === 'expense')
   const paid = expenses.filter((t) => t.paid_at !== null)
+  const income = rows.filter((t) => t.kind === 'income')
 
   const totalCents = sum(expenses)
   const paidCents = sum(paid)
+  const incomeCents = sum(income)
 
   return (
     <div ref={content} className="relative pb-0.5" aria-busy={refreshing}>
@@ -72,12 +74,13 @@ export function DashboardPage() {
           remainingCents={totalCents - paidCents}
           paidCents={paidCents}
           totalCents={totalCents}
+          incomeCents={incomeCents}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-2 px-3.5 pt-3">
+        <IncomeCard month={month} />
         <SpendingCard month={month} />
-        <TotalBalance month={month} />
       </div>
 
       <MonthList month={month} />

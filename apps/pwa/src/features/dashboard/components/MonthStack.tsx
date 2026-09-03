@@ -1,4 +1,4 @@
-import { splitBRL } from '@/lib/money'
+import { formatBRL, splitBRL } from '@/lib/money'
 import { monthKey, shiftMonth, todayIso } from '@/lib/dates'
 import type { AppIcon } from '@/ui/icons'
 import { Money } from '@/ui/Money'
@@ -11,6 +11,7 @@ interface MonthStackProps {
   remainingCents: number
   paidCents: number
   totalCents: number
+  incomeCents: number
 }
 
 /**
@@ -30,10 +31,12 @@ export function MonthStack({
   remainingCents,
   paidCents,
   totalCents,
+  incomeCents,
 }: MonthStackProps) {
   const { head, tail } = splitBRL(remainingCents)
   const progress = totalCents === 0 ? 0 : Math.min(paidCents / totalCents, 1)
   const clear = totalCents > 0 && remainingCents === 0
+  const leftoverCents = incomeCents - totalCents
 
   return (
     <section>
@@ -71,7 +74,15 @@ export function MonthStack({
       </div>
 
       <div className="card-shadow relative -mt-8 rounded-card border border-dashed border-line bg-surface px-5 py-5">
-        <p className="text-sm text-muted">{clear ? 'Tudo pago' : 'Falta pagar'}</p>
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-sm text-muted">{clear ? 'Tudo pago' : 'Falta pagar'}</p>
+
+          {totalCents > 0 && (
+            <p className="tnum shrink-0 text-xs font-medium text-muted">
+              {Math.round(progress * 100)}% pago
+            </p>
+          )}
+        </div>
 
         <p className="tnum pt-1 text-[2.25rem] leading-none font-bold tracking-[-0.02em] text-ink">
           {head}
@@ -80,19 +91,69 @@ export function MonthStack({
 
         <div className="pt-5">
           <ProgressTrack value={progress} />
+        </div>
 
-          <div className="flex items-baseline justify-between pt-2.5 text-xs text-muted">
-            <span>
-              Pago <Money cents={paidCents} className="text-xs text-ink" />
-            </span>
-            <span>
-              de <Money cents={totalCents} className="text-xs text-ink" />
-            </span>
-          </div>
+        {/* The two figures the headline does not say on its own: what has
+            already left, and what is left once everything has. Side by side
+            because they answer the two questions people bring to the card, in
+            the order they ask them. */}
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Stat label="Pago" cents={paidCents} hint={`de ${formatBRL(totalCents)}`} />
+          <Leftover cents={leftoverCents} incomeCents={incomeCents} />
         </div>
       </div>
 
     </section>
+  )
+}
+
+/** One small figure with its label, on the sunken tone so it reads as a cell. */
+function Stat({
+  label,
+  cents,
+  hint,
+  tone = 'default',
+}: {
+  label: string
+  cents: number
+  hint: string
+  tone?: 'default' | 'in' | 'out'
+}) {
+  return (
+    <div className="min-w-0 rounded-control bg-sunken px-3 py-2.5">
+      <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
+        {label}
+      </p>
+
+      <Money cents={cents} tone={tone} className="block truncate pt-0.5 text-base font-bold" />
+
+      <p className="truncate text-xs text-muted">{hint}</p>
+    </div>
+  )
+}
+
+/**
+ * Income minus expenses: what the month leaves behind, or takes.
+ *
+ * Coloured, unlike everything else on the card, because it is the one figure
+ * whose sign changes the meaning. Green is money that stays, red is a month
+ * that costs more than it brings — and with no income at all it is grey, since
+ * a shortfall against nothing is not a shortfall, only a month not filled in.
+ */
+function Leftover({ cents, incomeCents }: { cents: number; incomeCents: number }) {
+  if (incomeCents === 0) {
+    return <Stat label="Sobrou" cents={0} hint="Sem receitas no mês" />
+  }
+
+  const positive = cents >= 0
+
+  return (
+    <Stat
+      label="Sobrou"
+      cents={Math.abs(cents)}
+      tone={positive ? 'in' : 'out'}
+      hint={positive ? 'na conta' : 'a descoberto'}
+    />
   )
 }
 

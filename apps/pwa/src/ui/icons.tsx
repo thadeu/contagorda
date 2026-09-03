@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleCheckBig,
+  Clock,
   Home,
   LogOut,
   Pencil,
@@ -63,6 +64,7 @@ export const OutflowIcon = tuned(BanknoteArrowDown)
 export const ChevronDownIcon = tuned(ChevronDown)
 export const RepeatIcon = tuned(RefreshCw)
 export const PaidIcon = tuned(CircleCheckBig)
+export const PendingIcon = tuned(Clock)
 export const UnpaidIcon = tuned(RotateCcw)
 export const EditIcon = tuned(Pencil)
 export const DeleteIcon = tuned(Trash2)

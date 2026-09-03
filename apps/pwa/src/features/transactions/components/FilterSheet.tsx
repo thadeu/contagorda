@@ -1,86 +1,61 @@
+import { useState } from 'react'
 import { BottomSheet } from '@/ui/BottomSheet'
 import { NavButton } from '@/ui/NavBar'
 import { CheckIcon, ClearIcon } from '@/ui/icons'
 import { SORTS, type Sort } from '@/features/transactions/sorting'
-import type { Status } from '@/features/transactions/useStatusFilter'
 
 interface FilterSheetProps {
-  status: Status
   sort: Sort
-  onStatusChange: (status: Status) => void
   onSortChange: (sort: Sort) => void
   onClose: () => void
 }
 
-const STATUSES: { value: Status; label: string }[] = [
-  { value: 'pending', label: 'A pagar' },
-  { value: 'paid', label: 'Pago' },
-]
-
 /**
- * Both questions about the list, in one place.
+ * How the list is ordered.
  *
- * They used to be a segmented control taking a permanent strip across the top of
- * every month, to answer a question asked once a session — and there was nowhere
- * to put sorting without taking another strip.
+ * Paid-or-pending used to be in here too, and moved out to a toggle in the list
+ * header: it is flicked constantly, and sorting is the question asked once a
+ * session, so only sorting is worth the cost of a sheet.
  *
- * It stays open after a choice. Sorting is usually adjusted twice in a row, and
- * a sheet that closes on the first tap makes the second one a round trip — so
- * the tick in the header closes rather than applies. Every choice is already
- * live behind the sheet; there is nothing left to commit, and a button that
- * pretended otherwise would invite someone to wonder what happens if they close
- * without it.
+ * It stays open after a choice and there is no apply button. The choice is held
+ * here as a draft and written when the sheet closes — by swipe, backdrop or
+ * escape, all of which mean "done". Re-sorting the list behind a sheet that is
+ * still open is motion nobody asked to watch, and a tick that does the same as
+ * closing is a second way to do one thing.
  *
- * Clearing goes back to the defaults and greys out when it is already there,
+ * Clearing goes back to the default and greys out when it is already there,
  * which is the only honest way to say a reset would do nothing.
  */
-export function FilterSheet({
-  status,
-  sort,
-  onStatusChange,
-  onSortChange,
-  onClose,
-}: FilterSheetProps) {
-  const untouched = status === 'pending' && sort === 'date'
+export function FilterSheet({ sort, onSortChange, onClose }: FilterSheetProps) {
+  const [draft, setDraft] = useState<Sort>(sort)
+  const untouched = draft === 'date'
+
+  function close() {
+    if (draft !== sort) onSortChange(draft)
+
+    onClose()
+  }
 
   return (
     <BottomSheet
-      title="Filtros"
-      onClose={onClose}
+      title="Ordenar"
+      onClose={close}
       actions={
-        <>
-          <NavButton
-            icon={ClearIcon}
-            label="Limpar filtros"
-            disabled={untouched}
-            onClick={() => {
-              onStatusChange('pending')
-              onSortChange('date')
-            }}
-          />
-
-          <NavButton primary icon={CheckIcon} label="Aplicar" onClick={onClose} />
-        </>
+        <NavButton
+          icon={ClearIcon}
+          label="Voltar ao padrão"
+          disabled={untouched}
+          onClick={() => setDraft('date')}
+        />
       }
     >
-      <Group label="Situação">
-        {STATUSES.map((option) => (
-          <Choice
-            key={option.value}
-            label={option.label}
-            chosen={option.value === status}
-            onClick={() => onStatusChange(option.value)}
-          />
-        ))}
-      </Group>
-
       <Group label="Ordenar por">
         {SORTS.map((option) => (
           <Choice
             key={option.value}
             label={option.label}
-            chosen={option.value === sort}
-            onClick={() => onSortChange(option.value)}
+            chosen={option.value === draft}
+            onClick={() => setDraft(option.value)}
           />
         ))}
       </Group>

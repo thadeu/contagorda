@@ -6,6 +6,7 @@ import { groupsByDay, sortRows } from './sorting'
 import { LIST_ORDER, matchesStatus, useStatusFilter } from './useStatusFilter'
 import { DayGroupSection } from './components/DayGroupSection'
 import { FilterSheet } from './components/FilterSheet'
+import { StatusToggle } from './components/StatusToggle'
 import { TransactionRow } from './components/TransactionRow'
 import { TransactionSheet } from './components/TransactionSheet'
 import { EmptyState } from '@/ui/EmptyState'
@@ -72,8 +73,9 @@ export function MonthList({ month }: MonthListProps) {
           {all.length === 1 ? 'lançamento pago' : 'lançamentos pagos'}
         </p>
 
+        <StatusToggle status={status} onChange={setStatus} />
         <NavButton primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
-        <NavButton icon={FilterIcon} label="Filtros" onClick={() => setFiltering(true)} />
+        <NavButton icon={FilterIcon} label="Ordenar" onClick={() => setFiltering(true)} />
       </div>
 
       <div>
@@ -140,9 +142,7 @@ export function MonthList({ month }: MonthListProps) {
 
       {filtering && (
         <FilterSheet
-          status={status}
           sort={sort}
-          onStatusChange={setStatus}
           onSortChange={setSort}
           onClose={() => setFiltering(false)}
         />

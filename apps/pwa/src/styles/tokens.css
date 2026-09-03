@@ -20,13 +20,13 @@
  * income, where the mapping is learned too deeply to fight.
  */
 @theme {
-  --color-canvas: #eef1f6;
+  --color-canvas: #f6f1ea;
   --color-surface: #ffffff;
-  --color-sunken: #edf0f5;
+  --color-sunken: #efe8df;
 
-  --color-brand: #0a0f1a;
-  --color-brand-soft: #18202f;
-  --color-accent: #5aa9ff;
+  --color-brand: #0c0f18;
+  --color-brand-soft: #1b1d28;
+  --color-accent: #ef7a92;
 
   /* What a filled control is painted with.
      Split from `--color-accent` because the accent has two jobs that stopped
@@ -36,7 +36,7 @@
      text on top of it, and a pale blue with white text on it is the least
      readable button in the app. So the light theme fills with the same near-navy
      the month card uses, and keeps the bright blue for marking. */
-  --color-fill: #2a1f3d;
+  --color-fill: #0c0f18;
   --color-on-fill: #ffffff;
 
   /* The month view's sky. Same blue as the accent, opened up and taken down to
@@ -47,8 +47,8 @@
      stretch of no colour behind the hero card that read as smog. Keeping both
      stops in the same navy means the fade is one hue losing depth, which is
      what a sky does. */
-  --color-sky: #d9e3f2;
-  --color-sky-soft: #e6ecf5;
+  --color-sky: #ede3d6;
+  --color-sky-soft: #f3ece2;
 
   /* Flat, in both themes. The history screen tried the month view's gradient and
      lost by it: the docked panel is what should read as raised there, and a
@@ -62,13 +62,13 @@
      screens are told apart before anything is read, close enough that they are
      obviously the same app. Green and red were not available: they mean income
      and overdue here, and a screen painted in either would say something. */
-  --color-dusk: #6f76e8;
-  --color-dusk-soft: #a6abf3;
+  --color-dusk: #d9c4a3;
+  --color-dusk-soft: #eadcc6;
 
-  --color-ink: #0a0f1a;
-  --color-muted: #67748a;
-  --color-faint: #98a4b5;
-  --color-line: #e3e8ef;
+  --color-ink: #16130f;
+  --color-muted: #78706a;
+  --color-faint: #aaa198;
+  --color-line: #e9e2d8;
 
   /* The strong surface that carries white text, whichever theme is on. Light
      mode spends the near-black here; dark mode cannot, because there the page
@@ -83,13 +83,13 @@
      strong object on the screen reads as an object and not as a shade of the
      background. The dark theme keeps its navy; there the page itself is dark
      and a coloured slab would be a band. */
-  --color-inverse: #2a1f3d;
+  --color-inverse: #0c0f18;
 
   /* The surface of anything presented over the app. It is its own token because
      a sheet and a card are not the same thing wearing the same colour: the card
      belongs to the page, the sheet is on top of it, and telling them apart is
      what makes the sheet read as a layer instead of a taller card. */
-  --color-overlay: #ffffff;
+  --color-overlay: #fffcf7;
 
   /* Below the canvas. For a screen whose subject is a panel: the page drops so
      the panel can rise.
@@ -103,14 +103,14 @@
      So the light theme keeps the same grammar with the tones reversed: the page
      is the recessive one and the panel rises by being lighter, which is what the
      dark theme does too. Same relationship, opposite direction. */
-  --color-deep: #e8ecf1;
+  --color-deep: #ede6dc;
 
   /* How far the page is dimmed behind an overlay. Black, always — a scrim means
      less light, not the app's dark colour, so it must not follow the ink. */
   --overlay-scrim: 45%;
 
   --color-in: #128a5a;
-  --color-out: #d4443c;
+  --color-out: #c8382f;
 
   /* The three things a bar can be saying, kept apart from `in` and `out`. Those
      two mean money arriving and money leaving; on a chart of expenses every bar

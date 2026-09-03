@@ -54,6 +54,11 @@
 	@shell path / /index.html /manifest.webmanifest
 	header @shell Cache-Control "no-cache"
 
+	# Icons change rarely but do change, and iOS keeps the touch icon it saw
+	# first. A day plus a version in the URL lets a new one through.
+	@icons path /icons/* /favicon.svg
+	header @icons Cache-Control "public, max-age=86400"
+
 	encode gzip zstd
 	file_server
 }

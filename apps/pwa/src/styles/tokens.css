@@ -20,9 +20,9 @@
  * income, where the mapping is learned too deeply to fight.
  */
 @theme {
-  --color-canvas: #f2f4f7;
+  --color-canvas: #eef1f6;
   --color-surface: #ffffff;
-  --color-sunken: #e9edf2;
+  --color-sunken: #edf0f5;
 
   --color-brand: #0a0f1a;
   --color-brand-soft: #18202f;
@@ -36,14 +36,19 @@
      text on top of it, and a pale blue with white text on it is the least
      readable button in the app. So the light theme fills with the same near-navy
      the month card uses, and keeps the bright blue for marking. */
-  --color-fill: #232b3a;
+  --color-fill: #2a1f3d;
   --color-on-fill: #ffffff;
 
   /* The month view's sky. Same blue as the accent, opened up and taken down to
      the page so the screen has a horizon rather than a coloured header with an
      edge — an edge is what dates the shape. */
-  --color-sky: #0a0f1a;
-  --color-sky-soft: #4a515e;
+  /* Navy, not black-into-grey. The old pair ran from near-black through a
+     mid grey on the way to the page, and the grey was the whole problem: a
+     stretch of no colour behind the hero card that read as smog. Keeping both
+     stops in the same navy means the fade is one hue losing depth, which is
+     what a sky does. */
+  --color-sky: #d9e3f2;
+  --color-sky-soft: #e6ecf5;
 
   /* Flat, in both themes. The history screen tried the month view's gradient and
      lost by it: the docked panel is what should read as raised there, and a
@@ -63,7 +68,7 @@
   --color-ink: #0a0f1a;
   --color-muted: #67748a;
   --color-faint: #98a4b5;
-  --color-line: #e2e7ed;
+  --color-line: #e3e8ef;
 
   /* The strong surface that carries white text, whichever theme is on. Light
      mode spends the near-black here; dark mode cannot, because there the page
@@ -72,7 +77,13 @@
      top of the page is the near-black the card used to be: darker than a black
      background is nothing at all, so the card lifts instead. Raised by light,
      which is how a dark theme has always had to do it. */
-  --color-inverse: #232b3a;
+  /* Deep aubergine, in light mode only. The navy-grey it was is the colour of
+     every fintech's dark card, and next to a pale blue sky it was one more
+     blue. A warm dark purple is the opposite of the page's coolness, so the one
+     strong object on the screen reads as an object and not as a shade of the
+     background. The dark theme keeps its navy; there the page itself is dark
+     and a coloured slab would be a band. */
+  --color-inverse: #2a1f3d;
 
   /* The surface of anything presented over the app. It is its own token because
      a sheet and a card are not the same thing wearing the same colour: the card
@@ -98,7 +109,7 @@
      less light, not the app's dark colour, so it must not follow the ink. */
   --overlay-scrim: 45%;
 
-  --color-in: #0e7c57;
+  --color-in: #128a5a;
   --color-out: #d4443c;
 
   /* The three things a bar can be saying, kept apart from `in` and `out`. Those
@@ -331,7 +342,7 @@
 @utility card-shadow {
   box-shadow:
     0 1px 2px rgb(10 15 26 / 0.04),
-    0 8px 24px -12px rgb(10 15 26 / 0.1);
+    0 12px 32px -14px rgb(10 15 26 / 0.18);
 }
 
 /*
@@ -468,6 +479,16 @@ html[data-canvas='deep'] {
   --canvas-top: var(--canvas-deep-top);
   --canvas-mid: var(--canvas-deep-mid);
 }
+
+/*
+ * The light theme's sky is a tint, not a colour.
+ *
+ * A dark top has to fade through grey to reach paper, and that grey was smog
+ * behind the hero card. A pale steel blue reaches white with nothing in
+ * between: the top of the screen is cooler than the bottom, which is enough
+ * to say "here is where the month lives" without painting a block. The dark
+ * month stack then sits on the tint like a card on a desk.
+ */
 
 html[data-canvas='sky'] .app-surface::before,
 html[data-canvas='dusk'] .app-surface::before,

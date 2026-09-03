@@ -44,7 +44,7 @@ export function SpendingCard({ month }: { month: string }) {
     <button
       type="button"
       onClick={() => navigate({ pathname: '/stats', search })}
-      className="h-full w-full rounded-card border border-dashed border-line bg-surface px-4 py-3.5 text-left"
+      className="card-shadow h-full w-full rounded-card border border-dashed border-line bg-surface px-4 py-3.5 text-left"
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">

@@ -25,7 +25,7 @@ export function IncomeCard({ month }: { month: string }) {
   const share = totalCents === 0 ? 0 : Math.min(receivedCents / totalCents, 1)
 
   return (
-    <section className="h-full rounded-card bg-surface px-4 py-3.5">
+    <section className="card-shadow h-full rounded-card border border-line bg-surface px-4 py-3.5">
       <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
         Receitas
       </p>

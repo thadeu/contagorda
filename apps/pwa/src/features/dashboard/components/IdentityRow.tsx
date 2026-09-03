@@ -52,7 +52,7 @@ export function IdentityRow({
       <button
         type="button"
         onClick={onOpenProfile}
-        className="flex min-w-0 items-center gap-2.5 rounded-full bg-surface py-1.5 pr-3 pl-1.5"
+        className="card-shadow flex min-w-0 items-center gap-2.5 rounded-full border border-line bg-surface py-1.5 pr-3 pl-1.5"
       >
         <span className="rounded-full bg-gradient-to-br from-[#f0475f] via-[#b06cf5] to-[#4fb0f7] p-[2px]">
           <span className="block rounded-full bg-surface p-[2px]">
@@ -73,14 +73,14 @@ export function IdentityRow({
       <div className="flex shrink-0 items-center gap-1.5">
         <span
           aria-hidden="true"
-          className="grid size-10 place-items-center rounded-2xl bg-surface text-faint opacity-50"
+          className="grid size-10 place-items-center rounded-2xl border border-line bg-surface text-faint opacity-50"
         >
           <SearchIcon className="size-[1.125rem]" />
         </span>
 
         <span
           aria-hidden="true"
-          className="grid size-10 place-items-center rounded-2xl bg-surface text-faint opacity-50"
+          className="grid size-10 place-items-center rounded-2xl border border-line bg-surface text-faint opacity-50"
         >
           <BellIcon className="size-[1.125rem]" />
         </span>
@@ -89,7 +89,7 @@ export function IdentityRow({
           type="button"
           onClick={onOpenAccounts}
           aria-label="Contas"
-          className="grid size-10 place-items-center rounded-2xl bg-surface text-ink"
+          className="card-shadow grid size-10 place-items-center rounded-2xl border border-line bg-surface text-ink"
         >
           <WalletIcon className="size-[1.125rem]" />
         </button>

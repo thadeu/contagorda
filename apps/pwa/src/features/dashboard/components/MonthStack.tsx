@@ -73,7 +73,7 @@ export function MonthStack({
         </div>
       </div>
 
-      <div className="card-shadow relative -mt-8 rounded-card border border-dashed border-line bg-surface px-5 py-5">
+      <div className="card-shadow relative -mt-8 rounded-card border border-line bg-surface px-5 py-5">
         <div className="flex items-baseline justify-between gap-3">
           <p className="text-sm text-muted">{clear ? 'Tudo pago' : 'Falta pagar'}</p>
 
@@ -97,7 +97,7 @@ export function MonthStack({
             already left, and what is left once everything has. Side by side
             because they answer the two questions people bring to the card, in
             the order they ask them. */}
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="mt-4 grid grid-cols-2 divide-x divide-line border-t border-line pt-3">
           <Stat label="Pago" cents={paidCents} hint={`de ${formatBRL(totalCents)}`} />
           <Leftover cents={leftoverCents} incomeCents={incomeCents} />
         </div>
@@ -107,7 +107,7 @@ export function MonthStack({
   )
 }
 
-/** One small figure with its label, on the sunken tone so it reads as a cell. */
+/** One small figure with its label, in a row ruled by hairlines rather than boxed. */
 function Stat({
   label,
   cents,
@@ -120,7 +120,7 @@ function Stat({
   tone?: 'default' | 'in' | 'out'
 }) {
   return (
-    <div className="min-w-0 rounded-control bg-sunken px-3 py-2.5">
+    <div className="min-w-0 px-1 first:pr-3 last:pl-4">
       <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
         {label}
       </p>

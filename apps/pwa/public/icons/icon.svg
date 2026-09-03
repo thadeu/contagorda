@@ -9,7 +9,7 @@
       <stop offset="1" stop-color="#5aa9ff" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="#ffffff"/>
+  <rect width="512" height="512" fill="#ffffff"/>
 
   <g stroke="#0a0f1a" stroke-width="26" stroke-linejoin="round" stroke-linecap="round">
     <!-- ears: round and floppy, leaning outwards -->

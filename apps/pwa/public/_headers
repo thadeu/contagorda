@@ -22,3 +22,12 @@
 
 /manifest.webmanifest
   Cache-Control: no-cache
+
+# Icons change rarely but do change, and iOS in particular keeps the touch icon
+# it saw first. A short lifetime plus a version in the URL is what lets a new
+# one through without a reinstall.
+/icons/*
+  Cache-Control: public, max-age=86400
+
+/favicon.svg
+  Cache-Control: public, max-age=86400

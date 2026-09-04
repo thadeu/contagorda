@@ -20,13 +20,24 @@
  * income, where the mapping is learned too deeply to fight.
  */
 @theme {
-  --color-canvas: #f6f1ea;
+  /* White, the way the welcome screen is white: the app icon opened up. Cards
+     are white too and stand on their shadow; the warm off-white is kept for
+     what sits inside a card. */
+  --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-sunken: #efe8df;
+  --color-sunken: #f4f0eb;
 
   --color-brand: #0c0f18;
   --color-brand-soft: #1b1d28;
   --color-accent: #ef7a92;
+
+  /* The accent as text on white. The pink that fills a card is too pale to
+     read as a word; this is the same pink taken down until it can. */
+  --color-accent-ink: #d4526d;
+
+  /* The third colour on the welcome screen's pile of cards, kept for the
+     places that need one that is neither the ink nor the accent. */
+  --color-teal: #1f6f6b;
 
   /* What a filled control is painted with.
      Split from `--color-accent` because the accent has two jobs that stopped
@@ -47,8 +58,13 @@
      stretch of no colour behind the hero card that read as smog. Keeping both
      stops in the same navy means the fade is one hue losing depth, which is
      what a sky does. */
-  --color-sky: #ede3d6;
-  --color-sky-soft: #f3ece2;
+  /* White. The month view has no sky of its own in the light theme: the page
+     is white from top to bottom, and the month card is the one dark object
+     on it. Not the pink: a pink sky was tried and read as the subject of the
+     app rather than as a mark on it. The layer stays so the dark theme can
+     paint one. */
+  --color-sky: #ffffff;
+  --color-sky-soft: #ffffff;
 
   /* Flat, in both themes. The history screen tried the month view's gradient and
      lost by it: the docked panel is what should read as raised there, and a
@@ -62,13 +78,13 @@
      screens are told apart before anything is read, close enough that they are
      obviously the same app. Green and red were not available: they mean income
      and overdue here, and a screen painted in either would say something. */
-  --color-dusk: #d9c4a3;
-  --color-dusk-soft: #eadcc6;
+  --color-dusk: #d8ebe8;
+  --color-dusk-soft: #edf5f3;
 
   --color-ink: #16130f;
   --color-muted: #78706a;
   --color-faint: #aaa198;
-  --color-line: #e9e2d8;
+  --color-line: #ece7e1;
 
   /* The strong surface that carries white text, whichever theme is on. Light
      mode spends the near-black here; dark mode cannot, because there the page
@@ -89,7 +105,9 @@
      a sheet and a card are not the same thing wearing the same colour: the card
      belongs to the page, the sheet is on top of it, and telling them apart is
      what makes the sheet read as a layer instead of a taller card. */
-  --color-overlay: #fffcf7;
+  /* A hair warmer than white, so the white cards a sheet carries still read
+     as cards. On a pure white sheet they had nothing to stand on. */
+  --color-overlay: #f8f6f3;
 
   /* Below the canvas. For a screen whose subject is a panel: the page drops so
      the panel can rise.
@@ -103,7 +121,7 @@
      So the light theme keeps the same grammar with the tones reversed: the page
      is the recessive one and the panel rises by being lighter, which is what the
      dark theme does too. Same relationship, opposite direction. */
-  --color-deep: #ede6dc;
+  --color-deep: #f7f5f2;
 
   /* How far the page is dimmed behind an overlay. Black, always — a scrim means
      less light, not the app's dark colour, so it must not follow the ink. */
@@ -125,7 +143,7 @@
      the stats screen is greyscale, so there is nothing here for them to fight
      with. */
   --color-rise: #e12d20;
-  --color-steady: #1476e8;
+  --color-steady: #1f7f79;
   --color-now: #00a862;
 
   --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -165,13 +183,13 @@
   }
 
   html {
-    background-color: #f2f4f7;
+    background-color: #ffffff;
   }
 
   body {
     /* Matches --color-canvas. The installed PWA paints this behind the status
        bar, and any mismatch reads as a seam above the header on iOS. */
-    background-color: #f2f4f7;
+    background-color: #ffffff;
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

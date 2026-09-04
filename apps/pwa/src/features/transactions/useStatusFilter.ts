@@ -4,8 +4,20 @@ import type { Transaction } from '@/services/types'
 
 export type Status = 'pending' | 'paid'
 
+/**
+ * What the list is about, before it is about a status.
+ *
+ * `all` is the month. `income` is only what came in, paid or not — a scope,
+ * not a status: the question it answers is "what were my receipts", and a
+ * receipt that has not landed yet is still one of them. While a scope is on
+ * the status filter is set aside rather than combined with it, because "unpaid
+ * income" is not a list anybody opens the app to see.
+ */
+export type Scope = 'all' | 'income'
+
 const PARAM = 'status'
 const SORT_PARAM = 'sort'
+const SCOPE_PARAM = 'scope'
 
 /**
  * Pending is the default because it is the question the app exists to answer:
@@ -19,15 +31,20 @@ export function useStatusFilter() {
   const [params, setParams] = useSearchParams()
 
   const status: Status = params.get(PARAM) === 'paid' ? 'paid' : 'pending'
+  const scope: Scope = params.get(SCOPE_PARAM) === 'income' ? 'income' : 'all'
   const sortParam = params.get(SORT_PARAM)
   const sort: Sort = isSort(sortParam) ? sortParam : 'date'
 
-  function write(key: string, value: string) {
+  function write(key: string, value: string | null) {
     setParams(
       (current) => {
         const updated = new URLSearchParams(current)
 
-        updated.set(key, value)
+        if (value === null) {
+          updated.delete(key)
+        } else {
+          updated.set(key, value)
+        }
 
         return updated
       },
@@ -37,10 +54,24 @@ export function useStatusFilter() {
 
   return {
     status,
+    scope,
     sort,
     setStatus: (next: Status) => write(PARAM, next),
+    // The default is absent rather than written, so a URL with no scope stays
+    // the URL it was before scopes existed.
+    setScope: (next: Scope) => write(SCOPE_PARAM, next === 'all' ? null : next),
     setSort: (next: Sort) => write(SORT_PARAM, next),
   }
+}
+
+/**
+ * Which rows the list shows. A scope replaces the status rather than adding to
+ * it — see `Scope`.
+ */
+export function matchesView(transaction: Transaction, scope: Scope, status: Status): boolean {
+  if (scope === 'income') return transaction.kind === 'income'
+
+  return matchesStatus(transaction, status)
 }
 
 export function matchesStatus(transaction: Transaction, status: Status): boolean {

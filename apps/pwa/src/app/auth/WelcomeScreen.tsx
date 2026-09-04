@@ -36,7 +36,7 @@ export function WelcomeScreen() {
             type="button"
             onClick={() => leave('in')}
             disabled={going !== null}
-            className="min-h-11 rounded-full text-[0.9375rem] font-semibold text-[#d4526d] disabled:opacity-60"
+            className="min-h-11 rounded-full text-[0.9375rem] font-semibold text-accent-ink disabled:opacity-60"
           >
             {going === 'in' ? 'Abrindo…' : 'Já tenho uma conta'}
           </button>

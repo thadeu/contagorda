@@ -14,14 +14,15 @@ import { useStatusFilter } from '@/features/transactions/useStatusFilter'
  * has one colour: income is rarely more than a few lines, and slicing it by
  * category would be a chart of two things.
  *
- * Pressing it flips the list's pill to what has been paid, and pressing again
- * brings back what is owed. The pill beside the list is the control; the card
- * is a second place to reach it, next to the figure it explains.
+ * Pressing it narrows the list to income — every line that came in, received
+ * or not — and pressing again brings the whole month back. It is a scope, not
+ * a status: the card explains a figure, and the list under it shows the lines
+ * that figure is made of.
  */
 export function IncomeCard({ month }: { month: string }) {
   const transactions = useTransactions(month)
-  const { status, setStatus } = useStatusFilter()
-  const active = status === 'paid'
+  const { scope, setScope } = useStatusFilter()
+  const active = scope === 'income'
 
   const rows = (transactions.data ?? []).filter((t) => t.kind === 'income')
   const totalCents = rows.reduce((total, row) => total + row.amount_cents, 0)
@@ -34,9 +35,9 @@ export function IncomeCard({ month }: { month: string }) {
   return (
     <button
       type="button"
-      onClick={() => setStatus(active ? 'pending' : 'paid')}
+      onClick={() => setScope(active ? 'all' : 'income')}
       aria-pressed={active}
-      aria-label={active ? 'Mostrar o que falta pagar' : 'Mostrar o que já foi pago'}
+      aria-label={active ? 'Mostrar todos os lançamentos' : 'Mostrar só as receitas'}
       className={`card-shadow h-full w-full rounded-card border bg-surface px-4 py-3.5 text-left transition-colors ${
         active ? 'border-in' : 'border-line'
       }`}

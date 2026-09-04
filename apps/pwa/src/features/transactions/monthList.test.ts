@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { groupByDay, peakNet } from './groupByDay'
-import { LIST_ORDER, matchesStatus } from './useStatusFilter'
+import { LIST_ORDER, matchesStatus, matchesView } from './useStatusFilter'
 import type { Transaction } from '@/services/types'
 
 function tx(overrides: Partial<Transaction> = {}): Transaction {
@@ -31,6 +31,21 @@ describe('status filter', () => {
 
     expect(matchesStatus(paid, 'paid')).toBe(true)
     expect(matchesStatus(paid, 'pending')).toBe(false)
+  })
+
+  it('shows every income row under the income scope, paid or not', () => {
+    const unpaid = tx({ kind: 'income', paid_at: null })
+    const paid = tx({ kind: 'income', paid_at: '2026-08-10T12:00:00Z' })
+    const expense = tx({ kind: 'expense', paid_at: null })
+
+    expect(matchesView(unpaid, 'income', 'pending')).toBe(true)
+    expect(matchesView(paid, 'income', 'pending')).toBe(true)
+    expect(matchesView(expense, 'income', 'pending')).toBe(false)
+  })
+
+  it('falls back to the status filter without a scope', () => {
+    expect(matchesView(tx({ paid_at: null }), 'all', 'pending')).toBe(true)
+    expect(matchesView(tx({ paid_at: null }), 'all', 'paid')).toBe(false)
   })
 
   // Both lists open at the end of the month, because what is being checked is

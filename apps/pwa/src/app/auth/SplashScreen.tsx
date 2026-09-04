@@ -18,9 +18,8 @@ export function SplashScreen() {
   return (
     <WelcomeFrame
       actions={
-        <div className="flex min-h-12 flex-col items-center justify-center gap-1 text-[0.8125rem] font-medium text-[#78706a]">
-          <PigDrawing className="size-16" reverse={true} />
-          <span aria-hidden="true">Carregando…</span>
+        <div className="flex min-h-12 items-center justify-center">
+          <PigDrawing className="size-16" reverse />
         </div>
       }
     />

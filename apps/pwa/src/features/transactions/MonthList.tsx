@@ -3,10 +3,11 @@ import { useDeleteTransaction, useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '@/features/accounts/hooks'
 import { groupByDay } from './groupByDay'
 import { groupsByDay, sortRows } from './sorting'
-import { LIST_ORDER, matchesStatus, useStatusFilter } from './useStatusFilter'
+import { LIST_ORDER, matchesView, useStatusFilter } from './useStatusFilter'
 import { DayGroupSection } from './components/DayGroupSection'
 import { FilterSheet } from './components/FilterSheet'
 import { StatusToggle } from './components/StatusToggle'
+import { ScopeChip } from './components/ScopeChip'
 import { TransactionRow } from './components/TransactionRow'
 import { TransactionSheet } from './components/TransactionSheet'
 import { EmptyState } from '@/ui/EmptyState'
@@ -32,7 +33,7 @@ interface MonthListProps {
  * session — which left nowhere to put sorting without taking another.
  */
 export function MonthList({ month }: MonthListProps) {
-  const { status, sort, setStatus, setSort } = useStatusFilter()
+  const { status, scope, sort, setStatus, setScope, setSort } = useStatusFilter()
   const transactions = useTransactions(month)
   const categories = useCategories()
   const togglePaid = useTogglePaid(month)
@@ -45,7 +46,8 @@ export function MonthList({ month }: MonthListProps) {
   const editor = useTransactionEditor()
   const all = transactions.data ?? []
   const paid = all.filter((t) => t.paid_at !== null)
-  const visible = all.filter((t) => matchesStatus(t, status))
+  const visible = all.filter((t) => matchesView(t, scope, status))
+  const scoped = scope === 'income'
 
   const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
   const byDay = groupsByDay(sort)
@@ -67,13 +69,26 @@ export function MonthList({ month }: MonthListProps) {
     <>
       <div className="flex items-center gap-2 px-3.5 py-3">
         <p className="min-w-0 flex-1 truncate text-sm text-muted">
-          <span className="font-semibold text-ink">
-            {paid.length} de {all.length}
-          </span>{' '}
-          {all.length === 1 ? 'lançamento pago' : 'lançamentos pagos'}
+          {scoped ? (
+            <>
+              <span className="font-semibold text-ink">{visible.length}</span>{' '}
+              {visible.length === 1 ? 'receita' : 'receitas'}
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-ink">
+                {paid.length} de {all.length}
+              </span>{' '}
+              {all.length === 1 ? 'lançamento pago' : 'lançamentos pagos'}
+            </>
+          )}
         </p>
 
-        <StatusToggle status={status} onChange={setStatus} />
+        {scoped ? (
+          <ScopeChip label="Receitas" onClear={() => setScope('all')} />
+        ) : (
+          <StatusToggle status={status} onChange={setStatus} />
+        )}
         <NavButton primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
         <NavButton icon={FilterIcon} label="Ordenar" onClick={() => setFiltering(true)} />
       </div>
@@ -95,7 +110,15 @@ export function MonthList({ month }: MonthListProps) {
             />
           )}
 
-          {transactions.isSuccess && empty && status === 'pending' && (
+          {transactions.isSuccess && empty && scoped && (
+            <EmptyState
+              title="Nenhuma receita neste mês"
+              hint="O que entrar aparece aqui, recebido ou não."
+              action={<Button onClick={editor.openNew}>Adicionar lançamento</Button>}
+            />
+          )}
+
+          {transactions.isSuccess && empty && !scoped && status === 'pending' && (
             <EmptyState
               title="Nada pendente neste mês"
               hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
@@ -103,7 +126,7 @@ export function MonthList({ month }: MonthListProps) {
             />
           )}
 
-          {transactions.isSuccess && empty && status === 'paid' && (
+          {transactions.isSuccess && empty && !scoped && status === 'paid' && (
             <EmptyState
               title="Nada pago neste mês"
               hint="O que você marcar como pago aparece aqui."

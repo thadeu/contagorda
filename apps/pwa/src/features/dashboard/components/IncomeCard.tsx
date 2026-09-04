@@ -21,6 +21,7 @@ import { useStatusFilter } from '@/features/transactions/useStatusFilter'
 export function IncomeCard({ month }: { month: string }) {
   const transactions = useTransactions(month)
   const { status, setStatus } = useStatusFilter()
+  const active = status === 'paid'
 
   const rows = (transactions.data ?? []).filter((t) => t.kind === 'income')
   const totalCents = rows.reduce((total, row) => total + row.amount_cents, 0)
@@ -33,9 +34,12 @@ export function IncomeCard({ month }: { month: string }) {
   return (
     <button
       type="button"
-      onClick={() => setStatus(status === 'paid' ? 'pending' : 'paid')}
-      aria-label={status === 'paid' ? 'Mostrar o que falta pagar' : 'Mostrar o que já foi pago'}
-      className="card-shadow h-full w-full rounded-card border border-line bg-surface px-4 py-3.5 text-left"
+      onClick={() => setStatus(active ? 'pending' : 'paid')}
+      aria-pressed={active}
+      aria-label={active ? 'Mostrar o que falta pagar' : 'Mostrar o que já foi pago'}
+      className={`card-shadow h-full w-full rounded-card border bg-surface px-4 py-3.5 text-left transition-colors ${
+        active ? 'border-in' : 'border-line'
+      }`}
     >
       <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
         Receitas

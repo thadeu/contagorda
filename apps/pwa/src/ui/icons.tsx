@@ -15,6 +15,7 @@ import {
   Trash2,
   Eraser,
   ListFilter,
+  Lock,
   MoreHorizontal,
   Search,
   Crosshair,
@@ -69,6 +70,7 @@ export const UnpaidIcon = tuned(RotateCcw)
 export const EditIcon = tuned(Pencil)
 export const DeleteIcon = tuned(Trash2)
 export const SignOutIcon = tuned(LogOut)
+export const LockIcon = tuned(Lock)
 export const CloseIcon = tuned(X)
 export const SearchIcon = tuned(Search)
 export const BellIcon = tuned(Bell)

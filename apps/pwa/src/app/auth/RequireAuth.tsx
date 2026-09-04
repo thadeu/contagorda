@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useAuth } from '@clowk/react'
-import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
 import { WelcomeScreen } from './WelcomeScreen'
+import { SplashScreen } from './SplashScreen'
 
 /**
  * Everything behind a sign-in.
@@ -12,21 +12,15 @@ import { WelcomeScreen } from './WelcomeScreen'
  * signed in every time they opened the app — the exact thing the refresh token
  * exists to prevent.
  *
- * The loading state wears the welcome screen's background so the two do not
- * flash against each other on the way through.
+ * The splash wears the welcome screen's background so the two do not flash
+ * against each other on the way through.
  */
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { signedIn, isLoading } = useAuth()
 
-  if (isLoading) return <BootScreen />
+  if (isLoading) return <SplashScreen />
 
   if (!signedIn) return <WelcomeScreen />
 
   return <>{children}</>
-}
-
-function BootScreen() {
-  useDocumentCanvas('brand')
-
-  return <div className="h-full bg-brand" />
 }

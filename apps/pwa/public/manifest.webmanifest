@@ -9,8 +9,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#16233a",
-  "background_color": "#0b0e13",
+  "theme_color": "#0c0f18",
+  "background_color": "#0c0f18",
   "categories": [
     "finance"
   ],

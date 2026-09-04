@@ -208,6 +208,20 @@
     will-change: transform;
   }
 
+  /* The other exception: a spinner that does not turn is a glyph that says
+     nothing. Tailwind's `animate-spin` is switched off with everything else
+     above, so it is put back here, and it stays on under reduced motion for
+     the same reason — the movement is the message. */
+  @keyframes spin-live {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin-live 1s linear infinite !important;
+  }
+
   .slide-away[data-hidden='true'] {
     transform: translateY(calc(100% + 1rem));
   }
@@ -428,6 +442,18 @@ html[data-canvas='deep'] {
 
 html[data-canvas='brand'] {
   --bg-appshell: var(--color-brand);
+}
+
+/* White in both themes. The welcome screen is the app icon opened up — the
+   pig on its white tile — and it does not follow the theme for the same reason
+   the icon does not. */
+html[data-canvas='surface'],
+html[data-canvas='surface'] body {
+  background-color: #ffffff;
+}
+
+html[data-canvas='surface'] {
+  --bg-appshell: #ffffff;
 }
 
 html[data-canvas='deep'],
@@ -770,4 +796,89 @@ html[data-theme='dark'] body {
 
 html[data-theme='dark'] .footer-edge {
   --edge-shadow: rgb(0 0 0 / 55%);
+}
+
+/*
+ * The welcome screen's pile of cards.
+ *
+ * One rotation and one skew, shared, so the three read as a stack seen from
+ * one angle. Sized against the viewport width so the pile bleeds off the right
+ * edge on every phone and never becomes a small picture in a corner.
+ */
+.welcome-stack {
+  /* One width drives everything: the card, its height, the fan offsets, and
+     the room the pile takes — so the bottom of the stack is never clipped
+     and never runs into the heading, on any phone. */
+  --card-w: min(72vw, 24rem, 40svh);
+  --card-h: calc(var(--card-w) / 1.58);
+  height: calc(var(--card-h) * 1.6 + var(--card-w) * 0.22);
+}
+
+.welcome-card {
+  position: absolute;
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: 1.25rem;
+  transform: rotate(-14deg) skewX(-10deg);
+  transform-origin: center;
+  box-shadow: 0 24px 48px -24px rgb(12 15 24 / 0.35);
+}
+
+.welcome-card-back {
+  top: calc(var(--card-h) * 0.58);
+  right: -6vw;
+  opacity: 0.85;
+}
+
+.welcome-card-mid {
+  top: calc(var(--card-h) * 0.36);
+  right: -10vw;
+}
+
+.welcome-card-front {
+  top: calc(var(--card-h) * 0.14);
+  right: -14vw;
+  background: linear-gradient(135deg, #f7a1b3 0%, var(--color-accent) 55%, #e2617c 100%);
+}
+
+/* The parts pop from their own centre, not the drawing's. */
+.pig-drawing [data-part] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@layer base {
+  /*
+   * The pig blinks.
+   *
+   * A quick close and open at the end of every three seconds; the rest of the
+   * cycle is the eyes as drawn. `!important` for the same reason as the spinner
+   * and the tab bar: motion is off by default and this one is meant. And in
+   * the same layer as that switch, because for `!important` the cascade runs
+   * the layers backwards — an unlayered important rule loses to a layered one,
+   * so the only place to outrank the switch is beside it.
+   */
+  @keyframes pig-blink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+
+    96% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  .pig-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pig-blink 3s ease-in-out infinite !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pig-eye {
+      animation: none !important;
+    }
+  }
 }

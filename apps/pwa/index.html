@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-    <meta name="theme-color" content="#16233a" />
+    <meta name="theme-color" content="#0c0f18" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Conta Gorda" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -20,7 +20,60 @@
   <body>
     <div style='height: var(--h-status-bar); background: var(--bg-appshell)'></div>
 
-    <div id="root"></div>
+    <style>
+      /* Mirrors WelcomeFrame.tsx: what the page looks like before React mounts. */
+      #root:has(> .boot) { background: #fff; }
+    </style>
+    <div id="root">
+      <div class="boot" style="position:fixed;inset:0;display:flex;flex-direction:column;background:#fff;color:#16130f;font-family:'Instrument Sans',system-ui,sans-serif;max-width:32rem;margin:0 auto;overflow:hidden">
+        <div style="position:relative;flex-shrink:0;margin-top:calc(env(safe-area-inset-top) + 1rem);--card-w:min(72vw,24rem,40svh);--card-h:calc(var(--card-w) / 1.58);height:calc(var(--card-h) * 1.6 + var(--card-w) * .22)">
+          <div style="position:absolute;width:var(--card-w);height:var(--card-h);border-radius:1.25rem;transform:rotate(-14deg) skewX(-10deg);box-shadow:0 24px 48px -24px rgb(12 15 24 / .35);top:calc(var(--card-h) * .58);right:-6vw;background:#1f6f6b;opacity:.85"></div>
+          <div style="position:absolute;width:var(--card-w);height:var(--card-h);border-radius:1.25rem;transform:rotate(-14deg) skewX(-10deg);box-shadow:0 24px 48px -24px rgb(12 15 24 / .35);top:calc(var(--card-h) * .36);right:-10vw;background:#1b1d28"></div>
+          <div style="position:absolute;width:var(--card-w);height:var(--card-h);border-radius:1.25rem;transform:rotate(-14deg) skewX(-10deg);box-shadow:0 24px 48px -24px rgb(12 15 24 / .35);top:calc(var(--card-h) * .14);right:-14vw;background:linear-gradient(135deg,#f7a1b3 0%,#ef7a92 55%,#e2617c 100%)">
+            <svg viewBox="64 64 384 384" aria-hidden="true" style="position:absolute;top:10%;left:9%;width:24%">
+              <g stroke="#0a0f1a" stroke-width="26" stroke-linejoin="round" stroke-linecap="round">
+                <rect x="96" y="92" width="92" height="132" rx="46" fill="#f7efe6" transform="rotate(-38 142 158)"/>
+                <rect x="324" y="92" width="92" height="132" rx="46" fill="#f7efe6" transform="rotate(38 370 158)"/>
+                <path d="M256 128 C338 128 392 186 400 262 C408 336 372 400 256 400 C140 400 104 336 112 262 C120 186 174 128 256 128 Z" fill="#f2748c"/>
+                <rect x="186" y="256" width="140" height="102" rx="51" fill="#f7efe6"/>
+              </g>
+              <ellipse cx="228" cy="307" rx="13" ry="18" fill="#0a0f1a"/>
+              <ellipse cx="284" cy="307" rx="13" ry="18" fill="#0a0f1a"/>
+              <ellipse class="boot-eye" cx="204" cy="218" rx="12" ry="17" fill="#0a0f1a"/>
+              <ellipse class="boot-eye" cx="308" cy="218" rx="12" ry="17" fill="#0a0f1a"/>
+              <circle cx="158" cy="284" r="16" fill="#fff" opacity=".28"/>
+              <circle cx="354" cy="284" r="16" fill="#fff" opacity=".28"/>
+            </svg>
+            <div style="position:absolute;right:0;bottom:16%;height:9%;width:46%;border-radius:9999px 0 0 9999px;background:rgb(255 255 255 / .25)"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex:1;flex-direction:column;justify-content:flex-end;padding:1rem 1.75rem calc(env(safe-area-inset-bottom) + 1.25rem)">
+          <h1 style="margin:0;max-width:12ch;font-size:2rem;line-height:1.1;font-weight:700;letter-spacing:-.02em">Bem-vindo ao Conta Gorda</h1>
+          <p class="boot-desc" style="margin:.75rem 0 0;max-width:30ch;font-size:.9375rem;line-height:1.625;color:#78706a">Lance o que entra e o que sai, marque o que já pagou, e veja quanto ainda falta.</p>
+          <div style="min-height:6.25rem;margin-top:1.5rem">
+            <div style="display:flex;min-height:3rem;align-items:center;justify-content:center">
+              <svg viewBox="64 64 384 384" role="status" aria-label="Carregando" style="width:4rem;height:4rem">
+                <g stroke="#0a0f1a" stroke-width="26" stroke-linejoin="round" stroke-linecap="round">
+                  <path d="M256 128 C338 128 392 186 400 262 C408 336 372 400 256 400 C140 400 104 336 112 262 C120 186 174 128 256 128 Z" fill="#f2748c"/>
+                  <rect x="96" y="92" width="92" height="132" rx="46" fill="#f7efe6" transform="rotate(-38 142 158)"/>
+                  <rect x="324" y="92" width="92" height="132" rx="46" fill="#f7efe6" transform="rotate(38 370 158)"/>
+                  <rect x="186" y="256" width="140" height="102" rx="51" fill="#f7efe6"/>
+                </g>
+                <ellipse cx="204" cy="218" rx="12" ry="17" fill="#0a0f1a"/>
+                <ellipse cx="308" cy="218" rx="12" ry="17" fill="#0a0f1a"/>
+                <ellipse cx="228" cy="307" rx="13" ry="18" fill="#0a0f1a"/>
+                <ellipse cx="284" cy="307" rx="13" ry="18" fill="#0a0f1a"/>
+              </svg>
+            </div>
+          </div>
+          <p style="display:flex;align-items:center;justify-content:center;gap:.375rem;margin:.5rem 0 0;font-size:.75rem;color:#aaa198">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Secured by <span style="font-weight:500;color:#78706a">Clowk.in</span></span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <style>@media (max-height: 640px) { .boot-desc { display: none; } } @keyframes boot-blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } } .boot-eye { transform-box: fill-box; transform-origin: center; animation: boot-blink 3s ease-in-out infinite; }</style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

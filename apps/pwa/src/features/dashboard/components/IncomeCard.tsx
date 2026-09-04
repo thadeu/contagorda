@@ -14,15 +14,13 @@ import { useStatusFilter } from '@/features/transactions/useStatusFilter'
  * has one colour: income is rarely more than a few lines, and slicing it by
  * category would be a chart of two things.
  *
- * Pressing it turns the list below into the income. The list is the bills by
- * default, so this is the only way to see a salary as a row and tick it as
- * received; pressing again hands the list back to the expenses. A solid green
- * edge says which state it is in, since the card looks the same otherwise.
+ * Pressing it flips the list's pill to what has been paid, and pressing again
+ * brings back what is owed. The pill beside the list is the control; the card
+ * is a second place to reach it, next to the figure it explains.
  */
 export function IncomeCard({ month }: { month: string }) {
   const transactions = useTransactions(month)
-  const { kind, toggleKind } = useStatusFilter()
-  const active = kind === 'income'
+  const { status, setStatus } = useStatusFilter()
 
   const rows = (transactions.data ?? []).filter((t) => t.kind === 'income')
   const totalCents = rows.reduce((total, row) => total + row.amount_cents, 0)
@@ -35,12 +33,9 @@ export function IncomeCard({ month }: { month: string }) {
   return (
     <button
       type="button"
-      onClick={toggleKind}
-      aria-pressed={active}
-      aria-label={active ? 'Voltar para as despesas' : 'Mostrar só as receitas'}
-      className={`card-shadow h-full w-full rounded-card border bg-surface px-4 py-3.5 text-left transition-colors ${
-        active ? 'border-in' : 'border-line'
-      }`}
+      onClick={() => setStatus(status === 'paid' ? 'pending' : 'paid')}
+      aria-label={status === 'paid' ? 'Mostrar o que falta pagar' : 'Mostrar o que já foi pago'}
+      className="card-shadow h-full w-full rounded-card border border-line bg-surface px-4 py-3.5 text-left"
     >
       <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
         Receitas

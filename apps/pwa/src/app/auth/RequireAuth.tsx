@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useAuth } from '@clowk/react'
 import { WelcomeScreen } from './WelcomeScreen'
 import { SplashScreen } from './SplashScreen'
+import { BiometricGate } from '@/app/lock/BiometricGate'
 
 /**
  * Everything behind a sign-in.
@@ -14,6 +15,10 @@ import { SplashScreen } from './SplashScreen'
  *
  * The splash wears the welcome screen's background so the two do not flash
  * against each other on the way through.
+ *
+ * The biometric gate comes after the session, never instead of it: a face is
+ * asked for only once Clowk has said who this is, and a face that is refused
+ * or unavailable changes nothing about that answer.
  */
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { signedIn, isLoading } = useAuth()
@@ -22,5 +27,5 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   if (!signedIn) return <WelcomeScreen />
 
-  return <>{children}</>
+  return <BiometricGate>{children}</BiometricGate>
 }

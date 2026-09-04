@@ -7,6 +7,7 @@ import { BottomSheet } from '@/ui/BottomSheet'
 import { ChevronRightIcon, SignOutIcon } from '@/ui/icons'
 import { LedgerSection } from '@/features/ledgers/components/LedgerSection'
 import { ThemeSwitch } from '@/ui/ThemeSwitch'
+import { BiometricSwitch } from '@/ui/BiometricSwitch'
 
 interface ProfileButtonProps {
   name: string
@@ -89,6 +90,8 @@ export function ProfileSheet({ name, email, avatarUrl = null, onClose }: Profile
 
           <ThemeSwitch />
         </div>
+
+        <BiometricSwitch userName={name} />
 
         <LedgerSection />
 

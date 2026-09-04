@@ -1,5 +1,6 @@
 import { Money } from '@/ui/Money'
 import { useTransactions } from '@/features/transactions/hooks'
+import { useStatusFilter } from '@/features/transactions/useStatusFilter'
 
 /**
  * What came in this month, and how much of it has actually landed.
@@ -12,9 +13,16 @@ import { useTransactions } from '@/features/transactions/hooks'
  * The bar underneath is the share already received. Unlike the expense bar it
  * has one colour: income is rarely more than a few lines, and slicing it by
  * category would be a chart of two things.
+ *
+ * Pressing it turns the list below into the income. The list is the bills by
+ * default, so this is the only way to see a salary as a row and tick it as
+ * received; pressing again hands the list back to the expenses. A solid green
+ * edge says which state it is in, since the card looks the same otherwise.
  */
 export function IncomeCard({ month }: { month: string }) {
   const transactions = useTransactions(month)
+  const { kind, toggleKind } = useStatusFilter()
+  const active = kind === 'income'
 
   const rows = (transactions.data ?? []).filter((t) => t.kind === 'income')
   const totalCents = rows.reduce((total, row) => total + row.amount_cents, 0)
@@ -25,7 +33,15 @@ export function IncomeCard({ month }: { month: string }) {
   const share = totalCents === 0 ? 0 : Math.min(receivedCents / totalCents, 1)
 
   return (
-    <section className="card-shadow h-full rounded-card border border-line bg-surface px-4 py-3.5">
+    <button
+      type="button"
+      onClick={toggleKind}
+      aria-pressed={active}
+      aria-label={active ? 'Voltar para as despesas' : 'Mostrar só as receitas'}
+      className={`card-shadow h-full w-full rounded-card border bg-surface px-4 py-3.5 text-left transition-colors ${
+        active ? 'border-in' : 'border-line'
+      }`}
+    >
       <p className="text-[0.6875rem] font-medium tracking-[0.08em] text-muted uppercase">
         Receitas
       </p>
@@ -43,6 +59,6 @@ export function IncomeCard({ month }: { month: string }) {
       <p className="truncate pt-2 text-xs text-muted">
         {totalCents === 0 ? 'Sem previsão' : `${Math.round(share * 100)}% recebido`}
       </p>
-    </section>
+    </button>
   )
 }

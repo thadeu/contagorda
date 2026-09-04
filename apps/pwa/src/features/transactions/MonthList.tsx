@@ -3,7 +3,7 @@ import { useDeleteTransaction, useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '@/features/accounts/hooks'
 import { groupByDay } from './groupByDay'
 import { groupsByDay, sortRows } from './sorting'
-import { LIST_ORDER, matchesStatus, useStatusFilter } from './useStatusFilter'
+import { LIST_ORDER, matchesKind, matchesStatus, useStatusFilter } from './useStatusFilter'
 import { DayGroupSection } from './components/DayGroupSection'
 import { FilterSheet } from './components/FilterSheet'
 import { StatusToggle } from './components/StatusToggle'
@@ -32,7 +32,7 @@ interface MonthListProps {
  * session — which left nowhere to put sorting without taking another.
  */
 export function MonthList({ month }: MonthListProps) {
-  const { status, sort, setStatus, setSort } = useStatusFilter()
+  const { status, sort, kind, setStatus, setSort } = useStatusFilter()
   const transactions = useTransactions(month)
   const categories = useCategories()
   const togglePaid = useTogglePaid(month)
@@ -43,9 +43,10 @@ export function MonthList({ month }: MonthListProps) {
   const [filtering, setFiltering] = useState(false)
 
   const editor = useTransactionEditor()
-  const all = transactions.data ?? []
+  const all = (transactions.data ?? []).filter((t) => matchesKind(t, kind))
   const paid = all.filter((t) => t.paid_at !== null)
   const visible = all.filter((t) => matchesStatus(t, status))
+  const income = kind === 'income'
 
   const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
   const byDay = groupsByDay(sort)
@@ -70,10 +71,10 @@ export function MonthList({ month }: MonthListProps) {
           <span className="font-semibold text-ink">
             {paid.length} de {all.length}
           </span>{' '}
-          {all.length === 1 ? 'lançamento pago' : 'lançamentos pagos'}
+          {countLabel(all.length, income)}
         </p>
 
-        <StatusToggle status={status} onChange={setStatus} />
+        <StatusToggle status={status} kind={kind} onChange={setStatus} />
         <NavButton primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
         <NavButton icon={FilterIcon} label="Ordenar" onClick={() => setFiltering(true)} />
       </div>
@@ -97,16 +98,24 @@ export function MonthList({ month }: MonthListProps) {
 
           {transactions.isSuccess && empty && status === 'pending' && (
             <EmptyState
-              title="Nada pendente neste mês"
-              hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
+              title={income ? 'Nada a receber neste mês' : 'Nada pendente neste mês'}
+              hint={
+                income
+                  ? 'Tudo que estava previsto já entrou. Novas receitas aparecem aqui.'
+                  : 'Tudo que estava marcado já foi pago. Novas contas aparecem aqui.'
+              }
               action={<Button onClick={editor.openNew}>Adicionar lançamento</Button>}
             />
           )}
 
           {transactions.isSuccess && empty && status === 'paid' && (
             <EmptyState
-              title="Nada pago neste mês"
-              hint="O que você marcar como pago aparece aqui."
+              title={income ? 'Nada recebido neste mês' : 'Nada pago neste mês'}
+              hint={
+                income
+                  ? 'O que você marcar como recebido aparece aqui.'
+                  : 'O que você marcar como pago aparece aqui.'
+              }
             />
           )}
         </div>
@@ -169,4 +178,12 @@ export function MonthList({ month }: MonthListProps) {
       )}
     </>
   )
+}
+
+/** "3 de 5 lançamentos pagos", or "recebidos" while the list is the income. */
+function countLabel(total: number, income: boolean): string {
+  const noun = total === 1 ? 'lançamento' : 'lançamentos'
+  const verb = income ? (total === 1 ? 'recebido' : 'recebidos') : total === 1 ? 'pago' : 'pagos'
+
+  return `${noun} ${verb}`
 }

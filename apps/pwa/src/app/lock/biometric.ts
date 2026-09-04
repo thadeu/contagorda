@@ -72,12 +72,17 @@ export async function enrollBiometric(userName: string): Promise<boolean> {
         authenticatorSelection: {
           authenticatorAttachment: 'platform',
           userVerification: 'required',
-          residentKey: 'preferred',
+          // Required, not preferred: the unlock looks the passkey up by domain
+          // rather than by id (see `verifyBiometric`), and only a discoverable
+          // credential can be found that way.
+          residentKey: 'required',
+          requireResidentKey: true,
         },
+        hints: ['client-device'],
         timeout: 60_000,
         attestation: 'none',
       },
-    })) as PublicKeyCredential | null
+    } as CredentialCreationOptions)) as PublicKeyCredential | null
 
     if (!credential) return false
 
@@ -107,6 +112,15 @@ export type BiometricResult = 'passed' | 'refused' | 'unavailable'
  * else is `unavailable`: no API, no stored credential, a credential the phone
  * has since forgotten, an authenticator that threw. Those are the app's
  * problems, not the person's, and they let the Clowk session through.
+ *
+ * No `allowCredentials`. Handing Safari a list of ids is what brings up the
+ * "passkey, QR code or security key" sheet: when none of the ids is a passkey
+ * it holds locally it assumes the credential must be somewhere else and
+ * offers every way of reaching it. Asked for whatever discoverable passkey it
+ * has for this domain instead, it goes straight to the face. The credential
+ * was made discoverable for exactly this. The id that comes back is then
+ * compared with the one enrolled, so a different passkey for the same domain
+ * still counts as a pass — same phone, same face — but says so in the console.
  */
 export async function verifyBiometric(): Promise<BiometricResult> {
   const id = readCredentialId()
@@ -114,20 +128,24 @@ export async function verifyBiometric(): Promise<BiometricResult> {
   if (id === null) return 'unavailable'
 
   try {
-    const assertion = await navigator.credentials.get({
+    const assertion = (await navigator.credentials.get({
       publicKey: {
         challenge: randomBytes(32),
         rpId: window.location.hostname,
-        allowCredentials: [{ type: 'public-key', id: fromBase64Url(id) }],
         userVerification: 'required',
+        hints: ['client-device'],
         timeout: 60_000,
       },
-    })
+    } as CredentialRequestOptions)) as PublicKeyCredential | null
 
     if (assertion === null) {
       console.warn('[biometric] prompt returned nothing; treating as refused')
 
       return 'refused'
+    }
+
+    if (toBase64Url(new Uint8Array(assertion.rawId)) !== id) {
+      console.warn('[biometric] a different passkey for this domain was used; accepting it')
     }
 
     return 'passed'

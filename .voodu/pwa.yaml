@@ -1,4 +1,4 @@
-name: contagorda
+name: pwa
 on:
   push:
     branches: [main]

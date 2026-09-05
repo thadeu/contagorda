@@ -1,4 +1,4 @@
-name: contagorda
+name: api
 on:
   push:
     branches: [main]

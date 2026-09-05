@@ -65,7 +65,7 @@ export function SearchDock({ term, onTermChange, pinned = false }: SearchDockPro
     <FramePortal>
       <div
         style={{ bottom: keyboard }}
-        className={`absolute inset-x-0 z-20 px-3.5 pt-3 pb-[max(0.25rem,calc(env(safe-area-inset-bottom)-1rem))] transition-transform duration-300 ease-out ${
+        className={`absolute inset-x-0 z-20 px-5 pt-3 pb-[max(0.25rem,calc(env(safe-area-inset-bottom)-1rem))] transition-transform duration-300 ease-out ${
           away ? 'translate-y-full' : 'translate-y-0'
         }`}
       >

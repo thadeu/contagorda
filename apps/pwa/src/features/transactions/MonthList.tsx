@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDeleteTransaction, useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '@/features/accounts/hooks'
 import { groupByDay } from './groupByDay'
@@ -23,6 +23,12 @@ interface MonthListProps {
   month: string
   /** What the search bar holds. While it holds anything, status and scope step aside. */
   search?: string
+  /**
+   * How many rows are actually on screen, after every filter. The search bar
+   * reads it to know whether there is a list to get out of the way of — and
+   * "A pagar" with one row left is a short list however long the month is.
+   */
+  onVisibleCount?: (count: number) => void
 }
 
 /**
@@ -39,7 +45,7 @@ interface MonthListProps {
  * question being asked is "where is that row", and a tab that hides the answer
  * turns a search into a guess about which tab to be on first.
  */
-export function MonthList({ month, search = '' }: MonthListProps) {
+export function MonthList({ month, search = '', onVisibleCount }: MonthListProps) {
   const { status, scope, sort, setStatus, setScope, setSort } = useStatusFilter()
   const transactions = useTransactions(month)
   const categories = useCategories()
@@ -65,6 +71,11 @@ export function MonthList({ month, search = '' }: MonthListProps) {
   const groups = byDay ? groupByDay(visible, LIST_ORDER) : []
   const flat = byDay ? [] : sortRows(visible, sort, categoryMap)
   const empty = visible.length === 0
+  const count = visible.length
+
+  useEffect(() => {
+    onVisibleCount?.(count)
+  }, [count, onVisibleCount])
 
   function handleToggle(transaction: Transaction) {
     const nextPaid = transaction.paid_at === null

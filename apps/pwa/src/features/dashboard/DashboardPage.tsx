@@ -21,6 +21,7 @@ export function DashboardPage() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [visibleCount, setVisibleCount] = useState(0)
   const { month, setMonth } = useMonth()
   const { firstName, avatarUrl, email } = useGreeting()
   const transactions = useTransactions(month)
@@ -89,9 +90,9 @@ export function DashboardPage() {
         <SpendingCard month={month} />
       </div>
 
-      <MonthList month={month} search={search} />
+      <MonthList month={month} search={search} onVisibleCount={setVisibleCount} />
 
-      <SearchDock term={search} onTermChange={setSearch} />
+      <SearchDock term={search} onTermChange={setSearch} pinned={visibleCount <= 2} />
     </div>
   )
 }

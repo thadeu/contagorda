@@ -12,7 +12,8 @@ import type { Recurrence } from '@/features/transactions/recurrence'
 import { emptyValues, type TransactionFormValues } from '@/features/transactions/formValues'
 import type { Direction } from '@/services/types'
 import type { NewTransaction } from '@/services/types'
-
+import { useNameSuggestions } from '@/features/transactions/useNameSuggestions'
+import type { NameSuggestion } from '@/features/transactions/suggestions'
 
 interface TransactionFormProps {
   /** Ties the form to a submit button that lives outside it, in the nav bar. */
@@ -82,6 +83,28 @@ export function TransactionForm({
     setValues((current) => ({ ...current, [key]: value }))
   }
 
+  const [naming, setNaming] = useState(false)
+  const suggestions = useNameSuggestions(naming ? values.description : '', values.kind)
+
+  /**
+   * A name brings its company. The category and the account it was last filed
+   * under are filled in with it, since the same market is paid from the same
+   * card nearly every time — and both stay editable below, for the time it is
+   * not.
+   *
+   * The chips prevent `mousedown` so the field keeps focus through the tap:
+   * blurring first would take them away before the click could land on one.
+   */
+  function pick(suggestion: NameSuggestion) {
+    setValues((current) => ({
+      ...current,
+      description: suggestion.description,
+      categoryId: suggestion.categoryId ?? '',
+      accountId: suggestion.accountId,
+    }))
+    setNaming(false)
+  }
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     event.stopPropagation()
@@ -135,10 +158,31 @@ export function TransactionForm({
           <input
             value={values.description}
             onChange={(e) => set('description', e.target.value)}
+            onFocus={() => setNaming(true)}
+            onBlur={() => setNaming(false)}
             placeholder="Mercado, aluguel, salário…"
+            autoComplete="off"
+            autoCorrect="off"
             className="w-full bg-transparent text-right text-base text-ink outline-none placeholder:text-faint"
           />
         </Row>
+
+        {suggestions.length > 0 && (
+          <ul className="flex gap-2 overflow-x-auto py-2.5" aria-label="Nomes já usados">
+            {suggestions.map((suggestion) => (
+              <li key={suggestion.description} className="shrink-0">
+                <button
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => pick(suggestion)}
+                  className="rounded-full bg-sunken px-3 py-1.5 text-sm font-medium text-ink"
+                >
+                  {suggestion.description}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <Row label="Data">
           <input

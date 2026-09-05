@@ -39,6 +39,11 @@ interface SearchDockProps {
  *
  * Portalled into the frame rather than the scroller, so it is pinned to the
  * bottom of the screen and not to the bottom of the page.
+ *
+ * It moves as `.slide-away`, which is the one travel the stylesheet allows a
+ * bar — every other transition is switched off globally, and a Tailwind
+ * `transition-*` here would be silently overruled. That class also honours
+ * reduced motion and steps out from under an open sheet.
  */
 export function SearchDock({ term, onTermChange, pinned = false }: SearchDockProps) {
   const [focused, setFocused] = useState(false)
@@ -65,7 +70,7 @@ export function SearchDock({ term, onTermChange, pinned = false }: SearchDockPro
     <FramePortal>
       <div
         style={{ bottom: keyboard }}
-        className={`absolute inset-x-0 z-20 px-5 pt-3 pb-[max(0.25rem,calc(env(safe-area-inset-bottom)-1rem))] transition-transform duration-300 ease-out ${
+        className={`absolute inset-x-0 z-20 px-5 pt-3 pb-[max(0.25rem,calc(env(safe-area-inset-bottom)-1rem))] slide-away ${
           away ? 'translate-y-full' : 'translate-y-0'
         }`}
       >

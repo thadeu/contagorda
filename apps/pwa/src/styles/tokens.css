@@ -900,3 +900,42 @@ html[data-theme='dark'] .footer-edge {
     }
   }
 }
+
+/*
+ * The search field draws its own clear button, so the one WebKit adds to
+ * `type="search"` has to go — two crosses side by side in one capsule.
+ */
+.search-field::-webkit-search-cancel-button,
+.search-field::-webkit-search-decoration {
+  appearance: none;
+  display: none;
+}
+
+/*
+ * Glass. What the search capsule is made of.
+ *
+ * Mostly the page showing through: the fill is a thin wash so the rows keep
+ * scrolling under it, and the blur with a lift in saturation is what turns
+ * them from readable into a texture. The inset highlight along the top edge
+ * is the rim light that makes a translucent object read as a solid one and
+ * not as a stain. Written as one rule rather than utilities so both themes
+ * state their wash explicitly — a dark surface at 85% is not glass, it is a
+ * slab, which is how the first version looked.
+ */
+.glass {
+  background-color: rgb(255 255 255 / 62%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 70%),
+    inset 0 0 0 1px rgb(0 0 0 / 5%),
+    0 10px 30px -14px rgb(0 0 0 / 35%);
+}
+
+html[data-theme='dark'] .glass {
+  background-color: rgb(255 255 255 / 9%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 14%),
+    inset 0 0 0 1px rgb(255 255 255 / 6%),
+    0 12px 34px -14px rgb(0 0 0 / 70%);
+}

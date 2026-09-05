@@ -1,0 +1,6 @@
+name: contagorda
+on:
+  push:
+    branches: [main]
+apply:
+  file: apps/api/.voodu/api.voodu

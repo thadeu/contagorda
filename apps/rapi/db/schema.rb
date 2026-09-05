@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -139,6 +139,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_030000) do
     t.date "date", null: false
     t.string "description", null: false
     t.boolean "detached", default: false, null: false
+    t.string "folded_description", default: "", null: false
     t.string "kind", null: false
     t.uuid "ledger_id", null: false
     t.date "occurrence_date"

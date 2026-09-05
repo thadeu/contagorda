@@ -54,6 +54,12 @@ export interface Fetching {
 
 export interface TransactionsPort {
   listByMonth(month: string, options?: Fetching): Promise<Transaction[]>
+  /**
+   * Rows whose description contains the term, any month and any status,
+   * newest first. Accents and case are set aside on both sides, and the
+   * server caps the answer — a phone is asking for a handful of rows.
+   */
+  search(term: string, options?: Fetching): Promise<Transaction[]>
   summary(month: string, options?: Fetching): Promise<MonthSummary>
   /**
    * Every month holding at least one transaction, newest first.

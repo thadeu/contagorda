@@ -57,6 +57,7 @@ be redeployed to fix a sentence.
 | `AccountsButton` | Account count | `GET /accounts` |
 | `ProfileButton` | The name to greet | `GET /me` |
 | `MonthList` | The same month's rows | `GET /transactions?month=` |
+| `SearchDock` | Narrows the month already loaded, in memory | none — `GET /search?q=` exists for a search across months |
 | `FilterSheet` | Categories, to filter by | `GET /categories` |
 
 ### History (Stats)
@@ -133,6 +134,20 @@ The rows of one month, any order — the client groups and sorts.
 `paid_at` is a timestamp and not a boolean, because when something was settled is
 a fact worth keeping and "true" throws it away. `created_by_id` is stamped by the
 server from the authenticated membership and is rejected if the client sends it.
+
+#### `GET /search?q=<text>`
+
+Rows whose description contains the term, across every month and every status,
+newest first, capped at 50. Same shape as `GET /transactions`. Accents and case
+are set aside on both sides — `farmacia` finds `Farmácia` — by matching on a
+stored `folded_description`, the same device categories use. A blank term
+answers `[]`. Cached under the folded term and retired by any write to
+transactions, like every other read over them.
+
+The month view does not call this: it filters the month it already holds, which
+is instant and costs nothing. The route is the seam for a search across months —
+a client that does call it must send the term only once typing has paused,
+never per keystroke.
 
 #### `GET /months`
 

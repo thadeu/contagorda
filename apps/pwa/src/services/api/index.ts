@@ -105,6 +105,8 @@ export function createApiServices(): Services {
       listByMonth: (month, options) =>
         request<Transaction[]>('/transactions', { ...options, query: { month } }),
 
+      search: (term, options) => request<Transaction[]>('/search', { ...options, query: { q: term } }),
+
       summary: (month, options) => request<MonthSummary>(`/months/${month}/summary`, options),
 
       months: (options) => request<string[]>('/months', options),

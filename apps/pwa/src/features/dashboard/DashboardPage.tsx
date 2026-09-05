@@ -15,10 +15,12 @@ import { useDocumentCanvas } from '@/ui/useDocumentCanvas'
 import { useFadingCanvas } from '@/ui/useFadingCanvas'
 import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
 import { AccountsSheet } from '@/features/accounts/AccountsSheet'
+import { SearchDock } from '@/features/search/SearchDock'
 
 export function DashboardPage() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [accountsOpen, setAccountsOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const { month, setMonth } = useMonth()
   const { firstName, avatarUrl, email } = useGreeting()
   const transactions = useTransactions(month)
@@ -41,7 +43,11 @@ export function DashboardPage() {
   const incomeCents = sum(income)
 
   return (
-    <div ref={content} className="relative pb-0.5" aria-busy={refreshing}>
+    <div
+      ref={content}
+      className="relative pb-[calc(env(safe-area-inset-bottom)+4.5rem)]"
+      aria-busy={refreshing}
+    >
       <PullIndicator />
 
       <IdentityRow
@@ -83,7 +89,9 @@ export function DashboardPage() {
         <SpendingCard month={month} />
       </div>
 
-      <MonthList month={month} />
+      <MonthList month={month} search={search} />
+
+      <SearchDock term={search} onTermChange={setSearch} />
     </div>
   )
 }

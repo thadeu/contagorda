@@ -51,17 +51,28 @@ export async function shareOrCopy({ url, title, message }: Shareable): Promise<S
     }
   }
 
+  return (await copyText(text)) ? 'copied' : 'failed'
+}
+
+/**
+ * Puts text on the clipboard, the modern way when there is one.
+ *
+ * Also what a plain "copy" button calls: the sharing path above is one caller,
+ * copying a row's name to type it into a new one is another, and both fall
+ * through to the same last resort.
+ */
+export async function copyText(text: string): Promise<boolean> {
   if (navigator.clipboard) {
     try {
       await navigator.clipboard.writeText(text)
 
-      return 'copied'
+      return true
     } catch {
       // Falls through to the old way rather than giving up here.
     }
   }
 
-  return legacyCopy(text) ? 'copied' : 'failed'
+  return legacyCopy(text)
 }
 
 /**

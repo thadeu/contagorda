@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Transaction } from '@/services/types'
 import type { Scope } from '@/services/ports'
 import { ScopeSheet } from './ScopeSheet'
@@ -6,7 +6,8 @@ import { formatBRL } from '@/lib/money'
 import { BottomSheet, SheetActionCard } from '@/ui/BottomSheet'
 import { ConfirmSheet } from '@/ui/ConfirmSheet'
 import { Button } from '@/ui/Button'
-import { EditIcon, PaidIcon, UnpaidIcon } from '@/ui/icons'
+import { CheckIcon, CopyIcon, EditIcon, PaidIcon, UnpaidIcon } from '@/ui/icons'
+import { copyText } from '@/ui/share'
 import { useTransactionEditor } from '@/features/transactions/transactionEditorContext'
 import { useCategories } from '@/features/accounts/hooks'
 import { useMemberName } from '@/features/ledgers/useMemberName'
@@ -60,7 +61,12 @@ export function TransactionSheet({
         title={transaction.description}
         subtitle={formatBRL(transaction.amount_cents)}
         onClose={onClose}
-        actions={<span className="text-sm text-muted">{dayLabel(transaction.date)}</span>}
+        actions={
+          <span className="flex items-center gap-2">
+            <span className="text-sm text-muted">{dayLabel(transaction.date)}</span>
+            <CopyName text={transaction.description} />
+          </span>
+        }
         grab={
           /* Two lines, not a panel: the heading already carries what the row is
              and what it cost, and a card around these would announce them as a
@@ -176,5 +182,44 @@ function Detail({ label, value }: { label: string; value: string }) {
       </dt>
       <dd className="min-w-0 truncate text-right text-[0.9375rem] text-ink">{value}</dd>
     </div>
+  )
+}
+
+/**
+ * The row's name, onto the clipboard.
+ *
+ * Most new rows are old rows again — the same market, the same pharmacy — and
+ * the way to reuse a name on a phone was to long-press the heading and fight
+ * the selection handles. One tap here, then paste in the form.
+ *
+ * The tick is the only feedback: a toast for a copy would be louder than the
+ * action, and the heading it copied is right there to compare against.
+ */
+function CopyName({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!copied) return
+
+    const timer = setTimeout(() => setCopied(false), 1500)
+
+    return () => clearTimeout(timer)
+  }, [copied])
+
+  return (
+    <button
+      type="button"
+      aria-label={copied ? 'Nome copiado' : 'Copiar nome'}
+      onClick={() => {
+        void copyText(text).then((ok) => setCopied(ok))
+      }}
+      className={`grid size-8 shrink-0 place-items-center rounded-xl bg-sunken ${copied ? 'text-in' : 'text-ink'}`}
+    >
+      {copied ? (
+        <CheckIcon className="size-4" strokeWidth={2} aria-hidden="true" />
+      ) : (
+        <CopyIcon className="size-4" strokeWidth={2} aria-hidden="true" />
+      )}
+    </button>
   )
 }

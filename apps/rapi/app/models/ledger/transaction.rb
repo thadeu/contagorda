@@ -14,6 +14,9 @@ class Ledger::Transaction < ApplicationRecord
   validates :description, presence: true
   validates :date, presence: true
 
+  # What the search bar matches on. See `Folded`.
+  folds :description
+
   # Guards against a transaction pointing at another ledger's account or
   # category. The controller already scopes through the current ledger; this is
   # the backstop for every other path — console, importer, job.

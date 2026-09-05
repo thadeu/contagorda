@@ -37,3 +37,23 @@ export function Portal({ children }: { children: ReactNode }) {
 
   return createPortal(children, host)
 }
+
+/**
+ * Into the app frame, for what is pinned to the screen rather than presented
+ * over it.
+ *
+ * A bar docked at the bottom edge has to move with the frame and not with the
+ * page — but it is not an overlay either: it belongs under the sheets, inside
+ * the frame's rounded corners, and it must not take the frame's `fixed` inset
+ * problem on iOS. The frame is the one positioned box that is exactly the
+ * screen, so that is where it goes.
+ */
+export function FramePortal({ children }: { children: ReactNode }) {
+  const host = document.querySelector<HTMLElement>('.app-surface')
+
+  if (!host) {
+    return children
+  }
+
+  return createPortal(children, host)
+}

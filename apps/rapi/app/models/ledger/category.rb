@@ -12,22 +12,11 @@ class Ledger::Category < ApplicationRecord
   validates :kind, inclusion: { in: KINDS }
   validates :folded_name, uniqueness: { scope: %i[ledger_id kind] }
 
-  before_validation { self.folded_name = self.class.fold(name) }
+  folds :name
 
-  # The name reduced to what two people mean by the same category: no accents,
-  # no case, no stray spacing. `Farmácia`, `farmacia` and ` FARMACIA ` are one
-  # row.
-  #
-  # Done in Ruby rather than by `unaccent()` in the index because that function
-  # is declared STABLE and cannot be indexed without a custom immutable wrapper
-  # — and a function is exactly what `schema.rb` cannot carry, so the test
-  # database would load an index with nothing to call.
+  # Where `FindOrCreate` matches on. Kept as a method here so the rule and its
+  # caller stay on the same class.
   def self.fold(value)
-    value.to_s
-         .unicode_normalize(:nfd)
-         .gsub(/\p{Mn}/, "")
-         .downcase
-         .strip
-         .squeeze(" ")
+    Folded.fold(value)
   end
 end

@@ -67,6 +67,12 @@ describe('the API client', () => {
     expect(headers()['X-Ledger-Id']).toBe('019fce00-0000-7000-8000-00000000000b')
   })
 
+  it('asks the search route with the term', async () => {
+    await services.transactions.search('farmácia')
+
+    expect(calls[0].url).toBe('http://127.0.0.1:3000/api/v1/search?q=farm%C3%A1cia')
+  })
+
   it('hands the signal to fetch', async () => {
     const controller = new AbortController()
 

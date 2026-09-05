@@ -365,6 +365,19 @@ export function createMockServices(): Services {
       listByMonth: (month) =>
         delay(data().transactions.filter(inMonth(month)).sort(byDateThenCreation)),
 
+      search: (term) => {
+        const folded = fold(term).trim()
+
+        if (folded === '') return delay([])
+
+        return delay(
+          data()
+            .transactions.filter((t) => fold(t.description).includes(folded))
+            .sort((a, b) => -byDateThenCreation(a, b))
+            .slice(0, 50),
+        )
+      },
+
       months: () =>
         delay(
           [...new Set(data().transactions.map((t) => monthKey(t.date)))].sort((a, b) =>

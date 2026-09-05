@@ -17,9 +17,12 @@ import { Button } from '@/ui/Button'
 import { UndoBar } from '@/ui/UndoBar'
 import { useTransactionEditor } from './transactionEditorContext'
 import type { Transaction } from '@/services/types'
+import { fold } from '@/lib/text'
 
 interface MonthListProps {
   month: string
+  /** What the search bar holds. While it holds anything, status and scope step aside. */
+  search?: string
 }
 
 /**
@@ -31,8 +34,12 @@ interface MonthListProps {
  * do to the list. The count and the controls used to be two blocks stacked, and
  * the segmented control held a permanent strip to answer a question asked once a
  * session — which left nowhere to put sorting without taking another.
+ *
+ * A search reads across the whole month, paid or not, income or expense: the
+ * question being asked is "where is that row", and a tab that hides the answer
+ * turns a search into a guess about which tab to be on first.
  */
-export function MonthList({ month }: MonthListProps) {
+export function MonthList({ month, search = '' }: MonthListProps) {
   const { status, scope, sort, setStatus, setScope, setSort } = useStatusFilter()
   const transactions = useTransactions(month)
   const categories = useCategories()
@@ -46,7 +53,11 @@ export function MonthList({ month }: MonthListProps) {
   const editor = useTransactionEditor()
   const all = transactions.data ?? []
   const paid = all.filter((t) => t.paid_at !== null)
-  const visible = all.filter((t) => matchesView(t, scope, status))
+  const term = fold(search).trim()
+  const searching = term !== ''
+  const visible = searching
+    ? all.filter((t) => fold(t.description).includes(term))
+    : all.filter((t) => matchesView(t, scope, status))
   const scoped = scope === 'income'
 
   const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
@@ -69,7 +80,12 @@ export function MonthList({ month }: MonthListProps) {
     <>
       <div className="flex items-center gap-2 px-3.5 py-3">
         <p className="min-w-0 flex-1 truncate text-sm text-muted">
-          {scoped ? (
+          {searching ? (
+            <>
+              <span className="font-semibold text-ink">{visible.length}</span>{' '}
+              {visible.length === 1 ? 'resultado' : 'resultados'}
+            </>
+          ) : scoped ? (
             <>
               <span className="font-semibold text-ink">{visible.length}</span>{' '}
               {visible.length === 1 ? 'receita' : 'receitas'}
@@ -110,7 +126,14 @@ export function MonthList({ month }: MonthListProps) {
             />
           )}
 
-          {transactions.isSuccess && empty && scoped && (
+          {transactions.isSuccess && empty && searching && (
+            <EmptyState
+              title={`Nada com “${search.trim()}” neste mês`}
+              hint="A busca olha o nome de todo lançamento do mês, pago ou não."
+            />
+          )}
+
+          {transactions.isSuccess && empty && !searching && scoped && (
             <EmptyState
               title="Nenhuma receita neste mês"
               hint="O que entrar aparece aqui, recebido ou não."
@@ -118,7 +141,7 @@ export function MonthList({ month }: MonthListProps) {
             />
           )}
 
-          {transactions.isSuccess && empty && !scoped && status === 'pending' && (
+          {transactions.isSuccess && empty && !searching && !scoped && status === 'pending' && (
             <EmptyState
               title="Nada pendente neste mês"
               hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
@@ -126,7 +149,7 @@ export function MonthList({ month }: MonthListProps) {
             />
           )}
 
-          {transactions.isSuccess && empty && !scoped && status === 'paid' && (
+          {transactions.isSuccess && empty && !searching && !scoped && status === 'paid' && (
             <EmptyState
               title="Nada pago neste mês"
               hint="O que você marcar como pago aparece aqui."

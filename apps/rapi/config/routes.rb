@@ -45,6 +45,8 @@ Rails.application.routes.draw do
         end
       end
 
+      get "search" => "search#index"
+
       get "months" => "months#index"
       get "months/:month/summary" => "months#summary"
       get "monthly_totals" => "monthly_totals#index"

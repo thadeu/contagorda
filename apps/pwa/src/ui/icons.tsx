@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import {
   Check,
+  Copy,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -55,6 +56,7 @@ export const HomeIcon = tuned(Home)
 export const WalletIcon = tuned(Wallet)
 export const PlusIcon = tuned(Plus)
 export const CheckIcon = tuned(Check)
+export const CopyIcon = tuned(Copy)
 export const ChevronLeftIcon = tuned(ChevronLeft)
 export const ChevronRightIcon = tuned(ChevronRight)
 export const TargetIcon = tuned(Crosshair)

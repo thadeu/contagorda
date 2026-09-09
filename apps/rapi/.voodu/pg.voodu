@@ -50,7 +50,7 @@ postgres "contagorda" "pg" {
   # Its own bucket rather than the one clowk uses: `env_from` also stacks the
   # bucket into the container's environment, and clowk's holds a
   # `POSTGRES_PASSWORD` that is not this database's.
-  env_from = ["contagorda/pgbox"]
+  # env_from = ["contagorda/pgbox"]
 
   ports = ["${PG_BIND_IP}:5433:5432"]
 

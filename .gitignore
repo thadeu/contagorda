@@ -33,3 +33,4 @@ apps/rapi/config/credentials/*.key
 
 # overmind writes its control socket here
 .overmind.sock
+**/*.dump

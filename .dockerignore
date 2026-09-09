@@ -29,3 +29,4 @@
 **/log
 **/*.log
 .overmind.sock
+**/*.dump

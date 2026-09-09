@@ -26,7 +26,7 @@ deployment "contagorda" "api" {
   # probe before it takes traffic, and there is no old one still answering. On a
   # Rails boot that is tens of seconds of 502. Acceptable for an app used by the
   # people deploying it; the day it is not, this is the line to change.
-  replicas = 2
+  replicas = 1
 
   build {
     # This directory, not the repo root. The PWA builds from the root because
@@ -117,7 +117,7 @@ deployment "contagorda" "api" {
   resources {
     limits {
       cpu    = "0.5"
-      memory = "200Mi"
+      memory = "256Mi"
     }
   }
 }

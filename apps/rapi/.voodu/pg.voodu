@@ -52,7 +52,7 @@ postgres "contagorda" "pg" {
   # `POSTGRES_PASSWORD` that is not this database's.
   # env_from = ["contagorda/pgbox"]
 
-  ports = ["${PG_BIND_IP}:5433:5432"]
+  ports = ["5432"]
 
   env = {
     POSTGRES_DB = "contagorda_production"

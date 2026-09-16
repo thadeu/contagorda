@@ -13,9 +13,8 @@
 #   vd config contagorda/api set REDIS_URL="redis://cache-0.contagorda:6379/0"
 
 redis "contagorda" "cache" {
-  image = "redis:8-alpine"
-
-  ports = ["${REDIS_BIND_IP}::6379"]
+  image = "redis:8"
+  ports = ["6379"]
 
   # A cache with no ceiling is a memory leak with good manners. `allkeys-lru`
   # rather than `noeviction`: every key here is derived data that can be
@@ -25,16 +24,16 @@ redis "contagorda" "cache" {
   # it stores; the process also carries fragmentation and copy-on-write pages,
   # and a limit set to the same number is a limit the OOM killer reaches first.
   # Roughly three quarters is the usual room to leave.
-  command = [
-    "redis-server",
-    "--maxmemory", "96mb",
-    "--maxmemory-policy", "allkeys-lru",
+  # command = [
+  #   "redis-server",
+  #   "--maxmemory", "96mb",
+  #   "--maxmemory-policy", "allkeys-lru",
 
-    # No persistence. Losing the whole cache costs one recomputation per key,
-    # and writing it to disk buys nothing but io.
-    "--save", "",
-    "--appendonly", "no",
-  ]
+  #   # No persistence. Losing the whole cache costs one recomputation per key,
+  #   # and writing it to disk buys nothing but io.
+  #   "--save", "",
+  #   "--appendonly", "no",
+  # ]
 
   # Small, because it shares the VM with clowk (using ~400Mi) and the PWA
   # (~12Mi). What lives in here is derived data — a month's rows, a summary, a

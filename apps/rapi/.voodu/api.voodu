@@ -18,14 +18,6 @@
 #     CLOWK_SUBDOMAIN_URL="https://contagorda.clowk.dev"
 
 deployment "contagorda" "api" {
-  # One replica. Five threads in one Puma worker answer five requests at once,
-  # which is past what a household generates — the second replica was buying
-  # continuity during a deploy, not capacity.
-  #
-  # The cost is that a deploy has a gap: the new pod has to pass its startup
-  # probe before it takes traffic, and there is no old one still answering. On a
-  # Rails boot that is tens of seconds of 502. Acceptable for an app used by the
-  # people deploying it; the day it is not, this is the line to change.
   replicas = 1
 
   build {
@@ -105,7 +97,7 @@ deployment "contagorda" "api" {
         path = "/up"
         port = 3000
       }
-      period            = "60s"
+      period  = "60s"
       failure_threshold = 3
     }
   }
@@ -116,7 +108,7 @@ deployment "contagorda" "api" {
   # where a Rails process is at its fattest.
   resources {
     limits {
-      cpu    = "0.5"
+      cpu = "0.5"
       memory = "256Mi"
     }
   }

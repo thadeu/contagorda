@@ -2,6 +2,6 @@ name: api
 on:
   push:
     branches: [main]
-    paths: ["apps/rapi/**"]
+    paths: ["apps/rapi/**", ".voodu/api.voodu"]
 apply:
   file: .voodu/api.voodu

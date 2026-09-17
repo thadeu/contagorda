@@ -2,6 +2,6 @@ name: pwa
 on:
   push:
     branches: [main]
-    paths: ["apps/pwa/**"]
+    paths: ["apps/pwa/**", ".voodu/pwa.voodu", "package.json"]
 apply:
   file: .voodu/pwa.voodu

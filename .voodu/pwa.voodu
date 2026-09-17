@@ -41,11 +41,18 @@ app "contagorda" "pwa" {
   env_from = ["contagorda/pwa"]
 
   build {
-    # The repo root, reached from here. Not a preference: `pnpm install
-    # --frozen-lockfile` needs the lockfile and the workspace definition, and
-    # both live at the root. There is no lockfile inside `apps/pwa` and there
-    # should not be one — two lockfiles resolve to two answers.
-    context    = "../.."
+    # The repo root. Not a preference: `pnpm install --frozen-lockfile` needs
+    # the lockfile and the workspace definition, and both live at the root.
+    # There is no lockfile inside `apps/pwa` and there should not be one — two
+    # lockfiles resolve to two answers.
+    #
+    # Relative to the REPO ROOT, which is what both paths agree on: `vd apply`
+    # resolves it against the directory you run it from — run it from the
+    # root — and a GitHub push resolves it against this manifest's project,
+    # which for a file in `.voodu/` at the root is the root. `../..` used to
+    # sit here for an apply run from inside `.voodu/`; on a push that pointed
+    # above the repository and was refused.
+    context    = "."
     dockerfile = "apps/pwa/Dockerfile"
 
     # The keys have to be listed — docker needs a `--build-arg` for each — but
@@ -54,6 +61,13 @@ app "contagorda" "pwa" {
     # pointing at `http://127.0.0.1:3000` for exactly that reason. The repo root
     # `.dockerignore` now keeps that file out of the context; these put the real
     # values in.
+    #
+    # The defaults are for a GitHub push: the deploy plane parses this file
+    # without the bucket, and a variable reference with no default fails the
+    # parse before anything builds. `vd apply` still takes the bucket's value
+    # first. Both are public — the URL is the site's, the key is the
+    # publishable one. (No dollar-brace in this comment on purpose: the
+    # interpolator reads comments too.)
     args = {
       VITE_API_URL = "${VITE_API_URL}"
       VITE_CLOWK_PUBLISHABLE_KEY = "${VITE_CLOWK_PUBLISHABLE_KEY}"

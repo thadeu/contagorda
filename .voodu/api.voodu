@@ -31,7 +31,7 @@ deployment "contagorda" "api" {
     # lines point at paths that do not exist, the build fails, and the release
     # that follows reports the confusing half: no `contagorda-api:latest` to
     # run, so docker tries to pull one from a registry that has never seen it.
-    context    = "."
+    context    = "../.."
     dockerfile = "apps/rapi/Dockerfile"
   }
 

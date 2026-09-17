@@ -56,7 +56,7 @@ export function BiometricSwitch({ userName }: { userName: string }) {
       <span className="min-w-0">
         <span className="block text-[0.9375rem] font-medium text-ink">Biometria</span>
         <span className="block text-xs text-muted">
-          {enabled ? 'Usar Face ID ou Touch ID' : 'Desligada'}
+          {enabled ? 'Face ID ou Touch ID' : 'Desligada'}
         </span>
       </span>
 

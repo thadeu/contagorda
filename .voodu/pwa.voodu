@@ -68,10 +68,6 @@ app "contagorda" "pwa" {
     # first. Both are public — the URL is the site's, the key is the
     # publishable one. (No dollar-brace in this comment on purpose: the
     # interpolator reads comments too.)
-    args = {
-      VITE_API_URL = "${VITE_API_URL}"
-      VITE_CLOWK_PUBLISHABLE_KEY = "${VITE_CLOWK_PUBLISHABLE_KEY}"
-    }
   }
 
   # No `ports`. The ingress routes to `<name>:80` unless told otherwise, so the

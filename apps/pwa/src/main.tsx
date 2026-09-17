@@ -15,7 +15,6 @@ configureClowk()
 forgetMonthOnColdStart()
 applyStoredTheme()
 
-// CI rerun #2
 // afterSignOutPath is empty on purpose: with a path set, the SDK navigates away
 // on sign-out while the auth guard is already redirecting to Clowk, and the two
 // race each other. The guard owns where a signed-out user goes.

@@ -4,4 +4,4 @@ on:
     branches: [main]
     paths: ["apps/rapi/**"]
 apply:
-  file: apps/rapi/.voodu/api.voodu
+  file: .voodu/api.voodu

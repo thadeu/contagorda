@@ -45,7 +45,7 @@ app "contagorda" "pwa" {
     # --frozen-lockfile` needs the lockfile and the workspace definition, and
     # both live at the root. There is no lockfile inside `apps/pwa` and there
     # should not be one — two lockfiles resolve to two answers.
-    context    = "../.."
+    context    = "."
     dockerfile = "apps/pwa/Dockerfile"
 
     # The keys have to be listed — docker needs a `--build-arg` for each — but

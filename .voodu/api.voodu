@@ -32,7 +32,7 @@ deployment "contagorda" "api" {
     # that follows reports the confusing half: no `contagorda-api:latest` to
     # run, so docker tries to pull one from a registry that has never seen it.
     context    = "."
-    dockerfile = "Dockerfile"
+    dockerfile = "apps/rapi/Dockerfile"
   }
 
   # No `ports`. The ingress reaches the container over the container network, so

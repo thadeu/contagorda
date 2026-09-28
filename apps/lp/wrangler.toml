@@ -1,6 +1,33 @@
-# Cloudflare Pages, for `wrangler pages deploy` from a terminal and from CI
-# (.github/workflows/lp.yml). The build runs from the repo root, because the
-# lockfile and the workspace definition live there.
+# Cloudflare Workers with static assets, for `wrangler deploy` from a terminal
+# and from CI (.github/workflows/lp.yml). The build runs from the repo root,
+# because the lockfile and the workspace definition live there.
+#
+# Routes on the zone, not Pages custom domains, and not Workers Custom Domains.
+#
+# Both of those give the hostname a certificate and a routing path of its own.
+# Browsers reuse one HTTP/2 connection for every host that shares an IP and a
+# certificate, and a request for app.contagorda.com that arrived on the
+# landing's Pages connection was answered 403 — not the 421 that would make the
+# browser retry on a new connection. It showed as an intermittent "Access
+# denied" on the app, only for people who had just come from the landing.
+#
+# A route runs inside the zone's normal proxy path, which picks the site by the
+# Host header on any connection, the way app. and pay. already work. The DNS
+# records for the apex and www only need to exist and be proxied; with a route
+# in front, their target is never reached.
 
-name = "contagorda-lp"
-pages_build_output_dir = "out"
+name = "contagorda-www"
+compatibility_date = "2026-09-01"
+
+routes = [
+  { pattern = "contagorda.com/*", zone_name = "contagorda.com" },
+  { pattern = "www.contagorda.com/*", zone_name = "contagorda.com" },
+]
+
+[assets]
+directory = "./out"
+# `trailingSlash: true` in next.config.ts exports /terms/index.html, and this
+# serves it at /terms/ the way Pages did.
+html_handling = "auto-trailing-slash"
+# The custom not-found page that `next build` writes to out/404.html.
+not_found_handling = "404-page"

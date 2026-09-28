@@ -1,6 +1,6 @@
 name: lp
 
-# The landing page (apps/lp) on Cloudflare Pages.
+# The landing page (apps/lp) on Cloudflare, as a Worker with static assets.
 #
 # A push to main that touches the landing publishes it. Other apps share the
 # repo, so the paths filter keeps a PWA or API change from redeploying a site
@@ -54,14 +54,14 @@ jobs:
       - name: Build
         run: pnpm --filter @contagorda/lp build
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/lp
           packageManager: pnpm
-          # The branch is pinned so the upload lands on PRODUCTION. Without it
-          # wrangler infers the branch from git, and anything that is not the
-          # production branch goes to a preview URL.
-          command: pages deploy out --project-name contagorda-lp --branch main
+          # A Worker with static assets on zone routes; see apps/lp/wrangler.toml
+          # for why it is not a Pages project. The token needs Account › Workers
+          # Scripts: Edit and Zone › Workers Routes: Edit.
+          command: deploy

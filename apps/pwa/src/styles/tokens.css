@@ -653,22 +653,30 @@ html[data-overlay-open='true'] .slide-away {
  * app reads as a coloured band, so they become a suggestion of one.
  */
 html[data-theme='dark'] {
-  --color-canvas: #0b0e13;
-  --color-surface: #151922;
-  --color-sunken: #1e2430;
-  --color-inverse: #232b3a;
+  /* POC: the ContaGorda brand's black and orange (design/ContaGorda Manual de
+     Marca). Neutral blacks instead of the old blue-tinted navy, stepped the
+     same way — page, card, control — and the brand cream as the ink. */
+  --color-canvas: #0e0e0e;
+  --color-surface: #181818;
+  --color-sunken: #232323;
+  --color-inverse: #262626;
 
   /* Deeper than the cards, not lighter. Dark themes usually raise a surface by
      lightening it, and here that made the sheet land on exactly the colour of
      the dashboard cards — tested on a phone, and read as one confusing plane.
      Going down separates them, and the darker scrim does the lifting instead. */
-  --color-overlay: #0e1218;
-  --color-deep: #05070a;
+  --color-overlay: #121212;
+  --color-deep: #080808;
 
-  --color-ink: #f2f5f9;
-  --color-muted: #8b95a6;
-  --color-faint: #5f6a7d;
-  --color-line: #232936;
+  --color-ink: #f4f0ea;
+  --color-muted: #9a938b;
+  --color-faint: #67615b;
+  --color-line: #2a2a2a;
+
+  /* The brand orange marks and fills. As text on black it takes the lighter
+     hover orange from the manual, which holds its contrast at small sizes. */
+  --color-accent: #ff5b1f;
+  --color-accent-ink: #ff7443;
 
   /* Both have to hold against near-black rather than against paper: the green
      in particular is unreadable at the light theme's depth once it is a bar
@@ -679,12 +687,14 @@ html[data-theme='dark'] {
 
   /* The dark theme has the opposite problem and the original answer: a page this
      dark needs the fill to be the bright thing, and near-black on near-black is
-     the button that went missing before. */
+     the button that went missing before. Black on orange, as on the landing. */
   --color-fill: var(--color-accent);
-  --color-on-fill: var(--color-brand);
+  --color-on-fill: #111111;
 
-  --color-sky: #16233a;
-  --color-sky-soft: #101725;
+  /* A faint warm glow at the top instead of the navy sky: the orange, taken
+     almost all the way down to the page. */
+  --color-sky: #22160f;
+  --color-sky-soft: #15110e;
 
   /* Flat in the dark theme: both stops are the page, so the layer is there and
      shows nothing. The stats screen wants the docked panel to be what rises, and
@@ -692,8 +702,8 @@ html[data-theme='dark'] {
      enough for the panel to be the brightest thing on it. */
   --canvas-deep-top: var(--color-deep);
   --canvas-deep-mid: var(--color-deep);
-  --color-dusk: #1d1f3a;
-  --color-dusk-soft: #131426;
+  --color-dusk: #1c1a18;
+  --color-dusk-soft: #131211;
 
   color-scheme: dark;
 }
@@ -714,7 +724,7 @@ html[data-theme='dark'] {
  */
 html[data-theme='dark'],
 html[data-theme='dark'] body {
-  background-color: #0b0e13;
+  background-color: #0e0e0e;
 }
 
 /*

@@ -1069,3 +1069,18 @@ html[data-theme='dark'] .glass {
   top: calc(var(--stack-y) + var(--card-h) * 0.44);
   right: calc(var(--stack-x) + var(--card-w) * 0.12);
 }
+
+/*
+ * No sky on the desktop.
+ *
+ * The gradient is the phone's horizon: a narrow screen with the month card as
+ * the one object on it. Spread across a wide window it stops being a horizon
+ * and becomes a coloured band over the top of the content, so the desktop
+ * frame keeps the class — `Portal` finds its host by it — and drops the layer.
+ *
+ * Last in the file on purpose: it matches the canvas rules above on
+ * specificity and wins by coming after them.
+ */
+html .app-surface.app-surface-flat::before {
+  display: none;
+}

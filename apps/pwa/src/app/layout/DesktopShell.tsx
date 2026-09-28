@@ -48,7 +48,14 @@ interface DesktopShellProps {
  */
 export function DesktopShell({ onPanelHost }: DesktopShellProps) {
   const { firstName, email, avatarUrl } = useGreeting()
-  const [profileOpen, setProfileOpen] = useState(false)
+
+  /*
+   * The account panel opens with the app, so the right column is not an empty
+   * strip on arrival. Anything opened later stacks on top of it and gives it
+   * back when closed. Once it is closed itself it stays closed until the next
+   * visit — in memory only, on purpose: every new visit starts with it open.
+   */
+  const [profileOpen, setProfileOpen] = useState(true)
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(readCollapsed)
 
@@ -73,7 +80,7 @@ export function DesktopShell({ onPanelHost }: DesktopShellProps) {
         onOpenAccounts={openAccounts}
       />
 
-      <div className="app-surface relative flex min-w-0 flex-1 flex-col overflow-hidden bg-canvas">
+      <div className="app-surface app-surface-flat relative flex min-w-0 flex-1 flex-col overflow-hidden bg-canvas">
         <main className="app-scroll flex-1 overflow-y-auto">
           <div className="max-w-[1100px]">
             <ErrorBoundary>

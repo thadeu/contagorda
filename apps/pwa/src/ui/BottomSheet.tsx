@@ -68,7 +68,12 @@ const EXPANDED = 92
 export function BottomSheet(props: BottomSheetProps) {
   const host = usePanelHost()
 
-  // The phone sheet pads its panel by p-2 and the rows inside expect that inset.
+  /*
+   * The phone sheet pads its panel by p-2 and the rows inside expect that inset.
+   * `grab` sits in the phone header at p-2 plus px-3, so px-5 here keeps it on
+   * the same edge — it holds details such as the category and the author, and
+   * leaving it out is how the panel came to show less than the sheet.
+   */
   if (host) {
     return (
       <SidePanel
@@ -78,6 +83,8 @@ export function BottomSheet(props: BottomSheetProps) {
         trailing={props.actions}
         host={host}
       >
+        {props.grab && <div className="px-5 pb-3">{props.grab}</div>}
+
         <div className="p-2">{props.children}</div>
       </SidePanel>
     )

@@ -79,9 +79,9 @@ function DesktopWelcome({ actions }: { actions: ReactNode }) {
   return (
     <div className="grid h-full grid-cols-[minmax(26rem,36rem)_1fr] bg-white text-[#16130f]">
       <div className="flex flex-col overflow-y-auto px-14 py-12">
-        <div className="flex items-center gap-2.5">
-          <PigMark className="size-8" />
-          <span className="text-base font-bold tracking-[-0.01em]">Conta Gorda</span>
+        <div className="flex items-center gap-3.5">
+          <PigMark className="size-14" />
+          <span className="text-2xl font-bold tracking-[-0.02em]">Conta Gorda</span>
         </div>
 
         <div className="flex max-w-[22rem] flex-1 flex-col justify-center py-10">

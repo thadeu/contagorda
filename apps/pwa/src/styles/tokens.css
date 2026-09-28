@@ -20,20 +20,29 @@
  * income, where the mapping is learned too deeply to fight.
  */
 @theme {
+  /* POC: the ContaGorda brand colours. White throughout — page, cards and
+     panels — with borders and shadows doing the separating, light grey for the
+     controls, and the brand orange where the strong surfaces were black (the
+     month band and the main button), with black text on it as on the landing
+     page's orange card. */
   /* White, the way the welcome screen is white: the app icon opened up. Cards
      are white too and stand on their shadow; the warm off-white is kept for
      what sits inside a card. */
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-sunken: #f4f0eb;
+  /* Each transaction row, as a tile inside the grey list card. White here so
+     the items read one by one; transparent in the dark theme, where the rows
+     sit straight on the card as they always have. */
+  --color-row: #ffffff;
+  --color-sunken: #ebebea;
 
   --color-brand: #0c0f18;
   --color-brand-soft: #1b1d28;
-  --color-accent: #ef7a92;
+  --color-accent: #ff5b1f;
 
   /* The accent as text on white. The pink that fills a card is too pale to
      read as a word; this is the same pink taken down until it can. */
-  --color-accent-ink: #d4526d;
+  --color-accent-ink: #d9420c;
 
   /* The third colour on the welcome screen's pile of cards, kept for the
      places that need one that is neither the ink nor the accent. */
@@ -47,8 +56,8 @@
      text on top of it, and a pale blue with white text on it is the least
      readable button in the app. So the light theme fills with the same near-navy
      the month card uses, and keeps the bright blue for marking. */
-  --color-fill: #0c0f18;
-  --color-on-fill: #ffffff;
+  --color-fill: #ff5b1f;
+  --color-on-fill: #111111;
 
   /* The month view's sky. Same blue as the accent, opened up and taken down to
      the page so the screen has a horizon rather than a coloured header with an
@@ -81,10 +90,10 @@
   --color-dusk: #d8ebe8;
   --color-dusk-soft: #edf5f3;
 
-  --color-ink: #16130f;
-  --color-muted: #78706a;
-  --color-faint: #aaa198;
-  --color-line: #ece7e1;
+  --color-ink: #111111;
+  --color-muted: #6b6966;
+  --color-faint: #a3a19d;
+  --color-line: #e5e5e4;
 
   /* The strong surface that carries white text, whichever theme is on. Light
      mode spends the near-black here; dark mode cannot, because there the page
@@ -99,7 +108,7 @@
      strong object on the screen reads as an object and not as a shade of the
      background. The dark theme keeps its navy; there the page itself is dark
      and a coloured slab would be a band. */
-  --color-inverse: #0c0f18;
+  --color-inverse: #ff5b1f;
 
   /* The surface of anything presented over the app. It is its own token because
      a sheet and a card are not the same thing wearing the same colour: the card
@@ -107,7 +116,7 @@
      what makes the sheet read as a layer instead of a taller card. */
   /* A hair warmer than white, so the white cards a sheet carries still read
      as cards. On a pure white sheet they had nothing to stand on. */
-  --color-overlay: #f8f6f3;
+  --color-overlay: #ffffff;
 
   /* Below the canvas. For a screen whose subject is a panel: the page drops so
      the panel can rise.
@@ -121,13 +130,17 @@
      So the light theme keeps the same grammar with the tones reversed: the page
      is the recessive one and the panel rises by being lighter, which is what the
      dark theme does too. Same relationship, opposite direction. */
-  --color-deep: #f7f5f2;
+  --color-deep: #ffffff;
 
   /* How far the page is dimmed behind an overlay. Black, always — a scrim means
      less light, not the app's dark colour, so it must not follow the ink. */
   --overlay-scrim: 45%;
 
-  --color-in: #128a5a;
+  /* A yellow-green, not the old blue-green. The blue-green sat almost opposite
+     the brand orange on the wheel and the two fought wherever they met; a
+     green leaning to yellow is its neighbour instead. Darker as well, so it
+     holds 5:1 as text on the white page and 4.6:1 on the grey cards. */
+  --color-in: #3f7d20;
   --color-out: #c8382f;
 
   /* The three things a bar can be saying, kept apart from `in` and `out`. Those
@@ -143,8 +156,8 @@
      the stats screen is greyscale, so there is nothing here for them to fight
      with. */
   --color-rise: #e12d20;
-  --color-steady: #1f7f79;
-  --color-now: #00a862;
+  --color-steady: #4a8a1c;
+  --color-now: #4a8a1c;
 
   --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
@@ -681,6 +694,11 @@ html[data-theme='dark'] {
   /* Both have to hold against near-black rather than against paper: the green
      in particular is unreadable at the light theme's depth once it is a bar
      three pixels wide. */
+  /* Held at their own values: the light theme's income green moved to sit
+     beside the orange, and the dark theme keeps what it had until it is
+     looked at on its own. */
+  --color-in: #128a5a;
+  --color-row: transparent;
   --color-rise: #ff4a3d;
   --color-steady: #2f95ff;
   --color-now: #00d183;
@@ -879,8 +897,10 @@ html[data-theme='dark'] .footer-edge {
   right: -14vw;
 }
 
+/* Literal, not the accent: the welcome screen does not follow the theme, and
+   index.html paints this same pink before React mounts. */
 .welcome-card-pink {
-  background: linear-gradient(135deg, #f7a1b3 0%, var(--color-accent) 55%, #e2617c 100%);
+  background: linear-gradient(135deg, #f7a1b3 0%, #ef7a92 55%, #e2617c 100%);
 }
 
 /*

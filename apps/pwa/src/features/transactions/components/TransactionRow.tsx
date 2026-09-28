@@ -28,11 +28,11 @@ export function TransactionRow({ transaction, category, onOpen }: TransactionRow
   const income = transaction.kind === 'income'
 
   return (
-    <li>
+    <li className="[&+li]:mt-1.5">
       <button
         type="button"
         onClick={() => onOpen(transaction)}
-        className="flex w-full items-center gap-3 py-3 text-left"
+        className="-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-3 rounded-control bg-row px-3 py-3 text-left"
       >
         <span
           className="grid size-10 shrink-0 place-items-center rounded-2xl bg-sunken text-base"

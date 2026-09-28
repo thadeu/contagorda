@@ -3,4 +3,5 @@
 # held together by convention, not by forcing one package manager over all of it.
 packages:
   - 'apps/pwa'
+  - 'apps/lp'
   - 'packages/*'

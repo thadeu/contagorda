@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #111111;
+  --color-ink-soft: #1d1d1d;
+  --color-ink-card: #161616;
+  --color-ink-code: #1b1b1b;
+  --color-ink-hover: #2a2a2a;
+  --color-orange: #ff5b1f;
+  --color-orange-soft: #ff6f39;
+  --color-orange-hover: #ff7443;
+  --color-orange-deep: #d9420c;
+  --color-cream: #f4f0ea;
+
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(72px + env(safe-area-inset-top));
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@keyframes seal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.seal-spin {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: seal-spin 30s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seal-spin {
+    animation: none;
+  }
+}

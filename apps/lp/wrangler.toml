@@ -1,0 +1,6 @@
+# Cloudflare Pages, for `wrangler pages deploy` from a terminal and from CI
+# (.github/workflows/lp.yml). The build runs from the repo root, because the
+# lockfile and the workspace definition live there.
+
+name = "contagorda-lp"
+pages_build_output_dir = "out"

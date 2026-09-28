@@ -7,6 +7,9 @@
     "build": "pnpm --filter @contagorda/pwa build",
     "lint": "pnpm --filter @contagorda/pwa lint",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "dev:lp": "pnpm --filter @contagorda/lp dev",
+    "build:lp": "pnpm --filter @contagorda/lp build",
+    "deploy:lp": "pnpm --filter @contagorda/lp deploy:prod"
   }
 }

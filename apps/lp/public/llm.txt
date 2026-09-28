@@ -1,0 +1,33 @@
+# ContaGorda
+
+> Grupo de produtos financeiros para empresas e pessoas.
+> Site: https://contagorda.com
+
+## Produtos
+
+### ContaGorda Pay
+Gateway de pagamentos agnóstico. O aplicativo do cliente se comunica apenas com a
+ContaGorda, que direciona cada cobrança ao gateway configurado no painel.
+
+Como funciona:
+1. Configure o gateway no painel e informe as credenciais da conta
+   (Stripe ativo; Asaas e AbacatePay em breve).
+2. Adicione o botão de pagamento ao aplicativo com uma linha de código:
+   <a href="https://pay.contagorda.com/c/…">
+3. O cliente é encaminhado ao gateway ativo e o resultado retorna assinado ao aplicativo.
+
+Para trocar de gateway, basta alterar a configuração no painel; o código do
+aplicativo permanece o mesmo.
+
+### ContaGorda Finanças
+Controle financeiro pessoal: registre receitas e despesas e acompanhe o saldo do
+mês, no navegador ou instalado no celular (PWA).
+Endereço: https://app.contagorda.com
+
+## Sobre
+Cada produto opera de forma independente e compartilha a mesma conta de acesso.
+
+## Links
+- Início: https://contagorda.com/
+- Termos de uso: https://contagorda.com/terms/
+- Privacidade: https://contagorda.com/privacy/

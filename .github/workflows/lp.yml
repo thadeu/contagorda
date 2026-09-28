@@ -1,0 +1,67 @@
+name: lp
+
+# The landing page (apps/lp) on Cloudflare Pages.
+#
+# A push to main that touches the landing publishes it. Other apps share the
+# repo, so the paths filter keeps a PWA or API change from redeploying a site
+# that did not change. `workflow_dispatch` is the manual button, for a redeploy
+# with no code change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/lp/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/lp.yml'
+  workflow_dispatch:
+
+# One deploy at a time, and never cancel one in flight: wrangler uploading a
+# half-finished set of files is worse than waiting.
+concurrency:
+  group: deploy-lp
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pnpm before Node: setup-node's pnpm cache needs the package manager to
+      # exist, and it reads the version from `packageManager` in the root
+      # package.json.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # From the root: the lockfile and the workspace definition live there.
+      # The filter installs only the landing and what it depends on.
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter @contagorda/lp...
+
+      # `output: 'export'` writes a static site to apps/lp/out.
+      - name: Build
+        run: pnpm --filter @contagorda/lp build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/lp
+          packageManager: pnpm
+          # The branch is pinned so the upload lands on PRODUCTION. Without it
+          # wrangler infers the branch from git, and anything that is not the
+          # production branch goes to a preview URL.
+          command: pages deploy out --project-name contagorda-lp --branch main

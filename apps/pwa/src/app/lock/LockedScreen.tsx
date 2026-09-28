@@ -2,6 +2,7 @@ import { useAuth } from '@clowk/react'
 import { WelcomeFrame } from '@/app/auth/WelcomeFrame'
 import { Button } from '@/ui/Button'
 import { LockIcon } from '@/ui/icons'
+import { useIsDesktop } from '@/app/useIsDesktop'
 
 /**
  * The door, held.
@@ -17,6 +18,7 @@ import { LockIcon } from '@/ui/icons'
  */
 export function LockedScreen({ onRetry }: { onRetry: () => void }) {
   const { signOut } = useAuth()
+  const desktop = useIsDesktop()
 
   return (
     <div className="relative h-full">
@@ -26,9 +28,15 @@ export function LockedScreen({ onRetry }: { onRetry: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="locked-title"
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/45"
+        className={`fixed inset-0 z-50 flex justify-center bg-black/45 ${desktop ? 'items-center' : 'items-end'}`}
       >
-        <div className="w-full max-w-lg rounded-t-card bg-overlay px-5 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] text-ink shadow-[0_-12px_40px_rgba(0,0,0,0.25)]">
+        <div
+          className={`w-full bg-overlay px-5 pt-6 text-ink shadow-[0_-12px_40px_rgba(0,0,0,0.25)] ${
+            desktop
+              ? 'max-w-sm rounded-card pb-5'
+              : 'max-w-lg rounded-t-card pb-[calc(env(safe-area-inset-bottom)+1.25rem)]'
+          }`}
+        >
           <div className="mx-auto grid size-12 place-items-center rounded-full bg-sunken text-ink">
             <LockIcon className="size-5" />
           </div>

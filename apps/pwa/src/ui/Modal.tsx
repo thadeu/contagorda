@@ -8,6 +8,8 @@ import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 import { useExit } from './useExit'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
+import { SidePanel } from './SidePanel'
+import { usePanelHost } from '@/app/layout/panelHost'
 
 interface ModalProps {
   title: string
@@ -45,7 +47,17 @@ const THRESHOLD = 90
  * as much as it needs, up to nearly the screen. Sharing a component between the
  * two would mean a prop for every place they disagree.
  */
-export function Modal({ title, onClose, trailing, children }: ModalProps) {
+export function Modal(props: ModalProps) {
+  const host = usePanelHost()
+
+  if (host) {
+    return <SidePanel {...props} host={host} />
+  }
+
+  return <SheetModal {...props} />
+}
+
+function SheetModal({ title, onClose, trailing, children }: ModalProps) {
   const overlay = useRef<HTMLDivElement>(null)
   const content = useRef<HTMLDivElement>(null)
   const startY = useRef<number | null>(null)

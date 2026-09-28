@@ -33,47 +33,110 @@ export function MonthStack({
   totalCents,
   incomeCents,
 }: MonthStackProps) {
+  return (
+    <section>
+      <MonthBar month={month} onMonthChange={onMonthChange} attached />
+
+      <MonthSummary
+        remainingCents={remainingCents}
+        paidCents={paidCents}
+        totalCents={totalCents}
+        incomeCents={incomeCents}
+        attached
+      />
+    </section>
+  )
+}
+
+interface MonthBarProps {
+  month: string
+  onMonthChange: (month: string) => void
+  /** Leaves room at the bottom for the summary card to overlap it, as on the phone. */
+  attached?: boolean
+  className?: string
+}
+
+/**
+ * The month and the three ways to move from it.
+ *
+ * Exported on its own for the desktop, where it heads the page as a toolbar
+ * and the summary card sits in a row with the income and spending cards.
+ */
+export function MonthBar({ month, onMonthChange, attached = false, className = '' }: MonthBarProps) {
+  return (
+    <div
+      className={`flex items-center justify-between gap-4 rounded-card bg-inverse px-4 ${
+        attached ? 'pt-3.5 pb-12' : 'py-3'
+      } ${className}`}
+    >
+      <MonthPicker month={month} onChange={onMonthChange} />
+
+      {/* One month either way, which is nearly every move. The picker is
+          still there in the label for the rare jump to a month far off, and
+          two taps to reach next month was two taps too many for the thing
+          people do most. */}
+      <div className="flex shrink-0 items-center gap-1.5">
+        <Step
+          icon={ChevronLeftIcon}
+          label="Mês anterior"
+          onClick={() => onMonthChange(shiftMonth(month, -1))}
+        />
+        {/* Between the two steps, because it is the third way to move along
+            the same line and the only one that does not depend on where you
+            already are. Same place, same icon, same rule as the history
+            screen: a control that moves between screens is a control someone
+            has to find twice. */}
+        <Step
+          icon={TargetIcon}
+          label="Ir para o mês atual"
+          disabled={month === monthKey(todayIso())}
+          onClick={() => onMonthChange(monthKey(todayIso()))}
+        />
+
+        <Step
+          icon={ChevronRightIcon}
+          label="Próximo mês"
+          onClick={() => onMonthChange(shiftMonth(month, 1))}
+        />
+      </div>
+    </div>
+  )
+}
+
+interface MonthSummaryProps {
+  remainingCents: number
+  paidCents: number
+  totalCents: number
+  incomeCents: number
+  attached?: boolean
+  /**
+   * The figures beside the headline instead of under it, for the desktop row
+   * where this card sits next to the income and spending cards and should be
+   * no taller than they are.
+   */
+  wide?: boolean
+  className?: string
+}
+
+export function MonthSummary({
+  remainingCents,
+  paidCents,
+  totalCents,
+  incomeCents,
+  attached = false,
+  wide = false,
+  className = '',
+}: MonthSummaryProps) {
   const { head, tail } = splitBRL(remainingCents)
   const progress = totalCents === 0 ? 0 : Math.min(paidCents / totalCents, 1)
   const clear = totalCents > 0 && remainingCents === 0
   const leftoverCents = incomeCents - totalCents
 
-  return (
-    <section>
-      <div className="flex items-center justify-between rounded-card bg-inverse px-4 pt-3.5 pb-12">
-        <MonthPicker month={month} onChange={onMonthChange} />
-
-        {/* One month either way, which is nearly every move. The picker is
-            still there in the label for the rare jump to a month far off, and
-            two taps to reach next month was two taps too many for the thing
-            people do most. */}
-        <div className="flex shrink-0 items-center gap-1.5">
-          <Step
-            icon={ChevronLeftIcon}
-            label="Mês anterior"
-            onClick={() => onMonthChange(shiftMonth(month, -1))}
-          />
-          {/* Between the two steps, because it is the third way to move along
-              the same line and the only one that does not depend on where you
-              already are. Same place, same icon, same rule as the history
-              screen: a control that moves between screens is a control someone
-              has to find twice. */}
-          <Step
-            icon={TargetIcon}
-            label="Ir para o mês atual"
-            disabled={month === monthKey(todayIso())}
-            onClick={() => onMonthChange(monthKey(todayIso()))}
-          />
-
-          <Step
-            icon={ChevronRightIcon}
-            label="Próximo mês"
-            onClick={() => onMonthChange(shiftMonth(month, 1))}
-          />
-        </div>
-      </div>
-
-      <div className="card-shadow relative -mt-8 rounded-card border border-line bg-surface px-5 py-5">
+  if (wide) {
+    return (
+      <div
+        className={`card-shadow flex flex-col justify-center gap-3 rounded-card border border-line bg-surface px-5 py-3.5 ${className}`}
+      >
         <div className="flex items-baseline justify-between gap-3">
           <p className="text-sm text-muted">{clear ? 'Tudo pago' : 'Falta pagar'}</p>
 
@@ -84,26 +147,57 @@ export function MonthStack({
           )}
         </div>
 
-        <p className="tnum pt-1 text-[2.25rem] leading-none font-bold tracking-[-0.02em] text-ink">
-          {head}
-          <span className="text-[0.55em] font-semibold opacity-45">{tail}</span>
-        </p>
+        <div className="flex items-end justify-between gap-4">
+          <p className="tnum text-[1.75rem] leading-none font-bold tracking-[-0.02em] whitespace-nowrap text-ink">
+            {head}
+            <span className="text-[0.55em] font-semibold opacity-45">{tail}</span>
+          </p>
 
-        <div className="pt-5">
-          <ProgressTrack value={progress} />
+          <div className="flex min-w-0 divide-x divide-line">
+            <Stat label="Pago" cents={paidCents} hint={`de ${formatBRL(totalCents)}`} />
+            <Leftover cents={leftoverCents} incomeCents={incomeCents} />
+          </div>
         </div>
 
-        {/* The two figures the headline does not say on its own: what has
-            already left, and what is left once everything has. Side by side
-            because they answer the two questions people bring to the card, in
-            the order they ask them. */}
-        <div className="mt-4 grid grid-cols-2 divide-x divide-line border-t border-line pt-3">
-          <Stat label="Pago" cents={paidCents} hint={`de ${formatBRL(totalCents)}`} />
-          <Leftover cents={leftoverCents} incomeCents={incomeCents} />
-        </div>
+        <ProgressTrack value={progress} />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className={`card-shadow relative rounded-card border border-line bg-surface px-5 py-5 ${
+        attached ? '-mt-8' : ''
+      } ${className}`}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-sm text-muted">{clear ? 'Tudo pago' : 'Falta pagar'}</p>
+
+        {totalCents > 0 && (
+          <p className="tnum shrink-0 text-xs font-medium text-muted">
+            {Math.round(progress * 100)}% pago
+          </p>
+        )}
       </div>
 
-    </section>
+      <p className="tnum pt-1 text-[2.25rem] leading-none font-bold tracking-[-0.02em] text-ink">
+        {head}
+        <span className="text-[0.55em] font-semibold opacity-45">{tail}</span>
+      </p>
+
+      <div className="pt-5">
+        <ProgressTrack value={progress} />
+      </div>
+
+      {/* The two figures the headline does not say on its own: what has
+          already left, and what is left once everything has. Side by side
+          because they answer the two questions people bring to the card, in
+          the order they ask them. */}
+      <div className="mt-4 grid grid-cols-2 divide-x divide-line border-t border-line pt-3">
+        <Stat label="Pago" cents={paidCents} hint={`de ${formatBRL(totalCents)}`} />
+        <Leftover cents={leftoverCents} incomeCents={incomeCents} />
+      </div>
+    </div>
   )
 }
 

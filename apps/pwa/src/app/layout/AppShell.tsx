@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { Outlet } from 'react-router'
 import { ActiveLedgerProvider } from '@/app/ledger/ActiveLedgerProvider'
 import { ErrorBoundary } from '@/app/ErrorBoundary'
 import { AccountEditorProvider } from '@/features/accounts/AccountEditor'
 import { TransactionEditorProvider } from '@/features/transactions/TransactionEditor'
+import { useIsDesktop } from '@/app/useIsDesktop'
+import { DesktopShell } from './DesktopShell'
+import { PanelHostContext } from './panelHost'
 
 /**
  * The frame is in normal flow, filling `#root`, and nothing here is `fixed`.
@@ -33,18 +37,28 @@ import { TransactionEditorProvider } from '@/features/transactions/TransactionEd
  * floats over the content to do it.
  */
 export function AppShell() {
+  const desktop = useIsDesktop()
+  const [panelHost, setPanelHost] = useState<HTMLElement | null>(null)
+
+  /*
+   * The panel host sits above the editor providers and not inside the desktop
+   * frame, because the providers render their modals beside the frame rather
+   * than within it — a context opened lower down would never reach them.
+   */
   return (
-    <ActiveLedgerProvider>
-      <TransactionEditorProvider>
-        <AccountEditorProvider>
-          <Shell />
-        </AccountEditorProvider>
-      </TransactionEditorProvider>
-    </ActiveLedgerProvider>
+    <PanelHostContext value={desktop ? panelHost : null}>
+      <ActiveLedgerProvider>
+        <TransactionEditorProvider>
+          <AccountEditorProvider>
+            {desktop ? <DesktopShell onPanelHost={setPanelHost} /> : <PhoneShell />}
+          </AccountEditorProvider>
+        </TransactionEditorProvider>
+      </ActiveLedgerProvider>
+    </PanelHostContext>
   )
 }
 
-function Shell() {
+function PhoneShell() {
   return (
     <>
       <div className="app-surface relative mx-auto flex h-full max-w-lg flex-col overflow-hidden bg-canvas">

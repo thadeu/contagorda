@@ -840,23 +840,97 @@ html[data-theme='dark'] .footer-edge {
   transform: rotate(-14deg) skewX(-10deg);
   transform-origin: center;
   box-shadow: 0 24px 48px -24px rgb(12 15 24 / 0.35);
+  transition:
+    top 1400ms cubic-bezier(0.65, 0, 0.35, 1),
+    right 1400ms cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 1400ms ease-in-out;
 }
 
+/*
+ * Position and colour are separate classes because the cards take turns: the
+ * position moves from card to card, and each card keeps its own colour.
+ */
 .welcome-card-back {
+  z-index: 1;
   top: calc(var(--card-h) * 0.58);
   right: -6vw;
   opacity: 0.85;
 }
 
 .welcome-card-mid {
+  z-index: 2;
   top: calc(var(--card-h) * 0.36);
   right: -10vw;
 }
 
 .welcome-card-front {
+  z-index: 3;
   top: calc(var(--card-h) * 0.14);
   right: -14vw;
+}
+
+.welcome-card-pink {
   background: linear-gradient(135deg, #f7a1b3 0%, var(--color-accent) 55%, #e2617c 100%);
+}
+
+/*
+ * The front card going to the back of the pile.
+ *
+ * It lifts up and out first, still on top, and only drops behind the others
+ * at the midpoint, when it is clear of them. Without the lift it would slide
+ * through the two cards it passes. `z-index` animates in steps, which is what
+ * makes the drop a single moment instead of a blend.
+ */
+@keyframes welcome-card-shuffle {
+  0% {
+    z-index: 4;
+    transform: rotate(-14deg) skewX(-10deg);
+  }
+
+  45% {
+    z-index: 4;
+    transform: translate(12%, -22%) rotate(-10deg) skewX(-10deg);
+  }
+
+  55% {
+    z-index: 0;
+    transform: translate(12%, -22%) rotate(-10deg) skewX(-10deg);
+  }
+
+  100% {
+    z-index: 0;
+    transform: rotate(-14deg) skewX(-10deg);
+  }
+}
+
+/*
+ * The card details arriving over the skeleton that index.html painted in
+ * their place. The pig is left out of the fade: the skeleton draws it too, in
+ * the same spot, so it is already there.
+ */
+@keyframes welcome-card-face-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.welcome-card-face {
+  animation: welcome-card-face-in 400ms ease-out;
+}
+
+.welcome-card-leaving {
+  animation: welcome-card-shuffle 1600ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-card {
+    transition: none;
+  }
+
+  .welcome-card-leaving,
+  .welcome-card-face {
+    animation: none;
+  }
 }
 
 /* The parts pop from their own centre, not the drawing's. */
@@ -938,4 +1012,60 @@ html[data-theme='dark'] .glass {
     inset 0 1px 0 rgb(255 255 255 / 14%),
     inset 0 0 0 1px rgb(255 255 255 / 6%),
     0 12px 34px -14px rgb(0 0 0 / 70%);
+}
+
+/*
+ * The desktop side panel arriving from the right edge.
+ *
+ * Short and only on entry: the panel is a column of the layout, not a sheet
+ * with a physical position to return to, so it leaves at once when closed.
+ */
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+}
+
+.panel-enter {
+  animation: panel-enter 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-enter {
+    animation: none;
+  }
+}
+
+/*
+ * The card stack as the picture on the desktop welcome.
+ *
+ * The phone pile hangs off the right edge of the screen, sized from the
+ * viewport. Here it has a panel of its own, so it is sized from the panel's
+ * share of the window and centred in it, with the same fan: each card a step
+ * further left and lower than the one in front of it.
+ */
+.welcome-stack-wide {
+  --card-w: min(34vw, 32rem, 55vh);
+  --card-h: calc(var(--card-w) / 1.58);
+  --stack-x: calc(50% - var(--card-w) / 2);
+  --stack-y: calc(50% - var(--card-h) * 0.8);
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+
+.welcome-stack-wide .welcome-card-front {
+  top: var(--stack-y);
+  right: calc(var(--stack-x) - var(--card-w) * 0.12);
+}
+
+.welcome-stack-wide .welcome-card-mid {
+  top: calc(var(--stack-y) + var(--card-h) * 0.22);
+  right: var(--stack-x);
+}
+
+.welcome-stack-wide .welcome-card-back {
+  top: calc(var(--stack-y) + var(--card-h) * 0.44);
+  right: calc(var(--stack-x) + var(--card-w) * 0.12);
 }

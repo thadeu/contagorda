@@ -7,6 +7,8 @@ import { Portal } from './Portal'
 import { useEnter } from './useEnter'
 import { useExit } from './useExit'
 import { useTouchScrollGuard } from './useTouchScrollGuard'
+import { SidePanel } from './SidePanel'
+import { usePanelHost } from '@/app/layout/panelHost'
 
 interface BottomSheetProps {
   title: string
@@ -63,7 +65,28 @@ const EXPANDED = 92
  * height to dismissed in one gesture would throw away a list someone had just
  * opened up to read.
  */
-export function BottomSheet({
+export function BottomSheet(props: BottomSheetProps) {
+  const host = usePanelHost()
+
+  // The phone sheet pads its panel by p-2 and the rows inside expect that inset.
+  if (host) {
+    return (
+      <SidePanel
+        title={props.title}
+        subtitle={props.subtitle}
+        onClose={props.onClose}
+        trailing={props.actions}
+        host={host}
+      >
+        <div className="p-2">{props.children}</div>
+      </SidePanel>
+    )
+  }
+
+  return <SheetBottom {...props} />
+}
+
+function SheetBottom({
   title,
   subtitle,
   showTitle = true,

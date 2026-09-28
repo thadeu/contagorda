@@ -24,6 +24,7 @@ import { MonthDifference } from './components/MonthDifference'
 import { difference, read } from './trend'
 import { ALL, CategoryFilter, UNCATEGORISED } from './components/CategoryFilter'
 import type { Transaction } from '@/services/types'
+import { useIsDesktop } from '@/app/useIsDesktop'
 
 /**
  * The history behind the month.
@@ -104,6 +105,8 @@ export function StatsPage() {
   const totals = useMonthlyTotals(category)
   const [open, setOpen] = useState<Transaction | null>(null)
 
+  const desktop = useIsDesktop()
+
   useDocumentCanvas('deep')
 
   const expenses = (transactions.data ?? []).filter((row) => row.kind === 'expense')
@@ -131,6 +134,131 @@ export function StatsPage() {
   const oldest = bars[0]?.month ?? month
   const newest = bars[bars.length - 1]?.month ?? monthKey(todayIso())
 
+  const heading = (
+    <>
+      <div className="flex items-center justify-between gap-3 px-3.5 pb-2">
+        <p className="truncate text-[0.9375rem] font-semibold tracking-wide text-ink uppercase">
+          {monthLabel(month)}
+        </p>
+
+        <div className="flex shrink-0 gap-1.5">
+          <NavButton
+            solid
+            icon={ChevronLeftIcon}
+            label="Mês anterior"
+            disabled={month <= oldest}
+            onClick={() => setMonth(shiftMonth(month, -1))}
+          />
+
+          {/* Between the two steps, because it is the third way to move along
+              the same line — and the only one that does not depend on where
+              you already are. Six months out, going back costs six taps or a
+              scroll through the chart to find the month you started on. */}
+          <NavButton
+            solid
+            icon={TargetIcon}
+            label="Ir para o mês atual"
+            disabled={month === monthKey(todayIso())}
+            onClick={() => setMonth(monthKey(todayIso()))}
+          />
+
+          <NavButton
+            solid
+            icon={ChevronRightIcon}
+            label="Próximo mês"
+            disabled={month >= newest}
+            onClick={() => setMonth(shiftMonth(month, 1))}
+          />
+        </div>
+      </div>
+
+      {/* The figure keeps the month it had until the new one arrives, and
+          the spinner is what stops that from being a lie. A blank here, or a
+          zero, would both be worse: R$ 0,00 is a real answer — a month with
+          nothing spent — and the app would be stating it with a straight
+          face on the way to something else. */}
+      <p className="flex items-center gap-2.5 px-3.5 pb-4 text-[2rem] leading-tight font-bold text-ink">
+        {transactions.data ? <Money cents={totalCents} /> : <span className="opacity-0">—</span>}
+
+        {busy && <Spinner />}
+      </p>
+    </>
+  )
+
+  const chart = (
+    <>
+      {/* The one horizontal gesture on the screen, and the only place a finger
+          moves anything other than the sheet. */}
+      <div className="pb-3">
+        <MonthBars totals={bars} selected={month} onSelect={setMonth} />
+      </div>
+
+      {gap && (
+        <div className="touch-none pb-4">
+          <MonthDifference gap={gap} />
+        </div>
+      )}
+    </>
+  )
+
+  const filter = (
+    <CategoryFilter
+      rows={expenses}
+      categories={categoryMap}
+      selected={category}
+      onSelect={setCategory}
+    />
+  )
+
+  const list = (
+    <>
+      {groups.length === 0 ? (
+        <EmptyState title="Nada neste mês" hint="Escolha outro mês no gráfico." />
+      ) : (
+        groups.map((group) => (
+          <DayGroupSection
+            key={group.date}
+            group={group}
+            categories={categoryMap}
+            onOpen={setOpen}
+          />
+        ))
+      )}
+    </>
+  )
+
+  const transactionSheet = (
+    <>
+      {open && (
+        <TransactionSheet
+          transaction={open}
+          onClose={() => setOpen(null)}
+          onTogglePaid={(t) => togglePaid.mutate({ id: t.id, paid: t.paid_at === null })}
+          onDelete={(t, scope) => remove.mutate({ id: t.id, scope })}
+        />
+      )}
+    </>
+  )
+
+  if (desktop) {
+    return (
+      <div className="px-8 pt-7 pb-16">
+        <div className="-mx-3.5">
+          {heading}
+          {chart}
+        </div>
+
+        <section className="mt-2 overflow-hidden rounded-card border border-line bg-surface">
+          <div className="border-b border-line px-2 py-3">{filter}</div>
+
+          <div className="px-4 pb-4">{list}</div>
+        </section>
+
+        {transactionSheet}
+      </div>
+    )
+  }
+
   return (
     <div className="relative h-full overflow-hidden overscroll-none bg-deep">
       <div className="flex h-full flex-col">
@@ -148,103 +276,19 @@ export function StatsPage() {
             }
           />
 
-          <div className="flex items-center justify-between gap-3 px-3.5 pb-2">
-            <p className="truncate text-[0.9375rem] font-semibold tracking-wide text-ink uppercase">
-              {monthLabel(month)}
-            </p>
-
-            <div className="flex shrink-0 gap-1.5">
-              <NavButton
-                solid
-                icon={ChevronLeftIcon}
-                label="Mês anterior"
-                disabled={month <= oldest}
-                onClick={() => setMonth(shiftMonth(month, -1))}
-              />
-
-              {/* Between the two steps, because it is the third way to move along
-                  the same line — and the only one that does not depend on where
-                  you already are. Six months out, going back costs six taps or a
-                  scroll through the chart to find the month you started on. */}
-              <NavButton
-                solid
-                icon={TargetIcon}
-                label="Ir para o mês atual"
-                disabled={month === monthKey(todayIso())}
-                onClick={() => setMonth(monthKey(todayIso()))}
-              />
-
-              <NavButton
-                solid
-                icon={ChevronRightIcon}
-                label="Próximo mês"
-                disabled={month >= newest}
-                onClick={() => setMonth(shiftMonth(month, 1))}
-              />
-            </div>
-          </div>
-
-          {/* The figure keeps the month it had until the new one arrives, and
-              the spinner is what stops that from being a lie. A blank here, or a
-              zero, would both be worse: R$ 0,00 is a real answer — a month with
-              nothing spent — and the app would be stating it with a straight
-              face on the way to something else. */}
-          <p className="flex items-center gap-2.5 px-3.5 pb-4 text-[2rem] leading-tight font-bold text-ink">
-            {transactions.data ? <Money cents={totalCents} /> : <span className="opacity-0">—</span>}
-
-            {busy && <Spinner />}
-          </p>
+          {heading}
         </div>
 
-        {/* The one horizontal gesture on the screen, and the only place a finger
-            moves anything other than the sheet. */}
-        <div className="pb-3">
-          <MonthBars totals={bars} selected={month} onSelect={setMonth} />
-        </div>
-
-        {gap && (
-          <div className="touch-none pb-4">
-            <MonthDifference gap={gap} />
-          </div>
-        )}
+        {chart}
 
         <div aria-hidden="true" className="flex-1 touch-none" />
       </div>
 
-      <DockedSheet
-        expanded={expanded}
-        onExpandedChange={setExpanded}
-        toolbar={
-          <CategoryFilter
-            rows={expenses}
-            categories={categoryMap}
-            selected={category}
-            onSelect={setCategory}
-          />
-        }
-      >
-        {groups.length === 0 ? (
-          <EmptyState title="Nada neste mês" hint="Escolha outro mês no gráfico." />
-        ) : (
-          groups.map((group) => (
-            <DayGroupSection
-              key={group.date}
-              group={group}
-              categories={categoryMap}
-              onOpen={setOpen}
-            />
-          ))
-        )}
+      <DockedSheet expanded={expanded} onExpandedChange={setExpanded} toolbar={filter}>
+        {list}
       </DockedSheet>
 
-      {open && (
-        <TransactionSheet
-          transaction={open}
-          onClose={() => setOpen(null)}
-          onTogglePaid={(t) => togglePaid.mutate({ id: t.id, paid: t.paid_at === null })}
-          onDelete={(t, scope) => remove.mutate({ id: t.id, scope })}
-        />
-      )}
+      {transactionSheet}
     </div>
   )
 }

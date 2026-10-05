@@ -274,6 +274,13 @@ why there is no `all`.
 A row with `detached: true` is skipped by a `future` edit and keeps its own
 values. Somebody who corrected March did it knowing March differed.
 
+`created_by_id` hands the row to another member (a membership id of this ledger),
+or takes it over. **Owner only:** `403` `forbidden` from anyone else, `404` for a
+membership that is not in this ledger. Sending the author the row already has is
+no change and needs no right to it, so a form that posts everything back works
+for a guest. With `scope=future` it reaches the next rows as well. `POST
+/transactions` ignores it — a new row belongs to whoever signed in.
+
 #### `DELETE /transactions/:id?scope=one|future`
 
 Same two scopes, same rule about the past. `204`.

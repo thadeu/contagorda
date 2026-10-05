@@ -26,6 +26,7 @@ class Ledger::Transaction < ApplicationRecord
   # the backstop for every other path — console, importer, job.
   validate :account_belongs_to_ledger
   validate :category_belongs_to_ledger
+  validate :author_belongs_to_ledger
 
   scope :expenses, -> { where(kind: "expense") }
   scope :incomes, -> { where(kind: "income") }
@@ -56,6 +57,14 @@ class Ledger::Transaction < ApplicationRecord
       return if account.nil? || account.ledger_id == ledger_id
 
       errors.add(:account, "does not belong to this ledger")
+    end
+
+    # An author is a membership, and one from another ledger would put a stranger's
+    # name on this ledger's books.
+    def author_belongs_to_ledger
+      return if created_by.nil? || created_by.ledger_id == ledger_id
+
+      errors.add(:created_by, "does not belong to this ledger")
     end
 
     def category_belongs_to_ledger

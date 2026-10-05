@@ -209,6 +209,92 @@ RSpec.describe "Transactions", type: :request do
     end
   end
 
+  describe "changing who entered a row" do
+    let(:guest) { sign_in }
+    let(:guest_membership) { guest.user.memberships.create!(ledger: signed.ledger, role: "member") }
+    let(:guest_headers) { guest.headers.merge("X-Ledger-Id" => signed.ledger.id) }
+    let!(:entry) do
+      post_transaction
+      Ledger::Transaction.last
+    end
+
+    def hand_over(to, headers: signed.scoped, **extra)
+      patch "/api/v1/transactions/#{entry.id}",
+        params: { created_by_id: to }.merge(extra), headers: headers
+    end
+
+    it "lets the owner give a row to someone else" do
+      hand_over(guest_membership.id)
+
+      expect(response).to have_http_status(:ok)
+      expect(json[:created_by_id]).to eq(guest_membership.id)
+      expect(entry.reload.created_by).to eq(guest_membership)
+    end
+
+    it "lets the owner take over a row somebody else entered" do
+      entry.update!(created_by: guest_membership)
+
+      hand_over(signed.membership.id)
+
+      expect(entry.reload.created_by).to eq(signed.membership)
+    end
+
+    it "refuses a guest, and leaves the row alone" do
+      guest_membership
+
+      hand_over(guest_membership.id, headers: guest_headers)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(json.dig(:error, :code)).to eq("forbidden")
+      expect(entry.reload.created_by).to eq(signed.membership)
+    end
+
+    it "lets a guest save the row as it is, author sent back unchanged" do
+      entry.update!(created_by: guest_membership)
+
+      hand_over(guest_membership.id, headers: guest_headers, amount_cents: 777)
+
+      expect(response).to have_http_status(:ok)
+      expect(entry.reload).to have_attributes(amount_cents: 777, created_by_id: guest_membership.id)
+    end
+
+    it "refuses a membership from another ledger" do
+      stranger = sign_in.membership
+
+      hand_over(stranger.id)
+
+      expect(response).to have_http_status(:not_found)
+      expect(entry.reload.created_by).to eq(signed.membership)
+    end
+
+    it "refuses a membership that does not exist" do
+      hand_over(SecureRandom.uuid)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "reaches the next rows of a series when asked, and no others" do
+      post_transaction(date: "2026-01-10", description: "Aluguel",
+        recurrence: { frequency: "monthly", interval: 1, repeats: 3 })
+      rows = Ledger::Transaction.where(description: "Aluguel").order(:date).to_a
+
+      patch "/api/v1/transactions/#{rows[1].id}",
+        params: { created_by_id: guest_membership.id, scope: "future" }, headers: signed.scoped
+
+      expect(rows.map { |r| r.reload.created_by_id }).to eq(
+        [ signed.membership.id, guest_membership.id, guest_membership.id, guest_membership.id ]
+      )
+    end
+
+    it "ignores an author on a new row: it is whoever entered it" do
+      guest_membership
+
+      post_transaction(created_by_id: guest_membership.id)
+
+      expect(json[:created_by_id]).to eq(signed.membership.id)
+    end
+  end
+
   describe "PUT /api/v1/transactions/:id/recurrence" do
     let!(:series) do
       post_transaction(description: "Aluguel", date: "2026-01-10",

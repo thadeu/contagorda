@@ -26,9 +26,11 @@ module Api
       end
 
       def update
+        found = find_transaction
+
         transaction = Ledger::Transaction::Update.call(
-          transaction: find_transaction,
-          attributes: edit_attributes,
+          transaction: found,
+          attributes: edit_attributes.merge(author_change(found)),
           scope: scope
         )
 
@@ -73,6 +75,24 @@ module Api
           return attributes if paid.nil?
 
           attributes.merge(paid_at: ActiveModel::Type::Boolean.new.cast(paid) ? Time.current : nil)
+        end
+
+        # Handing a row to someone else, or taking it over. Only the owner may:
+        # who entered a row is how a shared ledger knows whose it is, and a member
+        # who could rewrite it could put their typing in someone else's name.
+        #
+        # Asking for the author the row already has is no change, so a form that
+        # sends everything back does not need the right to do what it did not do.
+        # The check comes before the lookup, so a member learns nothing about who
+        # is in the ledger from how the answer differs.
+        def author_change(transaction)
+          id = params[:created_by_id].presence
+
+          return {} if id.nil? || id == transaction.created_by_id
+
+          owner!
+
+          { created_by_id: current_ledger.memberships.find(id).id }
         end
 
         def transaction_params

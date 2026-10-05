@@ -8,6 +8,7 @@ import type {
   Ledger,
   LedgerInvite,
   LedgerMember,
+  MonthClone,
   MonthSummary,
   MonthTotal,
   NewTransaction,
@@ -99,6 +100,19 @@ export function createApiServices(): Services {
       update: (id, input) => request<Category>(`/categories/${id}`, { method: 'PATCH', body: input }),
 
       remove: (id) => request<void>(`/categories/${id}`, { method: 'DELETE' }),
+    },
+
+    monthClones: {
+      // 202: the server has accepted the copy and a job is doing it. The body is
+      // the record to watch, not a result.
+      start: (source, target) =>
+        request<MonthClone>(`/months/${source}/clone`, {
+          method: 'POST',
+          body: { target },
+          idempotent: true,
+        }),
+
+      get: (id, options) => request<MonthClone>(`/month_clones/${id}`, options),
     },
 
     transactions: {

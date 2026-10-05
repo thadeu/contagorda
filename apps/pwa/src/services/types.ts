@@ -145,3 +145,29 @@ export interface NewTransaction {
   description: string
   paid: boolean
 }
+
+export type MonthCloneStatus = 'pending' | 'running' | 'done' | 'failed'
+
+/**
+ * A request to copy one month's rows into another, and how far it has got.
+ *
+ * The copy runs on the server after the request has been answered, so this is
+ * what the client holds on to: it asks for it again until the status is `done`
+ * or `failed`, and the target month fills in the meantime.
+ */
+export interface MonthClone {
+  id: string
+  source_month: string
+  target_month: string
+  status: MonthCloneStatus
+  /** What the copy set out to write. Zero until it has counted. */
+  total: number
+  copied: number
+  /**
+   * Rows left out on purpose: those of a series that already wrote into the
+   * target, those of a series that is not monthly, and those on an archived
+   * account. Said to the person at the end, so a month that came out
+   * shorter than the original is not read as a bug.
+   */
+  skipped: number
+}

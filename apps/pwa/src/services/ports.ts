@@ -6,6 +6,7 @@ import type {
   Ledger,
   LedgerInvite,
   LedgerMember,
+  MonthClone,
   MonthSummary,
   MonthTotal,
   NewTransaction,
@@ -221,8 +222,33 @@ export interface ProfilePort {
   update(input: { display_name: string }): Promise<{ display_name: string | null }>
 }
 
+export interface MonthClonesPort {
+  /**
+   * Asks for a month to be copied into another. Answers at once with the record
+   * of the request; the rows are written afterwards, by the server, in the
+   * background.
+   *
+   * A row is copied with its account, category, kind, amount and description, on
+   * the same day of the month, and never as paid.
+   *
+   * A row that belongs to a monthly series is copied, as an ordinary row, when
+   * the series wrote nothing into the target — it stopped short of the month.
+   * When the series already has an occurrence there, the row is left out, or the
+   * bill would be doubled. Series that are not monthly are left out too: a yearly
+   * insurance is not due next month.
+   *
+   * Safe to ask again for the same pair. Whatever was copied already is found
+   * and left alone, so a retry after a failure only finishes the work.
+   *
+   * Refused while another copy is still filling the same target.
+   */
+  start(source: string, target: string): Promise<MonthClone>
+  get(id: string, options?: Fetching): Promise<MonthClone>
+}
+
 export interface Services {
   transactions: TransactionsPort
+  monthClones: MonthClonesPort
   accounts: AccountsPort
   categories: CategoriesPort
   profile: ProfilePort

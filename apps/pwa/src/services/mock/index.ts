@@ -5,6 +5,7 @@ import type {
   Ledger,
   LedgerInvite,
   LedgerMember,
+  MonthClone,
   MonthSummary,
   MonthTotal,
   NewTransaction,
@@ -119,6 +120,120 @@ function patch(next: Partial<LedgerData>): void {
   const id = getActiveLedgerId() ?? SEED_LEDGER
 
   ledgerData = { ...ledgerData, [id]: { ...data(), ...next } }
+}
+
+/**
+ * Copies a month the way the server's job does: in batches, over time, so the
+ * screens meet a target that fills rather than one that appears whole.
+ *
+ * It writes into the ledger the request was made for, not the active one — the
+ * person can switch while it runs, and the rows must not follow them.
+ */
+const CLONE_BATCH = 2
+const CLONE_TICK_MS = 400
+
+let clones: Record<string, MonthClone> = {}
+
+/** `${target month}:${original id}`, which is what the server finds a copy by. */
+const copied = new Set<string>()
+
+function startClone(source: string, target: string): MonthClone {
+  const ledgerId = getActiveLedgerId() ?? SEED_LEDGER
+  const rows = (ledgerData[ledgerId]?.transactions ?? []).filter(inMonth(source))
+
+  if (rows.length === 0) throw new Error('Esse mês não tem lançamentos para copiar.')
+
+  const busy = Object.values(clones).some(
+    (clone) => clone.target_month === target && (clone.status === 'pending' || clone.status === 'running'),
+  )
+
+  if (busy) throw new Error('Já estamos copiando lançamentos para esse mês.')
+
+  const archived = new Set(
+    (ledgerData[ledgerId]?.accounts ?? []).filter((a) => a.archived_at !== null).map((a) => a.id),
+  )
+
+  // A row of a series is copied only when the series wrote nothing into the
+  // target. The mock does not know a series' frequency, so every series counts
+  // as monthly; the server also leaves out the weekly and yearly ones.
+  const covered = new Set(
+    (ledgerData[ledgerId]?.transactions ?? [])
+      .filter((t) => monthKey(t.date) === target && t.recurring_series_id !== null)
+      .map((t) => t.recurring_series_id),
+  )
+
+  const eligible = rows.filter(
+    (t) =>
+      !archived.has(t.account_id) &&
+      (t.recurring_series_id === null || !covered.has(t.recurring_series_id)),
+  )
+  const todo = eligible
+    .filter((t) => !copied.has(`${target}:${t.id}`))
+    .sort(byDateThenCreation)
+
+  const clone: MonthClone = {
+    id: uuid(),
+    source_month: source,
+    target_month: target,
+    status: 'pending',
+    total: eligible.length,
+    copied: eligible.length - todo.length,
+    skipped: rows.length - eligible.length,
+  }
+
+  clones = { ...clones, [clone.id]: clone }
+
+  setTimeout(() => runClone(ledgerId, clone.id, todo), CLONE_TICK_MS)
+
+  return clone
+}
+
+function runClone(ledgerId: string, id: string, todo: Transaction[]): void {
+  const clone = clones[id]
+  const batch = todo.slice(0, CLONE_BATCH)
+
+  if (batch.length === 0) {
+    clones = { ...clones, [id]: { ...clone, status: 'done' } }
+
+    return
+  }
+
+  const rows: Transaction[] = batch.map((original) => {
+    copied.add(`${clone.target_month}:${original.id}`)
+
+    return {
+      ...original,
+      id: uuid(),
+      date: landOn(original.date, clone.target_month),
+      paid_at: null,
+      recurring_series_id: null,
+      created_by_id: you.id,
+      detached: false,
+    }
+  })
+
+  const current = ledgerData[ledgerId]
+
+  ledgerData = {
+    ...ledgerData,
+    [ledgerId]: { ...current, transactions: [...current.transactions, ...rows] },
+  }
+
+  clones = {
+    ...clones,
+    [id]: { ...clone, status: 'running', copied: clone.copied + batch.length },
+  }
+
+  setTimeout(() => runClone(ledgerId, id, todo.slice(CLONE_BATCH)), CLONE_TICK_MS)
+}
+
+/** The same day of the month, or the last one the target has. */
+function landOn(date: string, targetMonth: string): string {
+  const [year, month] = targetMonth.split('-').map(Number)
+  const lastDay = new Date(year, month, 0).getDate()
+  const day = Math.min(Number(date.slice(8, 10)), lastDay)
+
+  return `${targetMonth}-${String(day).padStart(2, '0')}`
 }
 
 function inMonth(month: string) {
@@ -358,6 +473,18 @@ export function createMockServices(): Services {
         })
 
         return delay(undefined)
+      },
+    },
+
+    monthClones: {
+      start: async (source, target) => delay(startClone(source, target)),
+
+      get: (id) => {
+        const found = clones[id]
+
+        if (!found) return Promise.reject(new Error(`clone ${id} not found`))
+
+        return delay(found)
       },
     },
 

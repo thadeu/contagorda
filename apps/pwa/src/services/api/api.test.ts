@@ -67,6 +67,25 @@ describe('the API client', () => {
     expect(headers()['X-Ledger-Id']).toBe('019fce00-0000-7000-8000-00000000000b')
   })
 
+  // The source month is in the path and the target travels in the body: the
+  // server reads it as "this month, copied to that one", and a swap would copy
+  // the wrong way round without any error to show for it.
+  it('asks to copy a month with the target in the body, and a key', async () => {
+    await services.monthClones.start('2026-09', '2026-10')
+
+    expect(calls[0].url).toBe('http://127.0.0.1:3000/api/v1/months/2026-09/clone')
+    expect(calls[0].init.method).toBe('POST')
+    expect(JSON.parse(calls[0].init.body as string)).toEqual({ target: '2026-10' })
+    expect(headers()['Idempotency-Key']).toBeTruthy()
+  })
+
+  it('reads how far a copy has got', async () => {
+    await services.monthClones.get('abc')
+
+    expect(calls[0].url).toBe('http://127.0.0.1:3000/api/v1/month_clones/abc')
+    expect(calls[0].init.method).toBe('GET')
+  })
+
   it('asks the search route with the term', async () => {
     await services.transactions.search('farmácia')
 

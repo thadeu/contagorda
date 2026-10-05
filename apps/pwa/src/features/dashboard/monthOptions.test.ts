@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { buildMonthOptions } from './monthOptions'
 
 describe('buildMonthOptions', () => {
-  it('groups by year, newest first', () => {
+  it('groups by year, oldest first', () => {
     const groups = buildMonthOptions(['2026-03', '2025-11'], '2026-03')
 
-    expect(groups.map((g) => g.year)).toEqual(['2026', '2025'])
-    expect(groups[0].months).toEqual(['2026-03', '2026-02', '2026-01'])
-    expect(groups[1].months).toEqual(['2025-12', '2025-11'])
+    expect(groups.map((g) => g.year)).toEqual(['2025', '2026'])
+    expect(groups[0].months).toEqual(['2025-11', '2025-12'])
+    expect(groups[1].months).toEqual(['2026-01', '2026-02', '2026-03'])
   })
 
   // A missing month in the middle would read as a bug, and an empty month is a
@@ -16,11 +16,11 @@ describe('buildMonthOptions', () => {
     const groups = buildMonthOptions(['2026-06', '2026-02'], '2026-06')
 
     expect(groups[0].months).toEqual([
-      '2026-06',
-      '2026-05',
-      '2026-04',
-      '2026-03',
       '2026-02',
+      '2026-03',
+      '2026-04',
+      '2026-05',
+      '2026-06',
     ])
   })
 
@@ -28,8 +28,8 @@ describe('buildMonthOptions', () => {
     const groups = buildMonthOptions(['2026-01'], '2025-12')
 
     expect(groups).toEqual([
-      { year: '2026', months: ['2026-01'] },
       { year: '2025', months: ['2025-12'] },
+      { year: '2026', months: ['2026-01'] },
     ])
   })
 
@@ -43,16 +43,15 @@ describe('buildMonthOptions', () => {
   it('extends past the data to reach the current month', () => {
     const groups = buildMonthOptions(['2026-01'], '2026-04')
 
-    expect(groups[0].months).toEqual(['2026-04', '2026-03', '2026-02', '2026-01'])
+    expect(groups[0].months).toEqual(['2026-01', '2026-02', '2026-03', '2026-04'])
   })
 
   // Planning ahead puts transactions in the future, and those months have to be
-  // reachable even though they are past today.
-  it('keeps months later than the current one', () => {
+  // reachable even though they are past today. They come after it, below.
+  it('keeps months later than the current one, after it', () => {
     const groups = buildMonthOptions(['2026-10'], '2026-08')
 
-    expect(groups[0].months[0]).toBe('2026-10')
-    expect(groups[0].months).toContain('2026-08')
+    expect(groups[0].months).toEqual(['2026-08', '2026-09', '2026-10'])
   })
 
   it('does not repeat a month present in both inputs', () => {

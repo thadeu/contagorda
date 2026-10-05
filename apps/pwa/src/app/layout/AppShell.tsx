@@ -4,6 +4,7 @@ import { ActiveLedgerProvider } from '@/app/ledger/ActiveLedgerProvider'
 import { ErrorBoundary } from '@/app/ErrorBoundary'
 import { AccountEditorProvider } from '@/features/accounts/AccountEditor'
 import { TransactionEditorProvider } from '@/features/transactions/TransactionEditor'
+import { MonthCloneProvider } from '@/features/monthClone/MonthCloneProvider'
 import { useIsDesktop } from '@/app/useIsDesktop'
 import { DesktopShell } from './DesktopShell'
 import { PanelHostContext } from './panelHost'
@@ -50,7 +51,9 @@ export function AppShell() {
       <ActiveLedgerProvider>
         <TransactionEditorProvider>
           <AccountEditorProvider>
-            {desktop ? <DesktopShell onPanelHost={setPanelHost} /> : <PhoneShell />}
+            <MonthCloneProvider>
+              {desktop ? <DesktopShell onPanelHost={setPanelHost} /> : <PhoneShell />}
+            </MonthCloneProvider>
           </AccountEditorProvider>
         </TransactionEditorProvider>
       </ActiveLedgerProvider>

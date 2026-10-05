@@ -7,7 +7,11 @@ export interface YearGroup {
  * Builds the picker's range from the months that hold data.
  *
  * A fixed window either hides months that exist or offers empty ones that lead
- * nowhere, so the list runs from the newest month with data down to the oldest.
+ * nowhere, so the list runs from the oldest month with data to the newest.
+ *
+ * In calendar order, oldest first: the past is above and the future below, the
+ * way a calendar reads. The picker opens scrolled to the current month, so what
+ * is behind you is a scroll up and what is ahead is a scroll down.
  * Every month in between is included even when empty — a gap in the sequence
  * would read as a bug, and an empty month is a legitimate thing to look at.
  *
@@ -20,22 +24,22 @@ export function buildMonthOptions(withData: string[], current: string): YearGrou
   const last = known[known.length - 1]
 
   const months: string[] = []
-  let cursor = last
+  let cursor = first
 
-  while (cursor >= first) {
+  while (cursor <= last) {
     months.push(cursor)
-    cursor = previousMonth(cursor)
+    cursor = nextMonth(cursor)
   }
 
   return groupByYear(months)
 }
 
-function previousMonth(month: string): string {
+function nextMonth(month: string): string {
   const [year, index] = month.split('-').map(Number)
 
-  return index === 1
-    ? `${year - 1}-12`
-    : `${year}-${String(index - 1).padStart(2, '0')}`
+  return index === 12
+    ? `${year + 1}-01`
+    : `${year}-${String(index + 1).padStart(2, '0')}`
 }
 
 function groupByYear(months: string[]): YearGroup[] {

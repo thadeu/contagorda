@@ -89,6 +89,26 @@ export interface Category {
   color: string | null
 }
 
+/**
+ * How the series a row belongs to repeats.
+ *
+ * `ends_on` and not a count: how many times it still repeats depends on which
+ * row is being looked at, so the client works that out from the row it has open
+ * (see `remainingRepeats`). Null when the series has no end recorded.
+ */
+export interface SeriesRule {
+  frequency: 'monthly' | 'yearly'
+  interval: number
+  ends_on: IsoDate | null
+  /**
+   * Where this row stands among the rows the series has, in date order, and how
+   * many it has. The fourth of eighteen. Counted from what exists, so deleting
+   * one renumbers the rest.
+   */
+  position: number
+  total: number
+}
+
 export interface Transaction {
   id: string
   account_id: string
@@ -99,6 +119,8 @@ export interface Transaction {
   description: string
   paid_at: string | null
   recurring_series_id: string | null
+  /** The rule of that series, and null for a row that stands alone. */
+  recurrence: SeriesRule | null
   /**
    * Which member entered it. Stamped by the server from whoever was
    * authenticated, never sent by the client — otherwise the answer to "who

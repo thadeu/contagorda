@@ -147,6 +147,9 @@ export function createApiServices(): Services {
       repeat: (id, recurrence) =>
         request<void>(`/transactions/${id}/recurrence`, { method: 'POST', body: recurrence }),
 
+      reschedule: (id, recurrence) =>
+        request<void>(`/transactions/${id}/recurrence`, { method: 'PUT', body: recurrence }),
+
       // The client says *that* it was paid; the server says *when*.
       setPaid: (id, paid) =>
         request<Transaction>(`/transactions/${id}/settlement`, { method: 'PUT', body: { paid } }),

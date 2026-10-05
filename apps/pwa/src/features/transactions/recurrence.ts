@@ -1,4 +1,5 @@
 import { monthLabel, monthKey, toIso, parts, type IsoDate } from '@/lib/dates'
+import type { SeriesRule } from '@/services/types'
 
 export type Frequency = 'monthly' | 'yearly'
 
@@ -46,6 +47,48 @@ export function occurrences(start: IsoDate, { frequency, interval, repeats }: Re
 
     return toIso(targetYear, targetMonth, Math.min(day, daysIn(targetYear, targetMonth)))
   })
+}
+
+/**
+ * The rule a series has now, as seen from one of its rows.
+ *
+ * The server keeps where the series ends; how many times it repeats after a
+ * given row is that row's own question. Counted by walking the schedule rather
+ * than by subtracting months, because a series cut short ends on the day before
+ * the occurrence that was deleted, and a month count would keep that one.
+ */
+export function recurrenceFrom(
+  date: IsoDate,
+  rule: Pick<SeriesRule, 'frequency' | 'interval' | 'ends_on'>,
+): Recurrence {
+  const { frequency, interval } = rule
+
+  if (!rule.ends_on) return { frequency, interval, repeats: 0 }
+
+  const start = parts(date)
+  const end = parts(rule.ends_on)
+  const months = (end.year - start.year) * 12 + (end.month - start.month)
+  const step = frequency === 'yearly' ? interval * 12 : interval
+  const upTo = Math.max(0, Math.floor(months / step)) + 1
+
+  const reached = occurrences(date, { frequency, interval, repeats: upTo }).filter(
+    (candidate) => candidate <= rule.ends_on!,
+  )
+
+  return { frequency, interval, repeats: Math.max(0, reached.length - 1) }
+}
+
+/** How often a series comes round, as a person would say it. */
+export function cadence({ frequency, interval }: Pick<SeriesRule, 'frequency' | 'interval'>): string {
+  if (frequency === 'yearly') return interval === 1 ? 'Todo ano' : `A cada ${interval} anos`
+
+  return interval === 1 ? 'Todo mês' : `A cada ${interval} meses`
+}
+
+export function sameRecurrence(a: Recurrence | null, b: Recurrence | null): boolean {
+  if (a === null || b === null) return a === b
+
+  return a.frequency === b.frequency && a.interval === b.interval && a.repeats === b.repeats
 }
 
 /**

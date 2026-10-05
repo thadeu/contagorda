@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { clamped, describe as describeSeries, occurrences } from './recurrence'
+import {
+  cadence,
+  clamped,
+  describe as describeSeries,
+  occurrences,
+  recurrenceFrom,
+  sameRecurrence,
+} from './recurrence'
 
 describe('occurrences', () => {
   it('counts repetitions after this one, so five more means six rows', () => {
@@ -102,5 +109,81 @@ describe('the shortest series', () => {
     expect(describeSeries('2026-08-10', { frequency: 'monthly', interval: 1, repeats: 1 })).toBe(
       'Até setembro de 2026.',
     )
+  })
+})
+
+describe('recurrenceFrom', () => {
+  const monthly = { frequency: 'monthly', interval: 1 } as const
+
+  it('counts the repeats left after the row being looked at', () => {
+    const rule = { ...monthly, ends_on: '2026-12-10' }
+
+    expect(recurrenceFrom('2026-08-10', rule)).toEqual({ ...monthly, repeats: 4 })
+    expect(recurrenceFrom('2026-11-10', rule)).toEqual({ ...monthly, repeats: 1 })
+  })
+
+  it('has nothing left on the last row', () => {
+    expect(recurrenceFrom('2026-12-10', { ...monthly, ends_on: '2026-12-10' }).repeats).toBe(0)
+  })
+
+  // Cutting a series short ends it the day before the occurrence that was
+  // removed. October 10th is gone, so from August there is one left, not two.
+  it('does not count an occurrence the series was cut short of', () => {
+    expect(recurrenceFrom('2026-08-10', { ...monthly, ends_on: '2026-10-09' }).repeats).toBe(1)
+  })
+
+  it('follows a month that clamped the day', () => {
+    expect(recurrenceFrom('2026-01-31', { ...monthly, ends_on: '2026-03-31' }).repeats).toBe(2)
+    expect(recurrenceFrom('2026-01-31', { ...monthly, ends_on: '2026-02-28' }).repeats).toBe(1)
+  })
+
+  it('steps by the interval', () => {
+    const rule = { frequency: 'monthly', interval: 2, ends_on: '2026-11-10' } as const
+
+    expect(recurrenceFrom('2026-05-10', rule)).toEqual({ frequency: 'monthly', interval: 2, repeats: 3 })
+  })
+
+  it('reads a yearly series in years', () => {
+    const rule = { frequency: 'yearly', interval: 1, ends_on: '2029-03-20' } as const
+
+    expect(recurrenceFrom('2026-03-20', rule).repeats).toBe(3)
+  })
+
+  it('treats a series with no end as ending here', () => {
+    expect(recurrenceFrom('2026-08-10', { ...monthly, ends_on: null }).repeats).toBe(0)
+  })
+
+  it('agrees with the schedule it describes', () => {
+    const from = '2026-08-10'
+    const dates = occurrences(from, { ...monthly, repeats: 6 })
+    const rule = { ...monthly, ends_on: dates[dates.length - 1] }
+
+    expect(occurrences(from, recurrenceFrom(from, rule))).toEqual(dates)
+  })
+})
+
+describe('sameRecurrence', () => {
+  const a = { frequency: 'monthly', interval: 1, repeats: 3 } as const
+
+  it('compares every part of the rule', () => {
+    expect(sameRecurrence(a, { ...a })).toBe(true)
+    expect(sameRecurrence(a, { ...a, repeats: 4 })).toBe(false)
+    expect(sameRecurrence(a, { ...a, interval: 2 })).toBe(false)
+    expect(sameRecurrence(a, { ...a, frequency: 'yearly' })).toBe(false)
+  })
+
+  it('tells no rule from a rule', () => {
+    expect(sameRecurrence(null, null)).toBe(true)
+    expect(sameRecurrence(a, null)).toBe(false)
+    expect(sameRecurrence(null, a)).toBe(false)
+  })
+})
+
+describe('cadence', () => {
+  it('says it the way a person does', () => {
+    expect(cadence({ frequency: 'monthly', interval: 1 })).toBe('Todo mês')
+    expect(cadence({ frequency: 'monthly', interval: 2 })).toBe('A cada 2 meses')
+    expect(cadence({ frequency: 'yearly', interval: 1 })).toBe('Todo ano')
+    expect(cadence({ frequency: 'yearly', interval: 3 })).toBe('A cada 3 anos')
   })
 })

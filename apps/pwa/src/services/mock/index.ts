@@ -16,6 +16,7 @@ import { getActiveLedgerId, setActiveLedgerId } from '@/services/activeLedger'
 import { uuid } from '@/lib/uuid'
 import { occurrences } from '@/features/transactions/recurrence'
 import { fold } from '@/lib/text'
+import { withPlacement } from './placement'
 import {
   accounts as seedAccounts,
   categories as seedCategories,
@@ -490,7 +491,12 @@ export function createMockServices(): Services {
 
     transactions: {
       listByMonth: (month) =>
-        delay(data().transactions.filter(inMonth(month)).sort(byDateThenCreation)),
+        delay(
+          withPlacement(
+            data().transactions,
+            data().transactions.filter(inMonth(month)).sort(byDateThenCreation),
+          ),
+        ),
 
       search: (term) => {
         const folded = fold(term).trim()
@@ -498,10 +504,13 @@ export function createMockServices(): Services {
         if (folded === '') return delay([])
 
         return delay(
-          data()
-            .transactions.filter((t) => fold(t.description).includes(folded))
-            .sort((a, b) => -byDateThenCreation(a, b))
-            .slice(0, 50),
+          withPlacement(
+            data().transactions,
+            data()
+              .transactions.filter((t) => fold(t.description).includes(folded))
+              .sort((a, b) => -byDateThenCreation(a, b))
+              .slice(0, 50),
+          ),
         )
       },
 
@@ -571,13 +580,16 @@ export function createMockServices(): Services {
           paid_at: index === 0 && input.paid ? new Date().toISOString() : null,
           description: input.description,
           recurring_series_id: series,
+          recurrence: recurrence
+            ? { frequency: recurrence.frequency, interval: recurrence.interval, ends_on: dates[dates.length - 1], position: 1, total: 1 }
+            : null,
           created_by_id: you.id,
           detached: false,
         }))
 
         patch({ transactions: [...data().transactions, ...rows] })
 
-        return delay(rows[0])
+        return delay(placed(rows[0]))
       },
 
       update: (id, input, scope = 'one') => {
@@ -600,7 +612,7 @@ export function createMockServices(): Services {
           }),
         })
 
-        return delay(find(id))
+        return delay(placed(find(id)))
       },
 
       repeat: (id, recurrence) => {
@@ -613,22 +625,79 @@ export function createMockServices(): Services {
         // it is written.
         const dates = occurrences(target.date, recurrence).slice(1)
 
+        const last = dates[dates.length - 1] ?? target.date
+        const rule = {
+          frequency: recurrence.frequency,
+          interval: recurrence.interval,
+          ends_on: last,
+          position: 1,
+          total: 1,
+        }
+
         const rows: Transaction[] = dates.map((date) => ({
           ...target,
           id: uuid(),
           date,
           paid_at: null,
           recurring_series_id: series,
+          recurrence: rule,
           detached: false,
         }))
 
         patch({
           transactions: [
             ...data().transactions.map((row) =>
-              row.id === id ? { ...row, recurring_series_id: series } : row,
+              row.id === id ? { ...row, recurring_series_id: series, recurrence: rule } : row,
             ),
             ...rows,
           ],
+        })
+
+        return delay(undefined)
+      },
+
+      reschedule: (id, recurrence) => {
+        const target = find(id)
+
+        if (!target.recurring_series_id) return Promise.reject(new Error('Esse lançamento não se repete.'))
+
+        const seriesId = target.recurring_series_id
+        const later = (row: Transaction) => row.recurring_series_id === seriesId && row.date > target.date
+
+        // A paid row, or one edited on its own, stays; the rest is rewritten.
+        const kept = data().transactions.filter(
+          (row) => later(row) && (row.paid_at !== null || row.detached),
+        )
+
+        const taken = new Set(kept.map((row) => row.date))
+        const dates = occurrences(target.date, recurrence)
+        const last = dates[dates.length - 1]
+        const rule = {
+          frequency: recurrence.frequency,
+          interval: recurrence.interval,
+          ends_on: last,
+          position: 1,
+          total: 1,
+        }
+
+        const written: Transaction[] = dates
+          .slice(1)
+          .filter((date) => !taken.has(date))
+          .map((date) => ({
+            ...target,
+            id: uuid(),
+            date,
+            paid_at: null,
+            recurring_series_id: seriesId,
+            detached: false,
+          }))
+
+        const rest = data().transactions.filter((row) => !later(row) || kept.includes(row))
+
+        patch({
+          transactions: [...rest, ...written].map((row) =>
+            row.recurring_series_id === seriesId ? { ...row, recurrence: rule } : row,
+          ),
         })
 
         return delay(undefined)
@@ -655,7 +724,7 @@ export function createMockServices(): Services {
           ),
         })
 
-        return delay(find(id))
+        return delay(placed(find(id)))
       },
     },
   }
@@ -697,6 +766,11 @@ function inDays(days: number): string {
 
 function sum(rows: Transaction[]): number {
   return rows.reduce((total, t) => total + t.amount_cents, 0)
+}
+
+/** One row, numbered within its series like the lists are. */
+function placed(row: Transaction): Transaction {
+  return withPlacement(data().transactions, [row])[0]
 }
 
 function find(id: string): Transaction {

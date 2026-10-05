@@ -31,7 +31,7 @@ export function DashboardPage() {
   const transactions = useTransactions(month)
 
   const content = useRef<HTMLDivElement>(null)
-  const { refreshing } = usePullToRefresh(content, useRefreshMonth(month))
+  const { refreshing } = usePullToRefresh(content, useRefreshMonth())
 
   const { current, shared } = useActiveLedger()
   const desktop = useIsDesktop()

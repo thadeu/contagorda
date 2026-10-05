@@ -50,7 +50,7 @@ export function MonthList({ month, search = '', onVisibleCount }: MonthListProps
   const transactions = useTransactions(month)
   const categories = useCategories()
   const togglePaid = useTogglePaid(month)
-  const remove = useDeleteTransaction(month)
+  const remove = useDeleteTransaction()
 
   const [sheet, setSheet] = useState<Transaction | null>(null)
   const [undo, setUndo] = useState<Transaction | null>(null)

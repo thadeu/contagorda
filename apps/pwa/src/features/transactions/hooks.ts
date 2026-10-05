@@ -71,13 +71,13 @@ export function useMonthSummary(month: string) {
   })
 }
 
-export function useCreateTransaction(month: string) {
+export function useCreateTransaction() {
   const client = useQueryClient()
 
   return useMutation({
     mutationFn: ({ input, recurrence }: { input: NewTransaction; recurrence: Recurrence | null }) =>
       services.transactions.create(input, recurrence),
-    onSuccess: () => invalidate(client, month),
+    onSuccess: () => invalidate(client),
   })
 }
 
@@ -112,7 +112,7 @@ export function useTogglePaid(month: string) {
       if (context?.previous) client.setQueryData(transactionKeys.month(month), context.previous)
     },
 
-    onSettled: () => invalidate(client, month),
+    onSettled: () => invalidate(client),
   })
 }
 
@@ -125,16 +125,23 @@ export function useTogglePaid(month: string) {
  * with itself. The promise is the point — whoever pulled has to know when to
  * stop showing that something is happening.
  */
-export function useRefreshMonth(month: string): () => Promise<unknown> {
+export function useRefreshMonth(): () => Promise<unknown> {
   const client = useQueryClient()
 
-  return useCallback(() => invalidate(client, month), [client, month])
+  return useCallback(() => invalidate(client), [client])
 }
 
-function invalidate(client: ReturnType<typeof useQueryClient>, month: string) {
+function invalidate(client: ReturnType<typeof useQueryClient>) {
   return Promise.all([
-    client.invalidateQueries({ queryKey: transactionKeys.month(month) }),
-    client.invalidateQueries({ queryKey: transactionKeys.summary(month) }),
+    // Every month, not just the one on screen. A series writes into months that
+    // are not open, and an edit that reaches "this and the next ones" changes
+    // them: renewing only this one left the next month showing what it had, for
+    // as long as it stayed fresh.
+    //
+    // Only the ones being looked at are fetched again. The rest are marked stale
+    // and refetch when opened, so this costs one request, not twenty-four.
+    client.invalidateQueries({ queryKey: ['transactions', getActiveLedgerId()] }),
+    client.invalidateQueries({ queryKey: ['summary', getActiveLedgerId()] }),
     // The first entry in a month has to make that month appear in the picker,
     // and deleting the last one has to take it out again.
     client.invalidateQueries({ queryKey: transactionKeys.months() }),
@@ -153,7 +160,7 @@ export function useTransaction(month: string, id: string): Transaction | undefin
   return data?.find((t) => t.id === id)
 }
 
-export function useUpdateTransaction(month: string) {
+export function useUpdateTransaction() {
   const client = useQueryClient()
 
   return useMutation({
@@ -166,28 +173,39 @@ export function useUpdateTransaction(month: string) {
       input: Partial<NewTransaction>
       scope?: Scope
     }) => services.transactions.update(id, input, scope),
-    onSuccess: () => invalidate(client, month),
+    onSuccess: () => invalidate(client),
   })
 }
 
 /** Makes an existing row the first of a series. */
-export function useRepeatTransaction(month: string) {
+export function useRepeatTransaction() {
   const client = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, recurrence }: { id: string; recurrence: Recurrence }) =>
       services.transactions.repeat(id, recurrence),
-    onSuccess: () => invalidate(client, month),
+    onSuccess: () => invalidate(client),
   })
 }
 
-export function useDeleteTransaction(month: string) {
+/** Changes how a series repeats, from one of its rows onward. */
+export function useRescheduleTransaction() {
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, recurrence }: { id: string; recurrence: Recurrence }) =>
+      services.transactions.reschedule(id, recurrence),
+    onSuccess: () => invalidate(client),
+  })
+}
+
+export function useDeleteTransaction() {
   const client = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, scope }: { id: string; scope?: Scope }) =>
       services.transactions.remove(id, scope),
-    onSuccess: () => invalidate(client, month),
+    onSuccess: () => invalidate(client),
   })
 }
 

@@ -115,6 +115,18 @@ export interface TransactionsPort {
    * settles its first: the rest have not happened.
    */
   repeat(id: string, recurrence: Recurrence): Promise<void>
+  /**
+   * Changes how a series repeats, from this row onward.
+   *
+   * Rewrites what comes after the row and leaves what came before: the past is
+   * history, whatever the rule says now. A later row that was paid, or edited on
+   * its own, is kept and the new schedule steps around it. `repeats: 0` ends the
+   * series at this row.
+   *
+   * Takes the row that is being edited as the anchor, so it only makes sense
+   * together with an edit that reaches "this and the next ones".
+   */
+  reschedule(id: string, recurrence: Recurrence): Promise<void>
   setPaid(id: string, paid: boolean): Promise<Transaction>
 }
 

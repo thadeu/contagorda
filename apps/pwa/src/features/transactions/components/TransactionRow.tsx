@@ -45,10 +45,20 @@ export function TransactionRow({ transaction, category, onOpen }: TransactionRow
           <span className="block truncate text-[0.9375rem] font-medium text-ink">
             {transaction.description}
           </span>
-          <span className="flex items-center gap-1.5 truncate text-xs text-muted">
-            {category?.name ?? 'Sem categoria'}
-            {transaction.recurring_series_id && <RepeatIcon className="size-3" />}
-            {overdue && <span className="font-medium text-out">· vencida</span>}
+          <span className="flex items-center gap-1.5 text-xs text-muted">
+            <span className="min-w-0 truncate">{category?.name ?? 'Sem categoria'}</span>
+
+            {transaction.recurrence && (
+              <span
+                aria-label={`${transaction.recurrence.position} de ${transaction.recurrence.total}`}
+                className="tnum inline-flex shrink-0 items-center gap-1 rounded-chip bg-sunken px-1.5 py-0.5 text-[0.6875rem] font-medium text-ink"
+              >
+                <RepeatIcon className="size-3 text-muted" aria-hidden="true" />
+                {transaction.recurrence.position}/{transaction.recurrence.total}
+              </span>
+            )}
+
+            {overdue && <span className="shrink-0 font-medium text-out">· vencida</span>}
           </span>
         </span>
 

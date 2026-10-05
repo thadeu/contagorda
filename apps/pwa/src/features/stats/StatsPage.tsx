@@ -97,7 +97,7 @@ export function StatsPage() {
   const transactions = useTransactions(month)
   const categories = useCategories()
   const togglePaid = useTogglePaid(month)
-  const remove = useDeleteTransaction(month)
+  const remove = useDeleteTransaction()
 
   const [expanded, setExpanded] = useState(false)
   const [category, setCategory] = useState<string | null>(ALL)

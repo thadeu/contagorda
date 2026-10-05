@@ -21,10 +21,10 @@ interface TransactionFormProps {
   /** Who entered it, when editing one that exists. Shown, never edited. */
   authorId?: string | null
   /**
-   * Absent when editing. A series is decided once, at the moment it is created:
-   * changing the rule afterwards would mean rewriting rows that already exist,
-   * some of them already paid, and the scope choice on save is the honest way to
-   * reach those.
+   * Absent when the row has no say over a series: one that sits inside it and is
+   * being edited on its own. The rule belongs to all the rows, and changing it is
+   * a change to the ones after this one — so it is offered when the edit reaches
+   * them, and left out when it does not.
    */
   recurrence?: Recurrence | null
   onRecurrenceChange?: (recurrence: Recurrence | null) => void

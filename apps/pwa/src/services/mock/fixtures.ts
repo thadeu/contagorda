@@ -1,5 +1,6 @@
 import type { Account, Category, Transaction } from '@/services/types'
 import { monthKey, shiftMonth, todayIso } from '@/lib/dates'
+import { withPlacement } from './placement'
 
 /**
  * Two years of it: January of this year through December of next.
@@ -142,6 +143,7 @@ function tx(
     description,
     paid_at: paid ? `${date}T12:00:00Z` : null,
     recurring_series_id: options.series ?? null,
+    recurrence: null,
     created_by_id: SEED_MEMBER,
     detached: false,
   }
@@ -211,7 +213,7 @@ function spread(index: number, month: number): number {
   return 1 + (((index * 7 + month * 13) % 9) - 4) / 10
 }
 
-export const transactions: Transaction[] = [
+const rows: Transaction[] = [
   ...series.flatMap((rule) =>
     months
       .map((month, index) => ({ month, index }))
@@ -264,3 +266,42 @@ export const transactions: Transaction[] = [
    */
   tx(shiftMonth(thisMonth, -3), 9, 'expense', 9_800_000, 'Entrada do carro', transporte, nubank),
 ]
+
+/**
+ * Hands every row the rule of its series, the way the API does.
+ *
+ * A twelve-month step is the yearly bill. `ends_on` is the last row the series
+ * has, which is what the server records.
+ */
+export const transactions: Transaction[] = withPlacement(withRules(rows))
+
+function withRules(all: Transaction[]): Transaction[] {
+  const rules = new Map(
+    series.map((spec) => {
+      const every = spec.every ?? 1
+
+      return [
+        spec.id,
+        every === 12
+          ? ({ frequency: 'yearly', interval: 1 } as const)
+          : ({ frequency: 'monthly', interval: every } as const),
+      ]
+    }),
+  )
+
+  const ends = new Map<string, string>()
+
+  for (const row of all) {
+    if (row.recurring_series_id && row.date > (ends.get(row.recurring_series_id) ?? '')) {
+      ends.set(row.recurring_series_id, row.date)
+    }
+  }
+
+  return all.map((row) => {
+    const rule = row.recurring_series_id ? rules.get(row.recurring_series_id) : undefined
+
+    return rule
+      ? { ...row, recurrence: { ...rule, ends_on: ends.get(row.recurring_series_id!)!, position: 1, total: 1 } }
+      : row
+  })
+}

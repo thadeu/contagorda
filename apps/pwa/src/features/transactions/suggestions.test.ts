@@ -13,6 +13,7 @@ function row(over: Partial<Transaction>): Transaction {
     description: 'Mercado',
     paid_at: null,
     recurring_series_id: null,
+    recurrence: null,
     created_by_id: null,
     detached: false,
     ...over,

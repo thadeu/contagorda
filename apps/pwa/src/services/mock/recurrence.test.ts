@@ -23,7 +23,7 @@ async function series(rows: number) {
 function rowsOf(seriesId: string | null) {
   return services.transactions
     .monthlyTotals()
-    .then(() => Promise.all(['2026-08', '2026-09', '2026-10', '2026-11'].map(monthRows)))
+    .then(() => Promise.all(['2026-08', '2026-09', '2026-10', '2026-11', '2026-12', '2027-01'].map(monthRows)))
     .then((months) => months.flat().filter((row) => row.recurring_series_id === seriesId))
 }
 
@@ -113,6 +113,87 @@ describe('editing', () => {
     const after = await rowsOf(first.recurring_series_id)
 
     expect(after.map((row) => row.date)).toEqual(['2026-08-15', '2026-09-10', '2026-10-10'])
+  })
+})
+
+describe('changing how a series repeats', () => {
+  const monthly = (repeats: number) => ({ frequency: 'monthly', interval: 1, repeats }) as const
+
+  async function dates(seriesId: string | null) {
+    return (await rowsOf(seriesId)).map((row) => row.date)
+  }
+
+  it('lengthens it from the row being edited', async () => {
+    const first = await series(3)
+    const rows = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.reschedule(rows[1].id, monthly(2))
+
+    expect(await dates(first.recurring_series_id)).toEqual([
+      '2026-08-10',
+      '2026-09-10',
+      '2026-10-10',
+      '2026-11-10',
+    ])
+  })
+
+  it('shortens it, and leaves the past alone', async () => {
+    const first = await series(4)
+    const rows = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.reschedule(rows[1].id, monthly(1))
+
+    expect(await dates(first.recurring_series_id)).toEqual(['2026-08-10', '2026-09-10', '2026-10-10'])
+  })
+
+  it('ends the series at the row when asked for no repeats', async () => {
+    const first = await series(4)
+    const rows = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.reschedule(rows[1].id, monthly(0))
+
+    expect(await dates(first.recurring_series_id)).toEqual(['2026-08-10', '2026-09-10'])
+  })
+
+  it('tells every row the new end', async () => {
+    const first = await series(3)
+    const rows = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.reschedule(rows[0].id, monthly(4))
+
+    const after = await rowsOf(first.recurring_series_id)
+
+    expect(after.every((row) => row.recurrence?.ends_on === '2026-12-10')).toBe(true)
+  })
+
+  it('keeps a row that was corrected on its own, and steps around it', async () => {
+    const first = await series(4)
+    const rows = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.update(rows[2].id, { amount_cents: 999_000 }, 'one')
+    await services.transactions.reschedule(rows[0].id, monthly(5))
+
+    const after = await rowsOf(first.recurring_series_id)
+
+    expect(after.map((row) => row.date)).toEqual([
+      '2026-08-10',
+      '2026-09-10',
+      '2026-10-10',
+      '2026-11-10',
+      '2026-12-10',
+      '2027-01-10',
+    ])
+    expect(after.find((row) => row.date === '2026-10-10')?.amount_cents).toBe(999_000)
+  })
+
+  it('refuses a row that does not repeat', async () => {
+    const alone = (await services.transactions.listByMonth('2026-08')).find(
+      (row) => row.recurring_series_id === null,
+    )
+
+    expect(alone).toBeDefined()
+
+    await expect(services.transactions.reschedule(alone!.id, monthly(2))).rejects.toThrow()
   })
 })
 

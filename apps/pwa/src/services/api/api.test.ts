@@ -86,6 +86,18 @@ describe('the API client', () => {
     expect(calls[0].init.method).toBe('GET')
   })
 
+  it('changes how a series repeats with a PUT to the row', async () => {
+    await services.transactions.reschedule('abc', { frequency: 'monthly', interval: 2, repeats: 5 })
+
+    expect(calls[0].url).toBe('http://127.0.0.1:3000/api/v1/transactions/abc/recurrence')
+    expect(calls[0].init.method).toBe('PUT')
+    expect(JSON.parse(calls[0].init.body as string)).toEqual({
+      frequency: 'monthly',
+      interval: 2,
+      repeats: 5,
+    })
+  })
+
   it('asks the search route with the term', async () => {
     await services.transactions.search('farmácia')
 

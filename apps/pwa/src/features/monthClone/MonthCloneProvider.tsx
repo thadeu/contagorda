@@ -84,7 +84,7 @@ interface CloneProgressProps {
  */
 function CloneProgress({ initial, onRetry, onDismiss }: CloneProgressProps) {
   const { data: clone, isError } = useMonthClone(initial)
-  const refresh = useRefreshMonth(clone.target_month)
+  const refresh = useRefreshMonth()
 
   useEffect(() => {
     void refresh()

@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useMonth } from '@/app/useMonth'
 import type { Scope } from '@/services/ports'
-import type { Recurrence } from './recurrence'
+import { recurrenceFrom, sameRecurrence, type Recurrence } from './recurrence'
 import { Modal } from '@/ui/Modal'
 import type { Direction } from '@/services/types'
 import { NavAction } from '@/ui/NavBar'
@@ -16,6 +16,7 @@ import {
   useUpdateTransaction,
   useCreateTransaction,
   useRepeatTransaction,
+  useRescheduleTransaction,
 } from './hooks'
 
 type Editing = { mode: 'new' } | { mode: 'edit'; id: string; scope: Scope } | null
@@ -55,8 +56,7 @@ export function TransactionEditorProvider({ children }: { children: ReactNode })
 }
 
 function NewTransactionModal({ onClose }: { onClose: () => void }) {
-  const { month } = useMonth()
-  const create = useCreateTransaction(month)
+  const create = useCreateTransaction()
   const [recurrence, setRecurrence] = useState<Recurrence | null>(null)
 
   /**
@@ -96,13 +96,68 @@ function EditTransactionModal({
 }) {
   const { month } = useMonth()
   const transaction = useTransaction(month, id)
-  const update = useUpdateTransaction(month)
-  const repeat = useRepeatTransaction(month)
-  const [recurrence, setRecurrence] = useState<Recurrence | null>(null)
+  const update = useUpdateTransaction()
+  const repeat = useRepeatTransaction()
+  const reschedule = useRescheduleTransaction()
+
+  /**
+   * What the series does now, when this edit reaches the ones after it.
+   *
+   * Only then. "Only this one" has no business with a rule that governs the
+   * rows around it, and showing the control there would invite a change the
+   * save could not honour. Null for a row that repeats nothing, which is the
+   * case where the picker offers to start a series instead.
+   */
+  const current =
+    transaction && transaction.recurrence && scope === 'future'
+      ? recurrenceFrom(transaction.date, transaction.recurrence)
+      : null
+
+  /**
+   * Undefined until the person touches it, and then what they chose — null
+   * included, which is "switched off". Starting from `current` in the state
+   * itself would freeze whatever it was on the first render, and the row can
+   * arrive after that.
+   */
+  const [chosen, setChosen] = useState<Recurrence | null | undefined>(undefined)
+  const recurrence = chosen === undefined ? current : chosen
   const [kind, setKind] = useState<Direction | null>(null)
 
   if (!transaction) {
     return null
+  }
+
+  const inSeries = transaction.recurring_series_id !== null
+  const editsRule = inSeries && scope === 'future'
+
+  /**
+   * Switching the repeat off on a series is not "no series": the rows around it
+   * exist. It ends the series here, which is a rule of zero repeats.
+   */
+  const next: Recurrence | null =
+    editsRule && current && recurrence === null ? { ...current, repeats: 0 } : recurrence
+
+  function save(input: Parameters<typeof update.mutate>[0]['input']) {
+    update.mutate(
+      { id, input, scope },
+      {
+        onSuccess: () => {
+          if (editsRule && next && !sameRecurrence(next, current)) {
+            reschedule.mutate({ id, recurrence: next }, { onSuccess: onClose })
+
+            return
+          }
+
+          if (!inSeries && recurrence) {
+            repeat.mutate({ id, recurrence }, { onSuccess: onClose })
+
+            return
+          }
+
+          onClose()
+        },
+      },
+    )
   }
 
   return (
@@ -110,7 +165,12 @@ function EditTransactionModal({
       title={`Editar ${noun(kind ?? transaction.kind)}`}
       onClose={onClose}
       trailing={
-        <NavAction type="submit" form={FORM_ID} label="Salvar" disabled={update.isPending} />
+        <NavAction
+          type="submit"
+          form={FORM_ID}
+          label="Salvar"
+          disabled={update.isPending || reschedule.isPending}
+        />
       }
     >
       <TransactionForm
@@ -127,31 +187,13 @@ function EditTransactionModal({
           paid: transaction.paid_at !== null,
         }}
         /*
-         * A row that belongs to no series can become the first of one. A row
-         * already in a series cannot have its rule rewritten here — the
-         * occurrences around it would have to move, and the scope choice is how
-         * those are reached.
+         * A row that belongs to no series can become the first of one. A row in
+         * a series can have its rule changed from here onward, when the edit
+         * reaches the ones after it; on its own it has no say over them.
          */
-        recurrence={transaction.recurring_series_id === null ? recurrence : undefined}
-        onRecurrenceChange={
-          transaction.recurring_series_id === null ? setRecurrence : undefined
-        }
-        onSubmit={(input) =>
-          update.mutate(
-            { id, input, scope },
-            {
-              onSuccess: () => {
-                if (recurrence) {
-                  repeat.mutate({ id, recurrence }, { onSuccess: onClose })
-
-                  return
-                }
-
-                onClose()
-              },
-            },
-          )
-        }
+        recurrence={!inSeries || editsRule ? recurrence : undefined}
+        onRecurrenceChange={!inSeries || editsRule ? setChosen : undefined}
+        onSubmit={save}
       />
     </Modal>
   )

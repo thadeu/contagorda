@@ -11,7 +11,8 @@ import { copyText } from '@/ui/share'
 import { useTransactionEditor } from '@/features/transactions/transactionEditorContext'
 import { useCategories } from '@/features/accounts/hooks'
 import { useMemberName } from '@/features/ledgers/useMemberName'
-import { dayLabel } from '@/lib/dates'
+import { dayLabel, monthKey, monthLabel } from '@/lib/dates'
+import { cadence, recurrenceFrom } from '@/features/transactions/recurrence'
 
 interface TransactionSheetProps {
   transaction: Transaction
@@ -54,6 +55,7 @@ export function TransactionSheet({
   const payLabel = paid ? (income ? 'Não recebida' : 'Não paga') : income ? 'Recebida' : 'Paga'
 
   const category = (categories.data ?? []).find((c) => c.id === transaction.category_id)
+  const series = transaction.recurrence ? describeSeries(transaction) : null
 
   return (
     <>
@@ -83,6 +85,14 @@ export function TransactionSheet({
               }
             />
             {author && <Detail label="Lançado por" value={author} />}
+
+            {series && (
+              <>
+                <Detail label="Repete" value={series.cadence} />
+                {series.until && <Detail label="Até" value={series.until} />}
+                <Detail label="Depois deste" value={series.after} />
+              </>
+            )}
           </dl>
         }
       >
@@ -164,6 +174,32 @@ export function TransactionSheet({
       )}
     </>
   )
+}
+
+/**
+ * What the series this row belongs to does, before anyone edits it.
+ *
+ * Said from the row being looked at: how many come after it is that row's own
+ * question, and the same series reads differently from March than from June.
+ * No position ("3 of 10"): a row that was deleted on its own leaves a gap, and a
+ * count that is wrong by one is worse than no count.
+ */
+function describeSeries(transaction: Transaction) {
+  const rule = transaction.recurrence!
+  const left = recurrenceFrom(transaction.date, rule).repeats
+
+  const until =
+    rule.ends_on && left > 0 ? capitalised(monthLabel(monthKey(rule.ends_on))) : null
+
+  return {
+    cadence: cadence(rule),
+    until,
+    after: left === 0 ? 'Este é o último' : left === 1 ? '1 lançamento' : `${left} lançamentos`,
+  }
+}
+
+function capitalised(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
 /**

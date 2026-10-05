@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useDeleteTransaction, useTransactions, useTogglePaid } from './hooks'
 import { useCategories } from '@/features/accounts/hooks'
+import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
+import { useMembers } from '@/features/ledgers/hooks'
+import { usePanelHost } from '@/app/layout/panelHost'
 import { groupByDay } from './groupByDay'
 import { groupsByDay, sortRows } from './sorting'
-import { LIST_ORDER, matchesView, useStatusFilter } from './useStatusFilter'
+import {
+  LIST_ORDER,
+  matchesFilters,
+  matchesView,
+  useFilterOpen,
+  useStatusFilter,
+} from './useStatusFilter'
+import { peopleOf } from './people'
+import { ActiveFilters } from './components/ActiveFilters'
 import { DayGroupSection } from './components/DayGroupSection'
 import { FilterSheet } from './components/FilterSheet'
 import { StatusToggle } from './components/StatusToggle'
@@ -46,25 +57,44 @@ interface MonthListProps {
  * turns a search into a guess about which tab to be on first.
  */
 export function MonthList({ month, search = '', onVisibleCount }: MonthListProps) {
-  const { status, scope, sort, setStatus, setScope, setSort } = useStatusFilter()
+  const { status, scope, sort, recurring, by, setStatus, setScope, setView } = useStatusFilter()
   const transactions = useTransactions(month)
   const categories = useCategories()
+  const { ledgerId } = useActiveLedger()
+  const members = useMembers(ledgerId)
   const togglePaid = useTogglePaid(month)
   const remove = useDeleteTransaction()
 
   const [sheet, setSheet] = useState<Transaction | null>(null)
   const [undo, setUndo] = useState<Transaction | null>(null)
-  const [filtering, setFiltering] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+
+  /*
+   * On the desktop the filter panel lives in the address, so it stays open
+   * through choosing, opening a row and coming back, and through a reload. On the
+   * phone it is a sheet that is closed when done, and nobody wants a link that
+   * opens one. The panel host is what says which this is.
+   */
+  const desktop = usePanelHost() !== null
+  const panel = useFilterOpen()
+  const filtering = desktop ? panel.open : sheetOpen
+  const setFiltering = desktop ? panel.setOpen : setSheetOpen
 
   const editor = useTransactionEditor()
   const all = transactions.data ?? []
   const paid = all.filter((t) => t.paid_at !== null)
   const term = fold(search).trim()
   const searching = term !== ''
-  const visible = searching
+  const narrowed = searching
     ? all.filter((t) => fold(t.description).includes(term))
     : all.filter((t) => matchesView(t, scope, status))
+  const visible = narrowed.filter((t) => matchesFilters(t, { recurring, by }))
+  const filtered = recurring || by !== null
   const scoped = scope === 'income'
+
+  const people = peopleOf(all, members.data ?? [], by)
+  const person = by === null ? null : (people.find((p) => p.id === by)?.name ?? 'Pessoa')
+  const recurringCount = all.filter((t) => t.recurring_series_id !== null).length
 
   const categoryMap = new Map((categories.data ?? []).map((c) => [c.id, c]))
   const byDay = groupsByDay(sort)
@@ -117,8 +147,15 @@ export function MonthList({ month, search = '', onVisibleCount }: MonthListProps
           <StatusToggle status={status} onChange={setStatus} />
         )}
         <NavButton primary icon={PlusIcon} label="Adicionar lançamento" onClick={editor.openNew} />
-        <NavButton icon={FilterIcon} label="Ordenar" onClick={() => setFiltering(true)} />
+        <NavButton icon={FilterIcon} label="Filtrar e ordenar" onClick={() => setFiltering(true)} />
       </div>
+
+      <ActiveFilters
+        recurring={recurring}
+        person={person}
+        onClearRecurring={() => setView({ sort, recurring: false, by })}
+        onClearPerson={() => setView({ sort, recurring, by: null })}
+      />
 
       <div>
         {/* Everything that is not the list keeps the page's margins. Only the
@@ -137,14 +174,26 @@ export function MonthList({ month, search = '', onVisibleCount }: MonthListProps
             />
           )}
 
-          {transactions.isSuccess && empty && searching && (
+          {transactions.isSuccess && empty && filtered && (
+            <EmptyState
+              title="Nenhum lançamento com esses filtros"
+              hint="Tire um filtro para ver mais do mês."
+              action={
+                <Button onClick={() => setView({ sort, recurring: false, by: null })}>
+                  Limpar filtros
+                </Button>
+              }
+            />
+          )}
+
+          {transactions.isSuccess && empty && !filtered && searching && (
             <EmptyState
               title={`Nada com “${search.trim()}” neste mês`}
               hint="A busca olha o nome de todo lançamento do mês, pago ou não."
             />
           )}
 
-          {transactions.isSuccess && empty && !searching && scoped && (
+          {transactions.isSuccess && empty && !filtered && !searching && scoped && (
             <EmptyState
               title="Nenhuma receita neste mês"
               hint="O que entrar aparece aqui, recebido ou não."
@@ -152,7 +201,7 @@ export function MonthList({ month, search = '', onVisibleCount }: MonthListProps
             />
           )}
 
-          {transactions.isSuccess && empty && !searching && !scoped && status === 'pending' && (
+          {transactions.isSuccess && empty && !filtered && !searching && !scoped && status === 'pending' && (
             <EmptyState
               title="Nada pendente neste mês"
               hint="Tudo que estava marcado já foi pago. Novas contas aparecem aqui."
@@ -160,7 +209,7 @@ export function MonthList({ month, search = '', onVisibleCount }: MonthListProps
             />
           )}
 
-          {transactions.isSuccess && empty && !searching && !scoped && status === 'paid' && (
+          {transactions.isSuccess && empty && !filtered && !searching && !scoped && status === 'paid' && (
             <EmptyState
               title="Nada pago neste mês"
               hint="O que você marcar como pago aparece aqui."
@@ -199,8 +248,10 @@ export function MonthList({ month, search = '', onVisibleCount }: MonthListProps
 
       {filtering && (
         <FilterSheet
-          sort={sort}
-          onSortChange={setSort}
+          view={{ sort, recurring, by }}
+          people={people}
+          recurringCount={recurringCount}
+          onApply={setView}
           onClose={() => setFiltering(false)}
         />
       )}

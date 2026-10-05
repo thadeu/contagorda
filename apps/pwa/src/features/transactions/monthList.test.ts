@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { groupByDay, peakNet } from './groupByDay'
-import { LIST_ORDER, matchesStatus, matchesView } from './useStatusFilter'
+import { LIST_ORDER, matchesFilters, matchesStatus, matchesView } from './useStatusFilter'
 import type { Transaction } from '@/services/types'
 
 function tx(overrides: Partial<Transaction> = {}): Transaction {
@@ -105,5 +105,37 @@ describe('groupByDay', () => {
   it('returns nothing for an empty month', () => {
     expect(groupByDay([])).toEqual([])
     expect(peakNet([])).toBe(0)
+  })
+})
+
+describe('filters beyond the status', () => {
+  const alone = tx({ recurring_series_id: null, created_by_id: 'ana' })
+  const repeating = tx({ recurring_series_id: 's', created_by_id: 'jess' })
+
+  it('lets everything through when nothing is chosen', () => {
+    expect(matchesFilters(alone, { recurring: false, by: null })).toBe(true)
+    expect(matchesFilters(repeating, { recurring: false, by: null })).toBe(true)
+  })
+
+  it('keeps only rows that belong to a series', () => {
+    expect(matchesFilters(alone, { recurring: true, by: null })).toBe(false)
+    expect(matchesFilters(repeating, { recurring: true, by: null })).toBe(true)
+  })
+
+  it('keeps only what one person entered', () => {
+    expect(matchesFilters(alone, { recurring: false, by: 'jess' })).toBe(false)
+    expect(matchesFilters(repeating, { recurring: false, by: 'jess' })).toBe(true)
+  })
+
+  it('needs both when both are chosen', () => {
+    const jessAlone = tx({ recurring_series_id: null, created_by_id: 'jess' })
+
+    expect(matchesFilters(jessAlone, { recurring: true, by: 'jess' })).toBe(false)
+    expect(matchesFilters(repeating, { recurring: true, by: 'jess' })).toBe(true)
+    expect(matchesFilters(repeating, { recurring: true, by: 'ana' })).toBe(false)
+  })
+
+  it('leaves out a row nobody entered once a person is chosen', () => {
+    expect(matchesFilters(tx({ created_by_id: null }), { recurring: false, by: 'jess' })).toBe(false)
   })
 })

@@ -71,8 +71,24 @@ export function DesktopShell({ onPanelHost }: DesktopShellProps) {
 
   useDesktopShortcuts({ onOpenAccounts: openAccounts, onToggleSidebar: toggleSidebar })
 
+  /*
+   * The account panel comes first in the tree, and that is its place in the
+   * column. Panels land in it in the order they are mounted, and the last one is
+   * on top: when the app arrives with two to show — this one, which opens with
+   * it, and a filter the address asks for — the page's own must win. Opened
+   * later, from the sidebar, it mounts later and stacks on top as it should.
+   */
   return (
     <div className="flex h-full bg-canvas">
+      {profileOpen && (
+        <ProfileSheet
+          name={firstName || 'Sua conta'}
+          email={email}
+          avatarUrl={avatarUrl}
+          onClose={() => setProfileOpen(false)}
+        />
+      )}
+
       <Sidebar
         collapsed={collapsed}
         onToggle={toggleSidebar}
@@ -94,15 +110,6 @@ export function DesktopShell({ onPanelHost }: DesktopShellProps) {
         ref={onPanelHost}
         className="relative w-[420px] shrink-0 overflow-hidden border-l border-line bg-overlay empty:hidden"
       />
-
-      {profileOpen && (
-        <ProfileSheet
-          name={firstName || 'Sua conta'}
-          email={email}
-          avatarUrl={avatarUrl}
-          onClose={() => setProfileOpen(false)}
-        />
-      )}
 
       {accountsOpen && <AccountsSheet onClose={() => setAccountsOpen(false)} />}
     </div>

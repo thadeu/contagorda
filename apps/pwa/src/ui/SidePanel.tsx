@@ -8,6 +8,8 @@ interface SidePanelProps {
   subtitle?: string
   onClose: () => void
   trailing?: ReactNode
+  /** Pinned to the foot of the column, under the scroll. */
+  footer?: ReactNode
   children: ReactNode
   host: HTMLElement
 }
@@ -27,7 +29,15 @@ interface SidePanelProps {
  * Escape closes the top panel only. Every panel listens, so each one asks
  * whether it is the last child of the column before acting on the key.
  */
-export function SidePanel({ title, subtitle, onClose, trailing, children, host }: SidePanelProps) {
+export function SidePanel({
+  title,
+  subtitle,
+  onClose,
+  trailing,
+  footer,
+  children,
+  host,
+}: SidePanelProps) {
   const panel = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -61,6 +71,8 @@ export function SidePanel({ title, subtitle, onClose, trailing, children, host }
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6">{children}</div>
+
+      {footer && <div className="shrink-0 border-t border-line px-4 py-3">{footer}</div>}
     </div>,
     host,
   )

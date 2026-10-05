@@ -18,6 +18,23 @@ export type Scope = 'all' | 'income'
 const PARAM = 'status'
 const SORT_PARAM = 'sort'
 const SCOPE_PARAM = 'scope'
+const RECURRING_PARAM = 'recurring'
+const BY_PARAM = 'by'
+const OPEN_PARAM = 'filter_open'
+
+/**
+ * How the list is narrowed beyond its status, and how it is ordered.
+ *
+ * These are the choices made in the filter sheet, held together because the
+ * sheet writes them together: one close, one change to the URL.
+ */
+export interface ListView {
+  sort: Sort
+  /** Only rows that belong to a series. */
+  recurring: boolean
+  /** Only rows entered by this member, or null for anyone's. */
+  by: string | null
+}
 
 /**
  * Pending is the default because it is the question the app exists to answer:
@@ -34,6 +51,8 @@ export function useStatusFilter() {
   const scope: Scope = params.get(SCOPE_PARAM) === 'income' ? 'income' : 'all'
   const sortParam = params.get(SORT_PARAM)
   const sort: Sort = isSort(sortParam) ? sortParam : 'date'
+  const recurring = params.get(RECURRING_PARAM) === '1'
+  const by = params.get(BY_PARAM) || null
 
   function write(key: string, value: string | null) {
     setParams(
@@ -52,16 +71,82 @@ export function useStatusFilter() {
     )
   }
 
+  /**
+   * All of it in one write. Three calls in a row each rewrite the URL from what
+   * it was when the call began, and the last one would win.
+   *
+   * Defaults are absent rather than written, so a list nobody filtered keeps the
+   * URL it always had.
+   */
+  function setView(next: ListView) {
+    setParams(
+      (current) => {
+        const updated = new URLSearchParams(current)
+
+        for (const [key, value] of [
+          [SORT_PARAM, next.sort === 'date' ? null : next.sort],
+          [RECURRING_PARAM, next.recurring ? '1' : null],
+          [BY_PARAM, next.by],
+        ] as const) {
+          if (value === null) {
+            updated.delete(key)
+          } else {
+            updated.set(key, value)
+          }
+        }
+
+        return updated
+      },
+      { replace: true },
+    )
+  }
+
   return {
     status,
     scope,
     sort,
+    recurring,
+    by,
+    setView,
     setStatus: (next: Status) => write(PARAM, next),
     // The default is absent rather than written, so a URL with no scope stays
     // the URL it was before scopes existed.
     setScope: (next: Scope) => write(SCOPE_PARAM, next === 'all' ? null : next),
     setSort: (next: Sort) => write(SORT_PARAM, next),
   }
+}
+
+/**
+ * Whether the filter panel is open, held in the address.
+ *
+ * Only the desktop reads it. There the panel is a column beside the list that
+ * stays open while you choose, open a row, edit it and come back — so it has to
+ * survive all of that, and a reload, and a link. The phone sheet is a thing you
+ * pass through and close, and keeps its own state.
+ *
+ * Absent when closed, so closing leaves the address the way it was before.
+ */
+export function useFilterOpen() {
+  const [params, setParams] = useSearchParams()
+
+  function setOpen(next: boolean) {
+    setParams(
+      (current) => {
+        const updated = new URLSearchParams(current)
+
+        if (next) {
+          updated.set(OPEN_PARAM, '1')
+        } else {
+          updated.delete(OPEN_PARAM)
+        }
+
+        return updated
+      },
+      { replace: true },
+    )
+  }
+
+  return { open: params.get(OPEN_PARAM) === '1', setOpen }
 }
 
 /**
@@ -72,6 +157,22 @@ export function matchesView(transaction: Transaction, scope: Scope, status: Stat
   if (scope === 'income') return transaction.kind === 'income'
 
   return matchesStatus(transaction, status)
+}
+
+/**
+ * The narrowing a person chose in the filter sheet, on top of the view.
+ *
+ * Applied to a search as well as to the lists: they are explicit choices, and a
+ * search that quietly ignored "only recurring" would show rows the list under it
+ * had been told to hide.
+ */
+export function matchesFilters(
+  transaction: Transaction,
+  { recurring, by }: Pick<ListView, 'recurring' | 'by'>,
+): boolean {
+  if (recurring && transaction.recurring_series_id === null) return false
+
+  return by === null || transaction.created_by_id === by
 }
 
 export function matchesStatus(transaction: Transaction, status: Status): boolean {

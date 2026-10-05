@@ -42,6 +42,15 @@ interface BottomSheetProps {
    * of it is doing nothing else.
    */
   grab?: ReactNode
+  /**
+   * Pinned under the content, out of the scroll, so it is where the thumb or the
+   * pointer expects it however long the list above is.
+   *
+   * A function, given the sheet's own way of closing. A button that dismissed
+   * the sheet by unmounting it would skip the exit, and the sheet would vanish
+   * where every other way of closing one slides away.
+   */
+  footer?: (close: () => void) => ReactNode
   children: ReactNode
 }
 
@@ -81,6 +90,7 @@ export function BottomSheet(props: BottomSheetProps) {
         subtitle={props.subtitle}
         onClose={props.onClose}
         trailing={props.actions}
+        footer={props.footer?.(props.onClose)}
         host={host}
       >
         {props.grab && <div className="px-5 pb-3">{props.grab}</div>}
@@ -101,6 +111,7 @@ function SheetBottom({
   expandable = false,
   actions,
   grab,
+  footer,
   children,
 }: BottomSheetProps) {
   const panel = useRef<HTMLDivElement>(null)
@@ -273,6 +284,8 @@ function SheetBottom({
         >
           {children}
         </div>
+
+        {footer && <div className="shrink-0 px-1 pt-2">{footer(requestClose)}</div>}
 
         <div className="footer-edge footer-edge-panel" aria-hidden="true" />
       </div>

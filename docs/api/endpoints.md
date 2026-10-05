@@ -78,6 +78,7 @@ be redeployed to fix a sentence.
 | — editing | Writes one row or the ones after it | `PATCH /transactions/:id` |
 | `RecurrencePicker` | Nothing — the rule is computed client-side and sent | — |
 | — on an existing row | Turns a single row into a series | `POST /transactions/:id/recurrence` |
+| — on a row of a series | Changes how it repeats, from this row onward | `PUT /transactions/:id/recurrence` |
 | `TransactionSheet` | Marking paid, deleting | `PUT /transactions/:id/settlement`, `DELETE /transactions/:id` |
 | `CategoryPicker` / `CategorySheet` | The list, and creating by name | `GET /categories`, `POST /categories` |
 | `CategoryFormSheet` | Renaming, re-iconing, deleting | `PATCH /categories/:id`, `DELETE /categories/:id` |
@@ -126,6 +127,7 @@ The rows of one month, any order — the client groups and sorts.
     "description": "Aluguel",
     "paid_at": "2026-08-05T12:00:00Z",
     "recurring_series_id": "019fce03-...",
+    "recurrence": { "frequency": "monthly", "interval": 1, "ends_on": "2026-12-05", "position": 4, "total": 18 },
     "created_by_id": "019fce00-...",
     "detached": false
   }
@@ -284,6 +286,33 @@ reach those is the scope choice on an edit.
 
 The row itself is untouched, including whether it was settled; what follows is
 new and unpaid.
+
+#### `PUT /transactions/:id/recurrence`
+
+Changes how the series of a row repeats, from that row onward. Body is the
+recurrence object; `repeats: 0` ends the series at the row. `422`
+`not_recurring` for a row that belongs to no series.
+
+The row is the anchor. It keeps its id, its date and whether it was paid, and
+what came before is never touched. Every later row is replaced by the new
+schedule, except two kinds that survive: one that was paid, and one that was
+edited on its own (`detached`). The new schedule steps around them, so a slot is
+never written twice. The new rows take the account, category, amount and
+description the edited row holds now.
+
+The client sends this after an edit that reaches "this and the next ones", and
+not after one that is about a single row. Any member of the ledger may do it, as
+any member may edit a row.
+
+`recurrence` on a transaction is the rule of its series: `ends_on` and not a
+count, because how many times it still repeats depends on the row being read.
+`null` for a row that stands alone.
+
+`position` and `total` say where the row stands: the fourth of eighteen. They are
+counted from the rows the series has, in date order, and not from the schedule it
+was created with — a rule can be rewritten and a row moved by hand, and what
+exists is the number that agrees with the list. Deleting one row renumbers the
+rest.
 
 #### `PUT /transactions/:id/settlement`
 

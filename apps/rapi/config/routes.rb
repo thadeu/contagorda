@@ -42,6 +42,7 @@ Rails.application.routes.draw do
         member do
           put :settlement, to: "settlements#update"
           post :recurrence, to: "recurrences#create"
+          put :recurrence, to: "recurrences#update"
         end
       end
 

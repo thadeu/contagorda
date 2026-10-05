@@ -17,10 +17,15 @@ class Ledger::Transaction::Search < ApplicationOperation
   def call
     return [] if @term.blank?
 
-    @ledger.transactions
+    rows = @ledger.transactions
+      .includes(:recurring_series)
       .where("folded_description LIKE ?", "%#{Ledger::Transaction.sanitize_sql_like(@term)}%")
       .order(date: :desc, created_at: :desc)
       .limit(LIMIT)
-      .map { |transaction| Ledger::Transaction::Serialize.call(transaction: transaction) }
+      .to_a
+
+    placements = Ledger::Transaction::Placement.call(transactions: rows)
+
+    rows.map { |transaction| Ledger::Transaction::Serialize.call(transaction: transaction, placements: placements) }
   end
 end

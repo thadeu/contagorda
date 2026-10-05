@@ -16,16 +16,20 @@ class Ledger::RecurringSeries::Rule
 
   attr_reader :frequency, :interval, :repeats
 
-  def initialize(frequency:, interval:, repeats:)
+  # `minimum` is how few repeats make sense. A new series needs at least one, or
+  # it is a row with extra steps. A series being shortened can end at the row
+  # being edited, which is zero.
+  def initialize(frequency:, interval:, repeats:, minimum: 1)
     @frequency = frequency.to_s
     @interval = interval.to_i
     @repeats = repeats.to_i
+    @minimum = minimum
   end
 
   def valid?
     FREQUENCIES.include?(frequency) &&
       interval.positive? &&
-      repeats.positive? &&
+      repeats >= @minimum &&
       repeats <= MAX_REPEATS
   end
 

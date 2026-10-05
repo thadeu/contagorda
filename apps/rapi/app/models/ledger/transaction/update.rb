@@ -12,7 +12,7 @@ class Ledger::Transaction::Update < ApplicationOperation
 
   def call
     Ledger::Transaction.transaction do
-      later.update_all(shared_changes.merge(updated_at: Time.current)) if future? && shared_changes.any?
+      later.update_all(later_changes) if future? && shared_changes.any?
 
       # Editing one on its own detaches it, so a later change to the series
       # leaves the correction alone. Someone who fixed one month deliberately
@@ -31,6 +31,17 @@ class Ledger::Transaction::Update < ApplicationOperation
     # change must not drag October's row onto September's day.
     def shared_changes
       @shared_changes ||= @attributes.except(:date, :paid_at)
+    end
+
+    # `update_all` skips the callbacks, and the folded description is written by
+    # one. Without it the later rows would show the new name and still be found
+    # by the old one in search.
+    def later_changes
+      changes = shared_changes.merge(updated_at: Time.current)
+
+      changes[:folded_description] = Folded.fold(changes[:description]) if changes.key?(:description)
+
+      changes
     end
 
     def later

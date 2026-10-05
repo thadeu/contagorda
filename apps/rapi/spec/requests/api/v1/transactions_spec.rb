@@ -137,6 +137,47 @@ RSpec.describe "Transactions", type: :request do
       expect(series[2].reload.amount_cents).to eq(12_050)
     end
 
+    it "keeps the later rows findable by their new name" do
+      patch "/api/v1/transactions/#{series[0].id}",
+        params: { description: "Condomínio", scope: "future" }, headers: signed.scoped
+
+      get "/api/v1/search", params: { q: "condominio" }, headers: signed.scoped
+
+      expect(json.length).to eq(4)
+    end
+
+    it "reports the rule of the series on every row" do
+      get "/api/v1/transactions", params: { month: "2026-02" }, headers: signed.scoped
+
+      expect(json.first[:recurrence]).to eq(
+        frequency: "monthly", interval: 1, ends_on: "2026-04-10", position: 2, total: 4
+      )
+    end
+
+    it "numbers each row of the series in date order, in a list and on its own" do
+      get "/api/v1/transactions", params: { month: "2026-04" }, headers: signed.scoped
+
+      expect(json.first[:recurrence]).to include(position: 4, total: 4)
+
+      get "/api/v1/search", params: { q: "aluguel" }, headers: signed.scoped
+
+      expect(json.map { |t| t.dig(:recurrence, :position) }).to eq([ 4, 3, 2, 1 ])
+    end
+
+    it "renumbers when a row of the series is deleted" do
+      delete "/api/v1/transactions/#{series[1].id}", headers: signed.scoped
+
+      get "/api/v1/transactions", params: { month: "2026-04" }, headers: signed.scoped
+
+      expect(json.first[:recurrence]).to include(position: 3, total: 3)
+    end
+
+    it "gives a single response its own place" do
+      patch "/api/v1/transactions/#{series[2].id}", params: { amount_cents: 1_000 }, headers: signed.scoped
+
+      expect(json[:recurrence]).to include(position: 3, total: 4)
+    end
+
     it "reaches the ones after it when asked" do
       patch "/api/v1/transactions/#{series[1].id}",
         params: { amount_cents: 99_900, scope: "future" }, headers: signed.scoped
@@ -165,6 +206,103 @@ RSpec.describe "Transactions", type: :request do
         params: { amount_cents: 10_000, scope: "future" }, headers: signed.scoped
 
       expect(series[2].reload.amount_cents).to eq(55_500)
+    end
+  end
+
+  describe "PUT /api/v1/transactions/:id/recurrence" do
+    let!(:series) do
+      post_transaction(description: "Aluguel", date: "2026-01-10",
+        recurrence: { frequency: "monthly", interval: 1, repeats: 3 })
+
+      Ledger::Transaction.order(:date).to_a
+    end
+
+    def reschedule(row, repeats:, frequency: "monthly", interval: 1)
+      put "/api/v1/transactions/#{row.id}/recurrence",
+        params: { frequency: frequency, interval: interval, repeats: repeats }, headers: signed.scoped
+    end
+
+    def dates
+      Ledger::Transaction.order(:date).pluck(:date).map(&:to_s)
+    end
+
+    it "lengthens a series from the row being edited" do
+      reschedule(series[1], repeats: 4)
+
+      expect(response).to have_http_status(:no_content)
+      expect(dates).to eq(%w[2026-01-10 2026-02-10 2026-03-10 2026-04-10 2026-05-10 2026-06-10])
+      expect(series[1].recurring_series.reload.ends_on.to_s).to eq("2026-06-10")
+    end
+
+    it "shortens it, and leaves what came before alone" do
+      reschedule(series[1], repeats: 1)
+
+      expect(dates).to eq(%w[2026-01-10 2026-02-10 2026-03-10])
+    end
+
+    it "ends the series at the row when asked for no repeats" do
+      reschedule(series[1], repeats: 0)
+
+      expect(dates).to eq(%w[2026-01-10 2026-02-10])
+    end
+
+    it "changes how often it repeats" do
+      reschedule(series[0], repeats: 2, interval: 2)
+
+      expect(dates).to eq(%w[2026-01-10 2026-03-10 2026-05-10])
+      expect(series[0].recurring_series.reload).to have_attributes(interval: 2)
+    end
+
+    it "writes the new rows with what the edited row holds now" do
+      patch "/api/v1/transactions/#{series[0].id}",
+        params: { amount_cents: 99_900, description: "Aluguel novo", scope: "future" }, headers: signed.scoped
+      reschedule(series[0], repeats: 5)
+
+      expect(Ledger::Transaction.order(:date).map { |t| [ t.amount_cents, t.description ] }.uniq)
+        .to eq([ [ 99_900, "Aluguel novo" ] ])
+    end
+
+    it "keeps a paid row and a row edited on its own" do
+      patch "/api/v1/transactions/#{series[1].id}", params: { amount_cents: 1_000 }, headers: signed.scoped
+      put "/api/v1/transactions/#{series[2].id}/settlement", params: { paid: true }, headers: signed.scoped
+
+      reschedule(series[0], repeats: 3)
+
+      expect(dates.length).to eq(4)
+      expect(series[1].reload.amount_cents).to eq(1_000)
+      expect(series[2].reload.paid_at).to be_present
+    end
+
+    it "does not write a second row into a slot a kept row holds" do
+      patch "/api/v1/transactions/#{series[1].id}", params: { amount_cents: 1_000 }, headers: signed.scoped
+
+      reschedule(series[0], repeats: 5)
+
+      expect(dates).to eq(dates.uniq)
+      expect(dates.length).to eq(6)
+    end
+
+    it "refuses a row that does not repeat" do
+      post_transaction(date: "2026-05-01")
+      alone = Ledger::Transaction.find_by!(date: "2026-05-01")
+
+      reschedule(alone, repeats: 2)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(json.dig(:error, :code)).to eq("not_recurring")
+    end
+
+    it "refuses a rule it cannot read" do
+      reschedule(series[0], repeats: 2, frequency: "daily")
+
+      expect(json.dig(:error, :code)).to eq("invalid_recurrence")
+    end
+
+    it "does not reach another ledger's row" do
+      put "/api/v1/transactions/#{series[0].id}/recurrence",
+        params: { frequency: "monthly", interval: 1, repeats: 2 }, headers: sign_in.scoped
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 

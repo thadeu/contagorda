@@ -10,8 +10,11 @@ class Ledger::Transaction::List < ApplicationOperation
   end
 
   def call
-    @ledger.transactions.in_month(@month).map do |transaction|
-      Ledger::Transaction::Serialize.call(transaction: transaction)
+    rows = @ledger.transactions.in_month(@month).includes(:recurring_series).to_a
+    placements = Ledger::Transaction::Placement.call(transactions: rows)
+
+    rows.map do |transaction|
+      Ledger::Transaction::Serialize.call(transaction: transaction, placements: placements)
     end
   end
 end

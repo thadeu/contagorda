@@ -44,6 +44,19 @@ describe('TransactionRow', () => {
     expect(tag.previousElementSibling?.textContent).toBe('Sem categoria')
   })
 
+  // A response from before the count existed carries the rule and no numbers.
+  it('draws no tag when the server did not say where the row stands', () => {
+    show(
+      row({
+        recurring_series_id: 's',
+        recurrence: { frequency: 'monthly', interval: 1, ends_on: '2027-12-10' } as Transaction['recurrence'],
+      }),
+    )
+
+    expect(screen.queryByText('/')).toBeNull()
+    expect(screen.queryByLabelText(/ de /)).toBeNull()
+  })
+
   it('has no count on a row that stands alone', () => {
     show(row({}))
 

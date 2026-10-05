@@ -48,7 +48,7 @@ export function TransactionRow({ transaction, category, onOpen }: TransactionRow
           <span className="flex items-center gap-1.5 text-xs text-muted">
             <span className="min-w-0 truncate">{category?.name ?? 'Sem categoria'}</span>
 
-            {transaction.recurrence && (
+            {transaction.recurrence && hasPlace(transaction.recurrence) && (
               <span
                 aria-label={`${transaction.recurrence.position} de ${transaction.recurrence.total}`}
                 className="tnum inline-flex shrink-0 items-center gap-1 rounded-chip bg-sunken px-1.5 py-0.5 text-[0.6875rem] font-medium text-ink"
@@ -70,4 +70,14 @@ export function TransactionRow({ transaction, category, onOpen }: TransactionRow
       </button>
     </li>
   )
+}
+
+/**
+ * Whether the server said where the row stands.
+ *
+ * It always does, from the release that introduced it. A tag drawn from a
+ * response that predates it would read "/", which is worse than no tag.
+ */
+function hasPlace(rule: NonNullable<Transaction['recurrence']>): boolean {
+  return Number.isInteger(rule.position) && Number.isInteger(rule.total)
 }

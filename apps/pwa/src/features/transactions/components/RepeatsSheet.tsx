@@ -13,7 +13,7 @@ interface RepeatsSheetProps {
 }
 
 /**
- * Two years, and no further.
+ * Two years, and no further: twenty-four rows at most, this one included.
  *
  * A bill that outlives this is rarer than the cost of supporting it: when the
  * last one arrives, whoever is still paying extends it or starts another, and
@@ -23,6 +23,15 @@ interface RepeatsSheetProps {
  */
 const MAX = 24
 
+/**
+ * The list counts rows, this one included, and says so in the label: "14 meses"
+ * is fourteen entries, ending in the thirteenth month after this one.
+ *
+ * The rule underneath counts repeats *after* this one, and the two differ by
+ * one. Showing that number made "14" write fifteen rows — the label read as a
+ * total and the value was an increment — so the conversion lives here, at the
+ * edge, and nothing past this sheet sees a count.
+ */
 /**
  * Every option with the month it lands on.
  *
@@ -43,12 +52,13 @@ export function RepeatsSheet({
   onSelect,
   onClose,
 }: RepeatsSheetProps) {
-  const options = Array.from({ length: MAX }, (_, index) => index + 1)
+  const counts = Array.from({ length: MAX - 1 }, (_, index) => index + 2)
 
   return (
     <BottomSheet title="Se repete por" onClose={onClose} expandable>
       <ul className="px-1">
-        {options.map((repeats) => {
+        {counts.map((count) => {
+          const repeats = count - 1
           const dates = occurrences(date, { frequency, interval, repeats })
           const last = dates[dates.length - 1]
 
@@ -64,7 +74,7 @@ export function RepeatsSheet({
                 className="flex min-h-12 w-full items-center justify-between gap-3 rounded-control px-3 text-left"
               >
                 <span className="text-[0.9375rem] text-ink">
-                  {repeats} {unit(frequency, repeats)}
+                  {count} {unit(frequency, count)}
                 </span>
 
                 <span className="flex items-center gap-2">
@@ -83,8 +93,8 @@ export function RepeatsSheet({
   )
 }
 
-function unit(frequency: Frequency, repeats: number): string {
-  if (frequency === 'yearly') return repeats === 1 ? 'ano' : 'anos'
+function unit(frequency: Frequency, count: number): string {
+  if (frequency === 'yearly') return count === 1 ? 'ano' : 'anos'
 
-  return repeats === 1 ? 'mês' : 'meses'
+  return count === 1 ? 'mês' : 'meses'
 }

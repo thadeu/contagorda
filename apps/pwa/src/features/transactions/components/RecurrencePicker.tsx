@@ -123,7 +123,7 @@ function RecurrenceSheet({
           <span className="min-w-0 flex-1 text-sm text-muted">Se repete por</span>
 
           <span className="text-base text-ink">
-            {draft.repeats} {unit(draft)}
+            {draft.repeats + 1} {unit(draft)}
           </span>
           <ChevronRightIcon className="size-4 shrink-0 text-faint" />
         </button>

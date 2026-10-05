@@ -23,6 +23,20 @@ RSpec.describe "Cache-first reads", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
+  # A deploy changes no data, so no stamp moves. What the old code cached is
+  # still under a current key, and the new code would serve it — a response
+  # missing the field that shipped with the release. The version is what keeps
+  # one release from reading another's.
+  it "does not read what another version of the code wrote" do
+    read_months
+
+    stale = Cache.key_for(ledger: signed.ledger, of: Ledger::Transaction, key: [ "month", "2026-08" ])
+
+    expect(stale).to include("/#{Cache::VERSION}/")
+    expect(Rails.cache.read(stale.sub("/#{Cache::VERSION}/", "/v0/"))).to be_nil
+    expect(Rails.cache.read(stale)).not_to be_nil
+  end
+
   # A write does not delete anything. It replaces the stamp the key was built
   # from, and every key that carried the old one becomes unreachable at once.
   it "retires the value on a write" do

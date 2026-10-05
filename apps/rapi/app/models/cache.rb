@@ -19,6 +19,16 @@
 module Cache
   NAMESPACE = "cg".freeze
 
+  # The shape of what is cached. Raise it whenever a response changes — a field
+  # added to a serializer, one renamed.
+  #
+  # A stamp retires values when *data* changes, and a deploy changes none. The
+  # old code's JSON is still in Redis under a key that is still current, and it
+  # is served for up to the TTL by the new code: the app received `recurrence`
+  # without the `position` that shipped with it, and drew a tag that said "/".
+  # Part of the key, so the new code never reads what the old code wrote.
+  VERSION = "v2".freeze
+
   # Long, because nothing is ever served stale: a stamp change is what expires a
   # value, and the TTL is only there so abandoned keys do not accumulate.
   DEFAULT_TTL = 12.hours
@@ -46,7 +56,7 @@ module Cache
     def key_for(ledger:, of:, key:)
       stamps = Array(of).map { |aggregate| stamp(ledger, aggregate) }
 
-      [ NAMESPACE, ledger_id(ledger), stamps.join("."), Array(key).join("/") ].join("/")
+      [ NAMESPACE, VERSION, ledger_id(ledger), stamps.join("."), Array(key).join("/") ].join("/")
     end
 
     private

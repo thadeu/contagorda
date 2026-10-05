@@ -81,6 +81,8 @@ function NewTransactionModal({ onClose }: { onClose: () => void }) {
         onKindChange={setKind}
         onSubmit={(input) => create.mutate({ input, recurrence }, { onSuccess: onClose })}
       />
+
+      <SaveError error={create.error} />
     </Modal>
   )
 }
@@ -195,7 +197,25 @@ function EditTransactionModal({
         onRecurrenceChange={!inSeries || editsRule ? setChosen : undefined}
         onSubmit={save}
       />
+
+      <SaveError error={update.error ?? reschedule.error ?? repeat.error} />
     </Modal>
+  )
+}
+
+/**
+ * Why a save did not work, in the server's own words.
+ *
+ * Nothing said so before: a refused save closed nothing and explained nothing,
+ * and the form just sat there. The message arrives already in Portuguese.
+ */
+function SaveError({ error }: { error: Error | null }) {
+  if (!error) return null
+
+  return (
+    <p role="alert" className="px-4 pb-6 text-sm font-medium text-out">
+      {error.message}
+    </p>
   )
 }
 

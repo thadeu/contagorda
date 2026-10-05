@@ -173,7 +173,10 @@ export function useUpdateTransaction() {
       input: Partial<NewTransaction>
       scope?: Scope
     }) => services.transactions.update(id, input, scope),
-    onSuccess: () => invalidate(client),
+    // Settled and not only succeeded: an edit can be saved and still be reported
+    // as failed (see the author check in the API client), and the list has to
+    // show what was saved either way.
+    onSettled: () => invalidate(client),
   })
 }
 

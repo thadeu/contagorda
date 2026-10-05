@@ -116,6 +116,35 @@ describe('editing', () => {
   })
 })
 
+describe('changing whose row it is', () => {
+  it('hands one row on, and only that one', async () => {
+    const first = await series(3)
+    const rows = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.update(rows[1].id, { created_by_id: 'outra-pessoa' }, 'one')
+
+    const after = await rowsOf(first.recurring_series_id)
+
+    expect(after.map((row) => row.created_by_id)).toEqual([rows[0].created_by_id, 'outra-pessoa', rows[2].created_by_id])
+  })
+
+  it('hands on the next ones too when asked', async () => {
+    const first = await series(4)
+    const rows = await rowsOf(first.recurring_series_id)
+
+    await services.transactions.update(rows[1].id, { created_by_id: 'outra-pessoa' }, 'future')
+
+    const after = await rowsOf(first.recurring_series_id)
+
+    expect(after.map((row) => row.created_by_id)).toEqual([
+      rows[0].created_by_id,
+      'outra-pessoa',
+      'outra-pessoa',
+      'outra-pessoa',
+    ])
+  })
+})
+
 describe('changing how a series repeats', () => {
   const monthly = (repeats: number) => ({ frequency: 'monthly', interval: 1, repeats }) as const
 

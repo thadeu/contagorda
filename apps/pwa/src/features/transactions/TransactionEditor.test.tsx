@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { monthKey, todayIso } from '@/lib/dates'
 import { services } from '@/services'
 import type { Scope } from '@/services/ports'
@@ -67,5 +67,21 @@ describe('editing a row of a series', () => {
     await openEditor('one', 'alone')
 
     expect(screen.getByRole('button', { name: /repetir/i }).textContent).toMatch(/não se repete/i)
+  })
+})
+
+describe('when a save is refused', () => {
+  it('says why, in what the server said', async () => {
+    const refuse = vi
+      .spyOn(services.transactions, 'update')
+      .mockRejectedValue(new Error('Só quem é dono pode fazer isso.'))
+
+    await openEditor('one', 'alone')
+
+    fireEvent.click(screen.getByRole('button', { name: /salvar/i }))
+
+    expect((await screen.findByRole('alert')).textContent).toBe('Só quem é dono pode fazer isso.')
+
+    refuse.mockRestore()
   })
 })

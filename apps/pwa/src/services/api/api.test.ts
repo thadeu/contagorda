@@ -98,6 +98,39 @@ describe('the API client', () => {
     })
   })
 
+  // The API ignores a field it does not know and answers 200, so a save that
+  // handed a row to someone else can come back looking fine and be wrong.
+  it('says so when the server left the author where it was', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => reply({ id: 't', created_by_id: 'ana' })),
+    )
+
+    await expect(
+      services.transactions.update('t', { created_by_id: 'jess' }),
+    ).rejects.toMatchObject({ code: 'author_not_applied' })
+  })
+
+  it('accepts the answer when the author is the one asked for', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => reply({ id: 't', created_by_id: 'jess' })),
+    )
+
+    await expect(services.transactions.update('t', { created_by_id: 'jess' })).resolves.toMatchObject({
+      created_by_id: 'jess',
+    })
+  })
+
+  it('does not look at the author when none was sent', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => reply({ id: 't', created_by_id: 'ana' })),
+    )
+
+    await expect(services.transactions.update('t', { amount_cents: 5 })).resolves.toBeDefined()
+  })
+
   it('asks the search route with the term', async () => {
     await services.transactions.search('farmácia')
 

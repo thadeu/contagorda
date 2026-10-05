@@ -1,6 +1,6 @@
 import type { Cents } from '@/lib/money'
 import type { Recurrence } from '@/features/transactions/recurrence'
-import { request } from '@/services/http'
+import { ApiError, request } from '@/services/http'
 import type { NewAccount, Scope, Services } from '@/services/ports'
 import type {
   Account,
@@ -138,8 +138,25 @@ export function createApiServices(): Services {
           idempotent: true,
         }),
 
-      update: (id, input, scope: Scope = 'one') =>
-        request<Transaction>(`/transactions/${id}`, { method: 'PATCH', body: { ...input, scope } }),
+      update: async (id, input, scope: Scope = 'one') => {
+        const saved = await request<Transaction>(`/transactions/${id}`, {
+          method: 'PATCH',
+          body: { ...input, scope },
+        })
+
+        // A server that does not know the field answers 200 and leaves the row as
+        // it was — an app newer than the API it talks to. Said out loud, because
+        // the alternative is a save that looks as if it worked.
+        if (input.created_by_id && saved.created_by_id !== input.created_by_id) {
+          throw new ApiError(
+            200,
+            'author_not_applied',
+            'Não deu para trocar quem lançou. Atualize o app e tente de novo.',
+          )
+        }
+
+        return saved
+      },
 
       remove: (id, scope: Scope = 'one') =>
         request<void>(`/transactions/${id}`, { method: 'DELETE', query: { scope } }),

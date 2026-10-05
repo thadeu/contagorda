@@ -7,6 +7,9 @@ import { AmountField } from './AmountField'
 import { Switch } from '@/ui/Switch'
 import { OutflowIcon, PiggyIcon } from '@/ui/icons'
 import { useMemberName } from '@/features/ledgers/useMemberName'
+import { useMembers } from '@/features/ledgers/hooks'
+import { useActiveLedger } from '@/app/ledger/activeLedgerContext'
+import { AuthorPicker } from './AuthorPicker'
 import { RecurrencePicker } from './RecurrencePicker'
 import type { Recurrence } from '@/features/transactions/recurrence'
 import { emptyValues, type TransactionFormValues } from '@/features/transactions/formValues'
@@ -18,7 +21,11 @@ import type { NameSuggestion } from '@/features/transactions/suggestions'
 interface TransactionFormProps {
   /** Ties the form to a submit button that lives outside it, in the nav bar. */
   id: string
-  /** Who entered it, when editing one that exists. Shown, never edited. */
+  /**
+   * Who entered it, when editing one that exists — absent for a new row, where
+   * the author is whoever is signed in. Shown to everyone, and changeable by the
+   * owner only.
+   */
   authorId?: string | null
   /**
    * Absent when the row has no say over a series: one that sits inside it and is
@@ -62,7 +69,7 @@ interface TransactionFormProps {
  */
 export function TransactionForm({
   id,
-  authorId = null,
+  authorId,
   recurrence,
   onRecurrenceChange,
   initial,
@@ -71,7 +78,15 @@ export function TransactionForm({
 }: TransactionFormProps) {
   const accounts = useAccounts()
   const categories = useCategories()
-  const author = useMemberName(authorId)
+  const author = useMemberName(authorId ?? null)
+
+  const { current, ledgerId } = useActiveLedger()
+  const members = useMembers(ledgerId).data ?? []
+  const [newAuthor, setNewAuthor] = useState<string | null>(authorId ?? null)
+
+  // Only for a row that exists, only for the owner, and only when there is
+  // someone else to give it to.
+  const reassign = authorId !== undefined && current?.role === 'owner' && members.length > 1
 
   const base = { ...emptyValues(), ...initial }
   const [values, setValues] = useState<TransactionFormValues>(base)
@@ -131,6 +146,7 @@ export function TransactionForm({
       date: values.date,
       description: values.description.trim(),
       paid: values.paid,
+      ...(reassign && newAuthor && newAuthor !== authorId ? { created_by_id: newAuthor } : {}),
     })
   }
 
@@ -216,10 +232,13 @@ export function TransactionForm({
           onChange={(id) => set('categoryId', id)}
         />
 
-        {/* A fact about the row, not a field: who entered it is decided when it
-            is created and by whom, and an editable author would be a way to
-            claim someone else's typing. */}
-        {author && (
+        {/* A fact about the row for everyone but the owner: who entered it is
+            decided when it is created, and an author anyone could edit would be a
+            way to claim someone else's typing. The owner keeps the ledger, so the
+            owner may hand a row on or take it over. */}
+        {reassign && <AuthorPicker members={members} value={newAuthor} onChange={setNewAuthor} />}
+
+        {!reassign && author && (
           <div className="flex min-h-13 items-center justify-between gap-3">
             <span className="text-sm text-muted">Lançado por</span>
             <span className="min-w-0 truncate text-base text-muted">{author}</span>

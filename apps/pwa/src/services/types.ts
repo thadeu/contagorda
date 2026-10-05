@@ -166,6 +166,13 @@ export interface NewTransaction {
   date: IsoDate
   description: string
   paid: boolean
+  /**
+   * Whose row it is, as a membership. Sent only to hand a row to someone else or
+   * to take it over, and only by the owner: the server refuses it from anyone
+   * else, and ignores it when a row is created, where the author is whoever is
+   * signed in.
+   */
+  created_by_id?: string
 }
 
 export type MonthCloneStatus = 'pending' | 'running' | 'done' | 'failed'

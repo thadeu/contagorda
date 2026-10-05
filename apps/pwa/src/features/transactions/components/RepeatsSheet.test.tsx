@@ -48,8 +48,8 @@ describe('RepeatsSheet', () => {
     const labels = screen.getAllByRole('listitem').map((item) => item.textContent)
 
     expect(labels[0]).toMatch(/^2 meses/)
-    expect(labels).toHaveLength(23)
-    expect(labels[labels.length - 1]).toMatch(/^24 meses/)
+    expect(labels).toHaveLength(47)
+    expect(labels[labels.length - 1]).toMatch(/^48 meses/)
   })
 
   it('marks the count that matches what is stored', () => {
@@ -63,5 +63,22 @@ describe('RepeatsSheet', () => {
     show({ frequency: 'yearly' })
 
     expect(screen.getByRole('button', { name: /^3 anos/ }).textContent).toContain('2028')
+  })
+
+  it('offers one to four years when they are paid every month', () => {
+    const { onSelect } = show({ frequency: 'yearly', monthly: true })
+
+    const labels = screen.getAllByRole('listitem').map((item) => item.textContent)
+
+    expect(labels).toHaveLength(4)
+    expect(labels[0]).toMatch(/^1 ano/)
+
+    const row = screen.getByRole('button', { name: /^3 anos/ })
+
+    expect(row.textContent).toContain('setembro de 2029')
+
+    fireEvent.click(row)
+
+    expect(onSelect).toHaveBeenCalledWith(2)
   })
 })

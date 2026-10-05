@@ -3,6 +3,7 @@ import {
   cadence,
   clamped,
   describe as describeSeries,
+  inMonths,
   occurrences,
   recurrenceFrom,
   sameRecurrence,
@@ -185,5 +186,14 @@ describe('cadence', () => {
     expect(cadence({ frequency: 'monthly', interval: 2 })).toBe('A cada 2 meses')
     expect(cadence({ frequency: 'yearly', interval: 1 })).toBe('Todo ano')
     expect(cadence({ frequency: 'yearly', interval: 3 })).toBe('A cada 3 anos')
+  })
+})
+
+describe('inMonths', () => {
+  it('turns three years into thirty-six monthly rows', () => {
+    const rule = inMonths({ repeats: 2 })
+
+    expect(rule).toEqual({ frequency: 'monthly', interval: 1, repeats: 35 })
+    expect(occurrences('2026-10-10', rule)).toHaveLength(36)
   })
 })

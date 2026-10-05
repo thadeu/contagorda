@@ -78,6 +78,17 @@ export function recurrenceFrom(
   return { frequency, interval, repeats: Math.max(0, reached.length - 1) }
 }
 
+/**
+ * A span of years paid every month: "3 anos" becomes thirty-six rows.
+ *
+ * The count is read as a length of time rather than as a number of rows, which
+ * is how an instalment plan is usually stated — "três anos" — even though what
+ * it writes is one row a month.
+ */
+export function inMonths({ repeats }: Pick<Recurrence, 'repeats'>): Recurrence {
+  return { frequency: 'monthly', interval: 1, repeats: (repeats + 1) * 12 - 1 }
+}
+
 /** How often a series comes round, as a person would say it. */
 export function cadence({ frequency, interval }: Pick<SeriesRule, 'frequency' | 'interval'>): string {
   if (frequency === 'yearly') return interval === 1 ? 'Todo ano' : `A cada ${interval} anos`

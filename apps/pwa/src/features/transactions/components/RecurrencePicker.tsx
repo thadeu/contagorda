@@ -3,7 +3,13 @@ import { BottomSheet } from '@/ui/BottomSheet'
 import { Switch } from '@/ui/Switch'
 import { RepeatsSheet } from './RepeatsSheet'
 import { ChevronRightIcon } from '@/ui/icons'
-import { clamped, describe, FREQUENCIES, type Recurrence } from '@/features/transactions/recurrence'
+import {
+  clamped,
+  describe,
+  FREQUENCIES,
+  inMonths,
+  type Recurrence,
+} from '@/features/transactions/recurrence'
 import type { IsoDate } from '@/lib/dates'
 
 interface RecurrencePickerProps {
@@ -62,7 +68,11 @@ function RecurrenceSheet({
   )
 
   const [on, setOn] = useState(value !== null)
+  const [monthly, setMonthly] = useState(false)
   const [choosing, setChoosing] = useState(false)
+
+  const yearly = draft.frequency === 'yearly'
+  const result = yearly && monthly ? inMonths(draft) : draft
 
   /**
    * Nothing leaves this sheet until it closes.
@@ -74,7 +84,7 @@ function RecurrenceSheet({
    * drag, or Escape all pass through here.
    */
   function commitAndClose() {
-    onChange(on ? draft : null)
+    onChange(on ? result : null)
     onClose()
   }
 
@@ -103,7 +113,7 @@ function RecurrenceSheet({
               key={option.value}
               active={draft.frequency === option.value}
               disabled={!on}
-              onClick={() => update({ frequency: option.value })}
+              onClick={() => chooseFrequency(option.value)}
             >
               {option.label}
             </Chip>
@@ -128,9 +138,22 @@ function RecurrenceSheet({
           <ChevronRightIcon className="size-4 shrink-0 text-faint" />
         </button>
 
+        {yearly && (
+          <div className="flex min-h-13 items-center gap-3">
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm text-ink">Lançar todo mês</span>
+              <span className="block text-xs text-muted">
+                {draft.repeats + 1} {unit(draft)} viram {result.repeats + 1} lançamentos.
+              </span>
+            </span>
+
+            <Switch checked={monthly} onChange={toggleMonthly} label="Lançar todo mês" />
+          </div>
+        )}
+
         <p className="text-sm leading-relaxed text-muted">
-          {on ? describe(date, draft) : 'Este lançamento acontece uma vez só.'}
-          {on && clamped(date, draft) &&
+          {on ? describe(date, result) : 'Este lançamento acontece uma vez só.'}
+          {on && clamped(date, result) &&
             ' Alguns meses não têm esse dia, então esses caem no último dia do mês.'}
         </p>
       </div>
@@ -141,6 +164,7 @@ function RecurrenceSheet({
           frequency={draft.frequency}
           interval={draft.interval}
           value={draft.repeats}
+          monthly={yearly && monthly}
           onSelect={(repeats) => update({ repeats })}
           onClose={() => setChoosing(false)}
         />
@@ -150,6 +174,25 @@ function RecurrenceSheet({
 
   function update(patch: Partial<Recurrence>) {
     setDraft({ ...draft, ...patch })
+  }
+
+  /** The switch belongs to years; it does not carry over to months and back. */
+  function chooseFrequency(frequency: Recurrence['frequency']) {
+    setMonthly(false)
+    update({ frequency })
+  }
+
+  /**
+   * Paid every month, the list stops at four years; paid once a year, it starts
+   * at two. The count moves into range on the way across rather than leaving a
+   * selection the list cannot show.
+   */
+  function toggleMonthly(next: boolean) {
+    setMonthly(next)
+
+    if (next && draft.repeats > 3) update({ repeats: 3 })
+
+    if (!next && draft.repeats < 1) update({ repeats: 1 })
   }
 }
 

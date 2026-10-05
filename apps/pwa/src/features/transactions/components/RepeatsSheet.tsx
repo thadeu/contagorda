@@ -1,27 +1,34 @@
 import { BottomSheet } from '@/ui/BottomSheet'
 import { CheckIcon } from '@/ui/icons'
 import { monthKey, monthLabel, type IsoDate } from '@/lib/dates'
-import { occurrences, type Frequency } from '@/features/transactions/recurrence'
+import { inMonths, occurrences, type Frequency } from '@/features/transactions/recurrence'
 
 interface RepeatsSheetProps {
   date: IsoDate
   frequency: Frequency
   interval: number
   value: number
+  /** Years paid every month: each option is a number of years, written as months. */
+  monthly?: boolean
   onSelect: (repeats: number) => void
   onClose: () => void
 }
 
 /**
- * Two years, and no further: twenty-four rows at most, this one included.
+ * Four years of monthly rows, and no further: forty-eight rows at most, this one
+ * included.
  *
  * A bill that outlives this is rarer than the cost of supporting it: when the
  * last one arrives, whoever is still paying extends it or starts another, and
- * that is a decision made with two years of hindsight instead of a guess made
- * today. The alternative is an unbounded series, which means either materialising
- * forever or inventing a rule about when to stop that nobody asked for.
+ * that is a decision made with hindsight instead of a guess made today. The
+ * alternative is an unbounded series, which means either materialising forever
+ * or inventing a rule about when to stop that nobody asked for.
+ *
+ * Years keep their own limit, as a count of rows; paid every month, they share
+ * the monthly one.
  */
-const MAX = 24
+const MAX_MONTHS = 48
+const MAX_YEARS = 24
 
 /**
  * The list counts rows, this one included, and says so in the label: "14 meses"
@@ -49,17 +56,19 @@ export function RepeatsSheet({
   frequency,
   interval,
   value,
+  monthly = false,
   onSelect,
   onClose,
 }: RepeatsSheetProps) {
-  const counts = Array.from({ length: MAX - 1 }, (_, index) => index + 2)
+  const counts = options(frequency, monthly)
 
   return (
     <BottomSheet title="Se repete por" onClose={onClose} expandable>
       <ul className="px-1">
         {counts.map((count) => {
           const repeats = count - 1
-          const dates = occurrences(date, { frequency, interval, repeats })
+          const rule = monthly ? inMonths({ repeats }) : { frequency, interval, repeats }
+          const dates = occurrences(date, rule)
           const last = dates[dates.length - 1]
 
           return (
@@ -91,6 +100,17 @@ export function RepeatsSheet({
       </ul>
     </BottomSheet>
   )
+}
+
+/**
+ * Counts from two, because one is a row that does not repeat — except for years
+ * paid every month, where one year is already twelve rows.
+ */
+function options(frequency: Frequency, monthly: boolean): number[] {
+  const first = monthly ? 1 : 2
+  const last = monthly ? MAX_MONTHS / 12 : frequency === 'yearly' ? MAX_YEARS : MAX_MONTHS
+
+  return Array.from({ length: last - first + 1 }, (_, index) => index + first)
 }
 
 function unit(frequency: Frequency, count: number): string {

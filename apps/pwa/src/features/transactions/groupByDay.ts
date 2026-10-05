@@ -13,8 +13,13 @@ export interface DayGroup {
  * The order is a parameter rather than a constant because the two lists answer
  * different questions: a pending list is read soonest-first, so anything overdue
  * leads; a paid list is read newest-first, because it is a record of what just
- * happened. Within a day the original order is kept, so nothing reshuffles when
- * a row is edited.
+ * happened.
+ *
+ * Within a day the rows are in name order, so the ones that belong together sit
+ * together: "PJ / PARC IMPOSTO 21/60" and "PJ / PARC IMPOSTO 38/60" used to land
+ * apart, wherever the server happened to return them. Name and not amount,
+ * because a household's bills share a prefix far more often than a size. Numbers
+ * inside a name compare as numbers, so 9/60 comes before 10/60.
  */
 export function groupByDay(transactions: Transaction[], order: 'asc' | 'desc' = 'desc'): DayGroup[] {
   const byDate = new Map<IsoDate, Transaction[]>()
@@ -33,12 +38,16 @@ export function groupByDay(transactions: Transaction[], order: 'asc' | 'desc' = 
     .sort(([a], [b]) => (order === 'asc' ? a.localeCompare(b) : b.localeCompare(a)))
     .map(([date, rows]) => ({
       date,
-      transactions: rows,
+      transactions: [...rows].sort(byName),
       netCents: rows.reduce(
         (total, t) => total + (t.kind === 'income' ? t.amount_cents : -t.amount_cents),
         0,
       ),
     }))
+}
+
+function byName(a: Transaction, b: Transaction): number {
+  return a.description.localeCompare(b.description, 'pt-BR', { sensitivity: 'base', numeric: true })
 }
 
 export function peakNet(groups: DayGroup[]): number {

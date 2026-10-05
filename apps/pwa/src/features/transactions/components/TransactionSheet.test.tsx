@@ -52,15 +52,22 @@ const monthly = { frequency: 'monthly', interval: 1 } as const
 const place = { position: 1, total: 3 }
 
 describe('TransactionSheet on a row of a series', () => {
-  it('says how it repeats, until when, and how many come after', async () => {
+  it('says how it repeats and until when', async () => {
     await open(row({ recurring_series_id: 's', recurrence: { ...monthly, ends_on: '2026-12-10', ...place } }))
 
     expect(screen.getByText('Todo mês')).toBeTruthy()
     expect(screen.getByText('Dezembro de 2026')).toBeTruthy()
-    expect(screen.getByText('2 lançamentos')).toBeTruthy()
   })
 
-  it('counts from the row being looked at', async () => {
+  // Where the row stands is the tag on the list, not a line here.
+  it('does not say how many come after', async () => {
+    await open(row({ recurring_series_id: 's', recurrence: { ...monthly, ends_on: '2026-12-10', ...place } }))
+
+    expect(screen.queryByText('Depois deste')).toBeNull()
+    expect(screen.queryByText(/lançamentos$/)).toBeNull()
+  })
+
+  it('has no end to say on the last row', async () => {
     await open(
       row({
         date: '2026-12-10',
@@ -69,8 +76,8 @@ describe('TransactionSheet on a row of a series', () => {
       }),
     )
 
-    expect(screen.getByText('Este é o último')).toBeTruthy()
     expect(screen.queryByText('Até')).toBeNull()
+    expect(screen.queryByText('Este é o último')).toBeNull()
   })
 
   it('reads a series that repeats less often', async () => {
@@ -82,13 +89,11 @@ describe('TransactionSheet on a row of a series', () => {
     )
 
     expect(screen.getByText('A cada 3 meses')).toBeTruthy()
-    expect(screen.getByText('1 lançamento')).toBeTruthy()
   })
 
   it('shows nothing about repeating on a row that stands alone', async () => {
     await open(row({}))
 
     expect(screen.queryByText('Repete')).toBeNull()
-    expect(screen.queryByText('Depois deste')).toBeNull()
   })
 })

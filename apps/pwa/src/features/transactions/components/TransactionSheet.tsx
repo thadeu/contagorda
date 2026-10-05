@@ -90,7 +90,6 @@ export function TransactionSheet({
               <>
                 <Detail label="Repete" value={series.cadence} />
                 {series.until && <Detail label="Até" value={series.until} />}
-                <Detail label="Depois deste" value={series.after} />
               </>
             )}
           </dl>
@@ -177,12 +176,12 @@ export function TransactionSheet({
 }
 
 /**
- * What the series this row belongs to does, before anyone edits it.
+ * What the series this row belongs to does, before anyone edits it: how often,
+ * and until when. Where the row stands in it ("4/18") is the tag on the list, and
+ * saying it twice here was noise.
  *
- * Said from the row being looked at: how many come after it is that row's own
- * question, and the same series reads differently from March than from June.
- * No position ("3 of 10"): a row that was deleted on its own leaves a gap, and a
- * count that is wrong by one is worse than no count.
+ * Nothing to say about the end on the last row of a series — "until" this very
+ * month adds nothing.
  */
 function describeSeries(transaction: Transaction) {
   const rule = transaction.recurrence!
@@ -191,11 +190,7 @@ function describeSeries(transaction: Transaction) {
   const until =
     rule.ends_on && left > 0 ? capitalised(monthLabel(monthKey(rule.ends_on))) : null
 
-  return {
-    cadence: cadence(rule),
-    until,
-    after: left === 0 ? 'Este é o último' : left === 1 ? '1 lançamento' : `${left} lançamentos`,
-  }
+  return { cadence: cadence(rule), until }
 }
 
 function capitalised(text: string): string {

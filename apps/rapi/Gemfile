@@ -55,3 +55,8 @@ end
 # The cache is not a nicety here: every read is served from it first, and the
 # stamp that invalidates one has to be visible to every Puma worker.
 gem "redis", "~> 5.4"
+
+# Copying a month runs as a job, so the request that asked for it is not held
+# open while the rows are written. It is a table in the primary database and
+# runs inside Puma — see config/puma.rb and config/queue.yml.
+gem "solid_queue", "~> 1.7"

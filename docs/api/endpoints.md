@@ -52,6 +52,7 @@ be redeployed to fix a sentence.
 |---|---|---|
 | `MonthStack` | This month's total, paid and outstanding | `GET /months/:month/summary` |
 | `MonthPicker` | Which months hold anything | `GET /months` |
+| — copying a month | Asks for a month's rows to be copied, then watches | `POST /months/:month/clone`, `GET /month_clones/:id` |
 | `SpendingCard` | The month's transactions, grouped by day | `GET /transactions?month=` |
 | `TotalBalance` | Every account, plus what each held at the start of the month | `GET /accounts`, `GET /accounts/opening_balances?month=` |
 | `AccountsButton` | Account count | `GET /accounts` |
@@ -170,6 +171,54 @@ either hide months that exist or offer empty ones that lead nowhere.
 
 `net_cents` is signed and computed by the server. The client never derives a
 direction it could get wrong; `upcoming_cents` is what is unpaid and still ahead.
+
+#### `POST /months/:month/clone`
+
+Copies the rows of `:month` into another month, in the background. Body:
+`{ "target": "2026-10" }`. Answers `202` at once with the record to watch:
+
+```json
+{
+  "id": "019fce05-...",
+  "source_month": "2026-09",
+  "target_month": "2026-10",
+  "status": "pending",
+  "total": 0,
+  "copied": 0,
+  "skipped": 0
+}
+```
+
+Nothing has been copied when this answers. A job writes the rows in batches, so
+the target month fills while the client watches. Carries `Idempotency-Key`: a
+retry replays the `202` and enqueues nothing.
+
+What is copied is account, category, kind, amount and description, on the same
+day of the month (the 31st lands on the last day a shorter month has), by the
+membership that asked. Never whether it was paid.
+
+A row of a monthly series is copied, as an ordinary row with no series, when the
+series wrote nothing into the target month — it stopped short of it. It is left
+out when the series already has an occurrence there, which would double the bill,
+and when the series is not monthly (yearly, weekly, every N months): those are
+not due next month. Rows on an archived account are left out too. All of these
+are counted in `skipped`.
+
+Refused with `422` `empty_month` when `:month` holds nothing, `422` `same_month`
+when the target is the source, and `409` `clone_in_progress` while another copy
+is still filling that target. The database enforces the last: one active copy
+per ledger and target month.
+
+#### `GET /month_clones/:id`
+
+The same record, current. `status` runs `pending` → `running` → `done`, or
+`failed` after three attempts. `total` is zero until the job has counted, which
+is how "not started" is told from "nothing to do"; `copied` climbs a batch at a
+time.
+
+Not cached, and the client asks again every second until the status is `done` or
+`failed`. Copying the same pair again is safe: every copy remembers its original
+(`transactions.cloned_from_id`), so a second pass writes only what is missing.
 
 #### `GET /monthly_totals?category_id=<uuid|null>`
 
@@ -427,6 +476,9 @@ difference is the interesting part.
 9. **`Idempotency-Key` honoured** on every creating POST. ✅ — first call stores
    its response in `idempotency_keys`, retries replay it, and the same key on
    another route is a 409 rather than someone else's body.
+10. **A job queue, for copying a month.** ✅ — the first work that outlives its
+    request. Solid Queue, in the primary database and inside Puma; see
+    [ADR 0004](../decisions/0004-copying-a-month-runs-in-a-job.md).
 
 ## What the client does
 

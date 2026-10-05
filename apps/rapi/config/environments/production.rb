@@ -67,8 +67,10 @@ Rails.application.configure do
     write_timeout: 1
   }
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  # config.active_job.queue_adapter = :resque
+  # Jobs are rows in the primary database, so one that was queued when a deploy
+  # restarted the pod is still there when it comes back. The default adapter
+  # keeps them in memory and would have lost it.
+  config.active_job.queue_adapter = :solid_queue
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

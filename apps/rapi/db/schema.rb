@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_04_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_120200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -104,6 +104,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_120000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "month_clones", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.integer "copied", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.uuid "created_by_id"
+    t.uuid "ledger_id", null: false
+    t.integer "skipped", default: 0, null: false
+    t.date "source_month", null: false
+    t.string "status", default: "pending", null: false
+    t.date "target_month", null: false
+    t.integer "total", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_month_clones_on_created_by_id"
+    t.index ["ledger_id", "target_month"], name: "index_month_clones_one_active_per_target", unique: true, where: "((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying])::text[]))"
+    t.index ["ledger_id"], name: "index_month_clones_on_ledger_id"
+    t.check_constraint "source_month <> target_month", name: "month_clones_distinct_check"
+    t.check_constraint "source_month = date_trunc('month'::text, source_month::timestamp with time zone)::date AND target_month = date_trunc('month'::text, target_month::timestamp with time zone)::date", name: "month_clones_month_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'done'::character varying, 'failed'::character varying]::text[])", name: "month_clones_status_check"
+  end
+
   create_table "recurring_series", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.bigint "amount_cents", null: false
@@ -130,10 +149,161 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_120000) do
     t.check_constraint "kind::text = ANY (ARRAY['expense'::character varying, 'income'::character varying]::text[])", name: "recurring_series_kind_check"
   end
 
+  create_table "solid_queue_batch_executions", force: :cascade do |t|
+    t.bigint "batch_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "job_id", null: false
+    t.index ["batch_id"], name: "index_solid_queue_batch_executions_on_batch_id"
+    t.index ["job_id"], name: "index_solid_queue_batch_executions_on_job_id", unique: true
+  end
+
+  create_table "solid_queue_batches", force: :cascade do |t|
+    t.string "active_job_batch_id"
+    t.integer "completed_jobs", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.datetime "enqueued_at"
+    t.datetime "failed_at"
+    t.integer "failed_jobs", default: 0, null: false
+    t.datetime "finished_at"
+    t.text "metadata"
+    t.text "on_failure"
+    t.text "on_finish"
+    t.text "on_success"
+    t.integer "total_jobs", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["active_job_batch_id"], name: "index_solid_queue_batches_on_active_job_batch_id", unique: true
+    t.index ["finished_at"], name: "index_solid_queue_batches_on_finished_at"
+  end
+
+  create_table "solid_queue_blocked_executions", force: :cascade do |t|
+    t.string "concurrency_key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.bigint "job_id", null: false
+    t.integer "priority", default: 0, null: false
+    t.string "queue_name", null: false
+    t.index ["concurrency_key", "priority", "job_id"], name: "index_solid_queue_blocked_executions_for_release"
+    t.index ["expires_at", "concurrency_key"], name: "index_solid_queue_blocked_executions_for_maintenance"
+    t.index ["job_id"], name: "index_solid_queue_blocked_executions_on_job_id", unique: true
+  end
+
+  create_table "solid_queue_claimed_executions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_id", null: false
+    t.bigint "process_id"
+    t.index ["job_id"], name: "index_solid_queue_claimed_executions_on_job_id", unique: true
+    t.index ["process_id", "job_id"], name: "index_solid_queue_claimed_executions_on_process_id_and_job_id"
+  end
+
+  create_table "solid_queue_failed_executions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "error"
+    t.bigint "job_id", null: false
+    t.index ["job_id"], name: "index_solid_queue_failed_executions_on_job_id", unique: true
+  end
+
+  create_table "solid_queue_jobs", force: :cascade do |t|
+    t.string "active_job_id"
+    t.text "arguments"
+    t.bigint "batch_id"
+    t.string "class_name", null: false
+    t.string "concurrency_key"
+    t.datetime "created_at", null: false
+    t.datetime "finished_at"
+    t.integer "priority", default: 0, null: false
+    t.string "queue_name", null: false
+    t.datetime "scheduled_at"
+    t.datetime "updated_at", null: false
+    t.index ["active_job_id"], name: "index_solid_queue_jobs_on_active_job_id"
+    t.index ["batch_id"], name: "index_solid_queue_jobs_on_batch_id"
+    t.index ["class_name"], name: "index_solid_queue_jobs_on_class_name"
+    t.index ["finished_at"], name: "index_solid_queue_jobs_on_finished_at"
+    t.index ["queue_name", "finished_at"], name: "index_solid_queue_jobs_for_filtering"
+    t.index ["scheduled_at", "finished_at"], name: "index_solid_queue_jobs_for_alerting"
+  end
+
+  create_table "solid_queue_pauses", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "queue_name", null: false
+    t.index ["queue_name"], name: "index_solid_queue_pauses_on_queue_name", unique: true
+  end
+
+  create_table "solid_queue_processes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "hostname"
+    t.string "kind", null: false
+    t.datetime "last_heartbeat_at", null: false
+    t.text "metadata"
+    t.string "name", null: false
+    t.integer "pid", null: false
+    t.bigint "supervisor_id"
+    t.index ["last_heartbeat_at"], name: "index_solid_queue_processes_on_last_heartbeat_at"
+    t.index ["name", "supervisor_id"], name: "index_solid_queue_processes_on_name_and_supervisor_id", unique: true
+    t.index ["supervisor_id"], name: "index_solid_queue_processes_on_supervisor_id"
+  end
+
+  create_table "solid_queue_ready_executions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_id", null: false
+    t.integer "priority", default: 0, null: false
+    t.string "queue_name", null: false
+    t.index ["job_id"], name: "index_solid_queue_ready_executions_on_job_id", unique: true
+    t.index ["priority", "job_id"], name: "index_solid_queue_poll_all"
+    t.index ["queue_name", "priority", "job_id"], name: "index_solid_queue_poll_by_queue"
+  end
+
+  create_table "solid_queue_recurring_executions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_id", null: false
+    t.datetime "run_at", null: false
+    t.string "task_key", null: false
+    t.index ["job_id"], name: "index_solid_queue_recurring_executions_on_job_id", unique: true
+    t.index ["task_key", "run_at"], name: "index_solid_queue_recurring_executions_on_task_key_and_run_at", unique: true
+  end
+
+  create_table "solid_queue_recurring_tasks", force: :cascade do |t|
+    t.text "arguments"
+    t.string "class_name"
+    t.string "command", limit: 2048
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "key", null: false
+    t.integer "priority", default: 0
+    t.string "queue_name"
+    t.string "schedule", null: false
+    t.boolean "static", default: true, null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_solid_queue_recurring_tasks_on_key", unique: true
+    t.index ["static"], name: "index_solid_queue_recurring_tasks_on_static"
+  end
+
+  create_table "solid_queue_scheduled_executions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_id", null: false
+    t.integer "priority", default: 0, null: false
+    t.string "queue_name", null: false
+    t.datetime "scheduled_at", null: false
+    t.index ["job_id"], name: "index_solid_queue_scheduled_executions_on_job_id", unique: true
+    t.index ["scheduled_at", "priority", "job_id"], name: "index_solid_queue_dispatch_all"
+  end
+
+  create_table "solid_queue_semaphores", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.integer "value", default: 1, null: false
+    t.index ["expires_at"], name: "index_solid_queue_semaphores_on_expires_at"
+    t.index ["key", "value"], name: "index_solid_queue_semaphores_on_key_and_value"
+    t.index ["key"], name: "index_solid_queue_semaphores_on_key", unique: true
+  end
+
   create_table "transactions", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.bigint "amount_cents", null: false
     t.uuid "category_id"
+    t.uuid "cloned_from_id"
     t.datetime "created_at", null: false
     t.uuid "created_by_id"
     t.date "date", null: false
@@ -149,6 +319,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_120000) do
     t.index ["account_id", "date"], name: "index_transactions_on_account_id_and_date"
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
+    t.index ["cloned_from_id"], name: "index_transactions_on_cloned_from_id"
     t.index ["created_by_id"], name: "index_transactions_on_created_by_id"
     t.index ["ledger_id", "category_id", "date"], name: "index_transactions_on_ledger_id_and_category_id_and_date"
     t.index ["ledger_id", "date"], name: "index_transactions_on_ledger_id_and_date"
@@ -181,13 +352,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_120000) do
   add_foreign_key "ledger_invites", "ledgers"
   add_foreign_key "ledger_memberships", "ledgers"
   add_foreign_key "ledger_memberships", "users"
+  add_foreign_key "month_clones", "ledger_memberships", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "month_clones", "ledgers"
   add_foreign_key "recurring_series", "accounts"
   add_foreign_key "recurring_series", "categories"
   add_foreign_key "recurring_series", "ledger_memberships", column: "created_by_id", on_delete: :nullify
   add_foreign_key "recurring_series", "ledgers"
+  add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
+  add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "categories"
   add_foreign_key "transactions", "ledger_memberships", column: "created_by_id", on_delete: :nullify
   add_foreign_key "transactions", "ledgers"
   add_foreign_key "transactions", "recurring_series"
+  add_foreign_key "transactions", "transactions", column: "cloned_from_id", on_delete: :nullify
 end

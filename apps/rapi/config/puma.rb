@@ -34,6 +34,20 @@ port ENV.fetch("PORT", 3000)
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 
+# The job queue runs inside Puma, as threads of the same process.
+#
+# The default forks a process per worker and dispatcher, and every one of them is
+# a whole Rails process. The API has a 256Mi limit (see .voodu/api.voodu) and the
+# queue carries one short job per month somebody copies — the isolation that fork
+# buys is not worth a second and third copy of Rails in that budget.
+#
+# Opt-in, so a local `rails s` does not start a supervisor nobody asked for. The
+# manifest sets it in production.
+if ENV["SOLID_QUEUE_IN_PUMA"]
+  plugin :solid_queue
+  solid_queue_mode :async
+end
+
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
 pidfile ENV["PIDFILE"] if ENV["PIDFILE"]

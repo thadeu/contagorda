@@ -65,6 +65,11 @@ deployment "contagorda" "api" {
     # Postgres is sized against this.
     RAILS_MAX_THREADS = "5"
     WEB_CONCURRENCY   = "1"
+
+    # The job queue runs inside Puma — see config/puma.rb. It shares the five
+    # connections above with the request threads, which is why queue.yml asks
+    # for two worker threads and not the gem's three.
+    SOLID_QUEUE_IN_PUMA = "1"
   }
 
   # Migrations run once per deploy, not once per replica. The image's entrypoint

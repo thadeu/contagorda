@@ -49,6 +49,12 @@ Rails.application.routes.draw do
 
       get "months" => "months#index"
       get "months/:month/summary" => "months#summary"
+
+      # Copying a month answers 202 at once and does the work in a job. The
+      # client reads the record back to watch it.
+      post "months/:month/clone" => "month_clones#create"
+      get "month_clones/:id" => "month_clones#show"
+
       get "monthly_totals" => "monthly_totals#index"
     end
   end

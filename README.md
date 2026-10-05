@@ -39,6 +39,9 @@ Mobile-first PWA today, native iOS later, both against one Rails API.
   loop: the "left to pay" figure drops as you go through the month.
 - **Recurrence.** A rent or a salary is a series. Edit or delete "this one",
   "this and the next ones" or "all", the way a calendar does.
+- **Copy a month.** A new month usually starts as the last one did. Pick a
+  month, copy its rows into another, and watch them arrive while a background
+  job writes them — then reorder what needs it.
 - **Accounts.** Bank accounts, cards, cash and savings, each with an opening
   balance per month. Reorder them by drag.
 - **Categories** with an emoji, yours to create and rename.
@@ -225,3 +228,4 @@ an argument, so no screen can pass the wrong one.
 - [ADR 0001: recurrence dates are computed from the anchor, never chained](docs/decisions/0001-recurrence-dates.md)
 - [ADR 0002: what only the server may create](docs/decisions/0002-server-minted-secrets.md)
 - [ADR 0003: sheets and gestures in an installed PWA](docs/decisions/0003-sheet-gestures-on-ios.md)
+- [ADR 0004: copying a month runs in a job](docs/decisions/0004-copying-a-month-runs-in-a-job.md)

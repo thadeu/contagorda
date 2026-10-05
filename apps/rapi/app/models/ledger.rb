@@ -17,6 +17,7 @@ class Ledger < ApplicationRecord
   has_many :categories, class_name: "Ledger::Category", dependent: :destroy
   has_many :transactions, class_name: "Ledger::Transaction", dependent: :destroy
   has_many :recurring_series, class_name: "Ledger::RecurringSeries", dependent: :destroy
+  has_many :month_clones, class_name: "Ledger::MonthClone", dependent: :destroy
 
   validates :name, presence: true
 

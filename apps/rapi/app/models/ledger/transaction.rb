@@ -9,6 +9,10 @@ class Ledger::Transaction < ApplicationRecord
   belongs_to :recurring_series, class_name: "Ledger::RecurringSeries", optional: true
   belongs_to :created_by, class_name: "Ledger::Membership", optional: true
 
+  # The row this one was copied from by `Ledger::MonthClone`. See that model for
+  # why it is remembered.
+  belongs_to :cloned_from, class_name: "Ledger::Transaction", optional: true
+
   validates :kind, inclusion: { in: KINDS }
   validates :amount_cents, numericality: { greater_than: 0, only_integer: true }
   validates :description, presence: true

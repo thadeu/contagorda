@@ -12,6 +12,11 @@ export interface TransactionFormValues {
   paid: boolean
 }
 
+/**
+ * Unpaid, until it is marked. Most of what gets entered is a bill still to come,
+ * and a form that started on paid made the common case a tap to undo. Paying is
+ * the exception that is chosen.
+ */
 export function emptyValues(): TransactionFormValues {
   return {
     kind: 'expense',
@@ -20,7 +25,7 @@ export function emptyValues(): TransactionFormValues {
     date: todayIso(),
     accountId: '',
     categoryId: '',
-    paid: true,
+    paid: false,
   }
 }
 
